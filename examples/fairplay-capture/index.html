@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Secure Display | Real FairPlay capture experiment</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark;background:#0d1421;color:#edf4fb}
+main{max-width:820px;margin:6vh auto;padding:20px}
+h1{font-size:clamp(29px,4vw,42px)}
+p,li{line-height:1.55;color:#bdcce0}
+.notice{background:#242b38;border-left:3px solid #f1ad51;padding:14px 18px;border-radius:8px}
+.frame{border:1px solid #425675;border-radius:14px;background:#050a12;margin:20px 0;overflow:hidden}
+video{display:block;width:100%;max-height:500px}
+button{background:#83e5be;border:0;border-radius:8px;color:#101823;padding:11px 17px;font-weight:700;cursor:pointer;margin:5px}
+button:disabled{opacity:.4;cursor:wait}
+#status{padding:10px;border-radius:8px;background:#1b293a}
+#events{font-family:ui-monospace,monospace;font-size:12px;color:#b1c8e3;white-space:pre-wrap;padding:14px;background:#0a111c;border-radius:8px;max-height:190px;overflow:auto}
+a{color:#93c7fb}
+</style>
+</head>
+<body>
+<main>
+<p>SECURE DISPLAY · REAL DRM RESEARCH</p>
+<h1>FairPlay screenshot experiment</h1>
+<p class="notice"><strong>Real DRM attempt, not a simulated canvas.</strong> Uses Dolby's publicly documented FairPlay-encrypted sample, their matching public test license endpoint, and Shaka Player. This example contains no customer records or private Apple credentials. The provider's demo may expire or reject browser requests. Even successful playback does not establish universal screenshot prevention.</p>
+<div class="frame"><video id="video" playsinline controls crossorigin="anonymous"></video></div>
+<p id="status" role="status">Not started. Safari on macOS recommended.</p>
+<div>
+<button id="start">Try licensed FairPlay playback</button>
+<button id="stop" disabled>Stop</button>
+</div>
+<h2>What to test if playback starts</h2>
+<ol>
+<li>Confirm the log reports `com.apple.fps`, a real playing event and advancing playback time.</li>
+<li>With the protected video visible, take a macOS screenshot using Command + Shift + 4.</li>
+<li>Try Command + Shift + 5 screen recording and browser window sharing.</li>
+<li>Compare which pixels are visible on screen and which appear in each capture. Record exact browser, macOS version, and method.</li>
+</ol>
+<p>Only the video frame is DRM media. Ordinary page text remains capturable. Do not use sensitive content until capture behavior is understood.</p>
+<h2>Diagnostic events (no license contents)</h2>
+<div id="events" aria-live="polite">Ready.</div>
+<p>Test fixture: <a href="https://ott.dolby.com/browser_test_kit/help_files/topics/r_test_signals_all.html" target="_blank" rel="noopener noreferrer">Dolby Browser Test Kit</a>. <a href="https://developer.apple.com/library/archive/technotes/tn2454/" target="_blank" rel="noopener noreferrer">Apple's DRM debugging guidance</a>.</p>
+<script type="module" src="/src/main.js"></script>
+</main>
+</body>
+</html>

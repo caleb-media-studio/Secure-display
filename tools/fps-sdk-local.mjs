@@ -59,6 +59,15 @@ export function writeLocalPaths(result, repoRoot = ROOT) {
   writeFileSync(path, JSON.stringify(content,null,2)+"\n", {mode:0o600});
   return path;
 }
+/** Separate ignored Cargo registry avoids damaged ~/.cargo permissions without sudo/chown. */
+export function isolatedCargoHome(repoRoot = ROOT) {
+  return join(repoRoot, ".secure-display-local", "cargo-home");
+}
+export function cargoEnvironment(env = process.env, repoRoot = ROOT) {
+  const home = isolatedCargoHome(repoRoot);
+  mkdirSync(home, {recursive: true, mode: 0o700});
+  return {...env, CARGO_HOME: home};
+}
 export function cargoArgs(command, root) {
   const manifest = sdkPathMap(root).rustManifest;
   if (command === "build") return ["build","--manifest-path",manifest,"--bins"];
@@ -111,7 +120,7 @@ export function main(argv = process.argv.slice(2), options = {}) {
   }
   console.log("Running Apple's local Rust KSM "+command+" (not video playback).");
   const child = spawnSync("cargo",cargoArgs(command,result.root),{
-    cwd:dirname(result.paths.rustManifest), stdio:"inherit", env:process.env
+    cwd:dirname(result.paths.rustManifest), stdio:"inherit", env:cargoEnvironment(process.env,options.repoRoot??ROOT)
   });
   return child.status??1;
 }

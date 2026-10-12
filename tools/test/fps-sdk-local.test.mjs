@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {dirname, join} from "node:path";
-import {locateSdkRoot, sdkPathMap, inspectSdk, writeLocalPaths, cargoArgs, main} from "../fps-sdk-local.mjs";
+import {locateSdkRoot, sdkPathMap, inspectSdk, writeLocalPaths, cargoArgs, cargoEnvironment, isolatedCargoHome, main} from "../fps-sdk-local.mjs";
 
 test("uses ignored SDK path and accepts override",()=>{
   assert.equal(locateSdkRoot({repoRoot:"/tmp/repo",env:{}}),"/tmp/repo/FairPlay_Streaming_Server_SDK_27");
@@ -30,5 +30,14 @@ test("checks local files without copying SDK credential bytes",()=>{
     assert.equal(cargoArgs("build",root)[0],"build");
     assert.equal(cargoArgs("test",root)[0],"test");
     assert.equal(main(["doctor"],{repoRoot:repo,env:{SECURE_DISPLAY_FPS_SDK_PATH:"missing"}}),1);
+  } finally {rmSync(repo,{recursive:true,force:true});}
+});
+
+test("Cargo uses a local ignored registry instead of the broken user cache",()=>{
+  const repo=mkdtempSync(join(tmpdir(),"secure-display-cargo-"));
+  try {
+    const env=cargoEnvironment({HOME:"/fake"},repo);
+    assert.equal(env.CARGO_HOME,isolatedCargoHome(repo));
+    assert.ok(env.CARGO_HOME.startsWith(repo));
   } finally {rmSync(repo,{recursive:true,force:true});}
 });

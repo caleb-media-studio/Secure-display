@@ -82,3 +82,22 @@ For other layouts, set `SECURE_DISPLAY_FPS_SDK_PATH=/absolute/path/to/FairPlay_S
 **Important Apple limitation:** Apple's development credentials are intended for validating the key server with provided test SPC vectors; Apple says they **cannot be used to test actual FairPlay-protected content playback**. This bridge therefore does not magically supply a working Safari license, encrypted HLS stream or screenshot exclusion. For real playback, use an authorized provider or properly issued playback credentials and verify provider eligibility.
 
 - Apple guidance: https://developer.apple.com/library/archive/technotes/tn2454/
+
+## Actual browser capture experiment (public third-party FairPlay stream)
+
+The Apple SDK test credentials do **not** support playback. For a real Safari media/DRM experiment, Secure Display includes a standalone **example**, not production report rendering:
+
+```bash
+bun install
+bun run example:fairplay
+```
+
+Open the Vite localhost URL in Safari and press **Try licensed FairPlay playback**. It attempts Dolby's publicly documented FairPlay HLS test media with the paired public EZDRM test license and certificate. This needs no locally copied development credentials, and nothing private is committed. It can still fail from expired provider access, codecs, network policy or CORS; the page reports numeric Shaka error categories/codes and never logs license challenge bodies.
+
+**Important:** The streaming example is external media, **not a Secure Display custom text field**. First determine whether Safari actually initializes FairPlay and plays that protected media. Then compare screenshots, window sharing, and screen recording. Even if a particular capture returns black, that does not prove capture exclusion universally. The provider's public test service is not owned or controlled by Secure Display.
+
+References: https://ott.dolby.com/browser_test_kit/help_files/topics/r_test_signals_all.html and https://github.com/shaka-project/shaka-player/blob/main/docs/tutorials/fairplay.md
+
+### Cargo permission errors
+
+The bridge now redirects `CARGO_HOME` to `.secure-display-local/cargo-home/`, avoiding an unwritable global `~/.cargo/registry`. This is completely unrelated to whether DRM screenshots are protected.
