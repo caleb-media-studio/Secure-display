@@ -3,7 +3,7 @@
 Experimental, library-first, Apache-2.0-licensed research into **hardware DRM-backed rendering of server-encoded text** in ordinary browsers.
 
 > [!WARNING]
-> Screenshot prevention is **NOT demonstrated**. This alpha must not display confidential data. EME/DRM support does not prove that every screenshot or screen share will omit output. Strict confidential display remains blocked.
+> **Experimental result (October 12, 2026):** A macOS user reported that the synthetic DRM-protected document was visible on the display but omitted from screenshots in Safari/FairPlay and Chrome/Widevine. This is an observed test result, **not universal or independently verified protection**. This alpha must not display confidential data. Other capture engines remain untested; strict confidential display remains blocked.
 
 ## Architecture
 
@@ -81,7 +81,7 @@ Apache-2.0. See `LICENSE`.
 
 `bun run example:fairplay` launches the public test-media experiment under `examples/fairplay-capture`. Select FairPlay in Safari or Widevine in Chrome. It uses PBS/Axinom publicly documented encrypted sample media; a public test entitlement is fetched on demand rather than embedded in this repository. The earlier Dolby test manifest returned HTTP 403 and is no longer the default. The example intentionally uses *vendor test footage*, not Secure Display's proprietary text renderer or confidential documents.
 
-See `docs/FAIRPLAY.md`. Real-device screenshot exclusion remains unproven until a DRM playing frame has been compared with the capture result.
+See `docs/FAIRPLAY.md`. A user-reported macOS screenshot experiment on October 12, 2026 observed DRM media omitted from the captured image while visible on the display. See `docs/VALIDATION_MATRIX.md`. No universal screenshot or screen-share guarantee is established.
 
 ## DRM protected document and selection (experimental)
 

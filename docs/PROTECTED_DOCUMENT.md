@@ -102,3 +102,9 @@ Browser test:
 
 Shaka Packager docs: https://shaka-project.github.io/shaka-packager/html/tutorials/raw_key.html
 Public Axinom test vectors: https://github.com/Axinom/public-test-vectors
+
+## First observed capture result — October 12, 2026
+
+A macOS tester reported successfully packaging and displaying the library's **own synthetic DRM document**, including the geometry-based selection/highlighting interaction. In both Chrome/Widevine and Safari/FairPlay, the tester reported that the visible text did **not** appear in screenshots, while surrounding page controls did. An accompanying screenshot showed a black protected-media region and a normal position-selection indicator.
+
+This is an important **user-reported, platform-specific observation**, not independently reproduced, and not a claim of universal screen-capture blocking. Exact macOS/browser versions and screen recording/screen-share results have not been recorded. See [VALIDATION_MATRIX.md](VALIDATION_MATRIX.md).
