@@ -41,5 +41,7 @@ jobs:
       - run: bun run build
       - name: Rebuild and boot HTML element example from empty dist
         run: node tools/smoke-examples.mjs
+      - name: Install FFmpeg for synthetic fixture test
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Generate synthetic H.264 fixture without drawtext
         run: bun run fixture

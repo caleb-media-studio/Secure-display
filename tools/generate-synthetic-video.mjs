@@ -77,6 +77,7 @@ try {
   ], {encoding:"utf8",timeout:30000});
   if (result.error || result.status !== 0) {
     console.error("FFmpeg with libx264 is required (drawtext is not).");
+    if (result.error) console.error(result.error.message);
     if (result.stderr) console.error(result.stderr.trim());
     process.exitCode = 1;
   } else {
