@@ -43,6 +43,10 @@ Register the tags once using `registerSecureElements({resolveAsset, requestLicen
 
 Plaintext children like `<secure-text>real secret</secure-text>` are **forbidden**: HTML parsing would already expose that secret. The library is fail-closed and refuses to display inline content.
 
+### Browser example result
+
+Run `bun run example:elements`. The three elements intentionally report **DRM test provider is not configured** until an actual licensed synthetic test source is supplied. Click **Check browser DRM candidates** to probe the browser's PlayReady, hardware Widevine and FairPlay EME configurations. A candidate result indicates only that the configuration was accepted; **it does not prove screenshot exclusion**. Chrome's graphics acceleration toggle is separate and does not authorize the DRM license path.
+
 ## Develop
 
 ```bash

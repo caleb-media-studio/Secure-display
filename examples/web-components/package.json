@@ -10,7 +10,8 @@
     "dev": "vite --host 127.0.0.1"
   },
   "dependencies": {
-    "@secure-display/elements": "0.1.0"
+    "@secure-display/elements": "0.1.0",
+    "@secure-display/core": "0.1.0"
   },
   "devDependencies": {
     "vite": "^7.1.0"

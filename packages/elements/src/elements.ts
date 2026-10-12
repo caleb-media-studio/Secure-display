@@ -1,5 +1,6 @@
 import { startSyntheticPlayback, type PlaybackHandle } from "@secure-display/core";
 import { validateSyntheticDrmAsset, type SyntheticDrmAsset } from "./assets.js";
+import { SecureDisplaySetupError } from "./errors.js";
 
 export type SecureTag = "secure-text" | "secure-p" | "secure-h1";
 
@@ -155,9 +156,15 @@ export function registerSecureElements(adapters: SecureElementAdapters): void {
             return;
           }
           this.playback = handle;
-        } catch {
+        } catch (error) {
           if (run === this.generation && !controller.signal.aborted) {
-            this.setBlocked("Protected media not available on this device.");
+            if (error instanceof SecureDisplaySetupError) {
+              this.setAttribute("data-reason", "provider-unconfigured");
+              this.setBlocked("DRM test provider is not configured.");
+            } else {
+              this.setAttribute("data-reason", "asset-or-drm-failure");
+              this.setBlocked("DRM asset or playback failed. Check browser diagnostics.");
+            }
           }
         }
       }
