@@ -120,6 +120,8 @@ async function startTest() {
     instance.addEventListener("error",event=>{
       if(run!==generation) return;
       report(event.detail,"DRM/streaming");
+      video.hidden=true;
+      void shutdown();
     });
     await instance.attach(video);
     if(run!==generation) return;
@@ -137,6 +139,7 @@ async function startTest() {
     });
     instance.getNetworkingEngine().registerRequestFilter((type, request)=>{
       if(type!==shaka.net.NetworkingEngine.RequestType.LICENSE) return;
+      request.headers ??= {};
       request.headers["X-AxDRM-Message"]=entitlement;
       log("Sent licensed-media request to the public Axinom test server.");
       // Never display the entitlement or challenge body in logs.
@@ -145,19 +148,16 @@ async function startTest() {
     await instance.load(source.manifest);
     if(run!==generation) return;
     const actual=instance.drmInfo()?.keySystem;
-    if(actual && actual!==drm.keySystem) {
-      throw Error("Different DRM key system selected.");
+    if(actual!==drm.keySystem) {
+      throw Error("Expected hardware/browser DRM session was not reported; no clear fallback allowed.");
     }
-    if(actual===drm.keySystem) {
-      log("Actual EME DRM key system: "+actual+". Screenshot exclusion not established.");
-    } else {
-      log("No DRM key system reported by Shaka. Playback alone is not DRM verification.");
-    }
+    log("Shaka-selected EME DRM key system: "+actual+". Screenshot exclusion not established.");
     video.hidden=false;
-    try {await video.play();}
-    catch {log("Safari/Chrome needs a manual press of the video Play control.");}
-    if(run!==generation) return;
-    status.textContent="Playback initialized. Confirm moving frames, then screenshot and record; determine capture exclusion experimentally.";
+    // Do not indefinitely await play(), which can remain pending on DRM or gesture gates.
+    void video.play().catch(()=>{
+      if(run===generation) log("Use the video Play control if autoplay is blocked.");
+    });
+    status.textContent="DRM session initialized. Confirm moving frames, then screenshot and record; capture exclusion remains to be tested.";
   } catch(error) {
     if(run!==generation) return;
     report(error,"Playback");
