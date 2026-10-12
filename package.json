@@ -13,7 +13,8 @@
     "build": "npm run build -w @secure-display/core && npm run build -w @secure-display/react && npm run build -w @secure-display/lab",
     "test": "npm run build && node --test packages/core/test/*.test.mjs",
     "dev": "npm run dev -w @secure-display/lab",
-    "typecheck": "npm run build -w @secure-display/core && npm run build -w @secure-display/react && npm run typecheck -w @secure-display/lab"
+    "typecheck": "npm run build -w @secure-display/core && npm run build -w @secure-display/react && npm run typecheck -w @secure-display/lab",
+    "fixture": "node tools/generate-synthetic-video.mjs"
   },
   "engines": {
     "node": ">=20"

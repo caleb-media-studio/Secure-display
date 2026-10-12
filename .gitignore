@@ -20,3 +20,4 @@ coverage/
 .DRM-credentials/
 secrets/
 private/
+fixtures/generated/
