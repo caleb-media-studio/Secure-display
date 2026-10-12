@@ -5,7 +5,7 @@ import {readFileSync} from "node:fs";
 
 const files = execFileSync("git", ["ls-files", "-z"])
   .toString("utf8").split("\0").filter(Boolean);
-const bannedNames = /(^|\/)(\.env(?:\.[^/]*)?|secrets|private)(\/|$)|\.(?:pem|p12|pfx|key|jks|keystore)$/i;
+const bannedNames = /(^|\/)(\.env(?:\.[^/]*)?|secrets|private|\.secure-display-local|FairPlay_Streaming_Server_SDK_[^/]+)(\/|$)|\.(?:pem|p12|pfx|key|jks|keystore)$/i;
 const patterns = [
   {name:"private key block", value:/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/},
   {name:"GitHub token", value:/\bgh[pousr]_[A-Za-z0-9]{30,}\b/},

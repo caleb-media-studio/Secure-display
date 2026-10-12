@@ -23,4 +23,5 @@ private/
 fixtures/generated/
 bun.lock
 
-/FairPlay_Streaming_Server_SDK_27/
+/FairPlay_Streaming_Server_SDK_*/
+/.secure-display-local/

@@ -59,3 +59,26 @@ Apple publishes development SDK resources and sample encrypted streams. Producti
 ## Unverified security property
 
 A successful FairPlay capability probe, or a successful licensed playback, does **not** prove every screenshot, screen recording, screen-sharing application, or external camera will be blocked. Only platform-specific real-device capture testing can show observed behavior.
+
+## Local Apple SDK 27 bridge
+
+Keep the downloaded `FairPlay_Streaming_Server_SDK_27/` folder in the repository working directory, **but not in Git**. The folder and `.secure-display-local/` are ignored; the tracked-file secret guard blocks either from commits.
+
+Run from the Secure Display root:
+
+```bash
+bun run fps:sdk:doctor  # only checks local SDK paths, no credentials opened
+bun run fps:sdk:paths   # writes a local-only JSON index of SDK paths
+bun run fps:sdk:build   # builds the Apple Rust KSM examples in place (needs Cargo)
+bun run fps:sdk:test    # runs Apple's Rust SDK tests in place (needs Cargo)
+```
+
+The script looks at `FairPlay_Streaming_Server_SDK_27/Development/Key_Server_Module/Rust/Cargo.toml`, Rust `src/bin/server.rs` and `src/bin/local.rs`, the test certificate and provisioning data in `Development/Key_Server_Module/credentials/`, the SDK test vectors, and the Safari HLS sample. It **references**, but never copies or bundles, Apple's files.
+
+For other layouts, set `SECURE_DISPLAY_FPS_SDK_PATH=/absolute/path/to/FairPlay_Streaming_Server_SDK_27`. It can also be relative to the repository root.
+
+`fps:sdk:paths` writes `.secure-display-local/fps-sdk-paths.json` with **filesystem paths only**, never certificate bytes, key contents or test vectors. This file is ignored by Git. Never expose the local SDK folder via Vite's `public/`, an API static file route, or npm packaging. Rust build/test output is produced within the ignored SDK directory.
+
+**Important Apple limitation:** Apple's development credentials are intended for validating the key server with provided test SPC vectors; Apple says they **cannot be used to test actual FairPlay-protected content playback**. This bridge therefore does not magically supply a working Safari license, encrypted HLS stream or screenshot exclusion. For real playback, use an authorized provider or properly issued playback credentials and verify provider eligibility.
+
+- Apple guidance: https://developer.apple.com/library/archive/technotes/tn2454/
