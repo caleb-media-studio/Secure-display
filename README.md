@@ -18,11 +18,11 @@ Experimental, library-first, Apache-2.0-licensed research into **hardware DRM-ba
 
 Unlike GPU-canvas experiments, this approach targets **actual browser DRM**, where decryption and protected output can be delegated to the CDM/OS/hardware. Encoding normally happens on the trusted server; the browser performs licensed decoding. No text is passed in HTML children, React props, or DOM attributes.
 
-A CDM or robustness probe is not evidence that a screenshot is blocked. Supported DRM differs across Chrome, Safari, and Edge. FairPlay needs a provider-specific adapter and is not part of the initial CENC experiment.
+A CDM or robustness probe is not evidence that a screenshot is blocked. Supported DRM differs across Chrome, Safari, and Edge. A **synthetic-only FairPlay HLS adapter** is available for experiments, but cannot work without externally provisioned encrypted HLS, a FairPlay certificate and an authorized license-proxy service. It has not been tested end-to-end with licensed media.
 
 ## Repository
 
-- `packages/core`: EME capabilities, strict disclosure policy, experimental synthetic CENC playback.
+- `packages/core`: EME capabilities, strict disclosure policy, synthetic CENC and experimental FairPlay HLS adapter.
 - `packages/elements`: **`<secure-text>`, `<secure-p>`, `<secure-h1>`** custom elements routed through that DRM media pipeline.
 - `packages/react`: React security-status component (full element wrappers planned).
 - `examples/diagnostics`: optional browser capability lab.
@@ -70,7 +70,7 @@ Use `Ctrl+C` to stop an earlier runaway process before updating. Pull the latest
 
 ## Roadmap
 
-Actual DRM-protected synthetic media packaging + authorized license integration; FairPlay adapter; hardware/OS capture testing; accessibility, size/layout, security review. Publishing to npm is disabled until validated.
+Actual DRM-protected synthetic media packaging + authorized license integration; FairPlay end-to-end playback; hardware/OS capture testing; accessibility, size/layout, security review. Publishing to npm is disabled until validated.
 
 See `docs/ARCHITECTURE.md`, `docs/THREAT_MODEL.md`, and `SECURITY.md`.
 

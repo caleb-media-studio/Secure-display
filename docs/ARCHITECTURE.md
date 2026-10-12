@@ -17,7 +17,7 @@ authorized backend obtains text
 
 The encoding step is normally server-side; the device performs **decoding**. No JavaScript or WebGPU shader receives plaintext report text.
 
-`@secure-display/elements` exposes `secure-text`, `secure-p`, `secure-h1`, using the existing experimental `@secure-display/core` CENC EME player. Its resolver accepts only opaque IDs; **never supply plaintext as a child or attribute**.
+`@secure-display/elements` exposes `secure-text`, `secure-p`, `secure-h1`, routing CENC assets to the EME player and FairPlay HLS assets to an injected Shaka-compatible player. Its resolver accepts only opaque IDs; **never supply plaintext as a child or attribute**.
 
 **Current prototype only allows synthetic DRM tests.** It is not a production confidentiality mechanism. An accepted EME request, a usable license, or HDCP capability is not proof that a screenshot, screen sharing software, virtual display, or another camera cannot capture content.
 
@@ -25,7 +25,7 @@ The encoding step is normally server-side; the device performs **decoding**. No 
 
 - PlayReady SL3000 candidate: encrypted CENC MP4 via EME on compatible Edge/Windows hardware.
 - Widevine `HW_SECURE_ALL` candidate: CENC experiment on browsers/OSes supporting this robustness; software Widevine is explicitly rejected.
-- FairPlay: intentionally blocked pending native HLS/FairPlay adapter and provider authorization.
+- FairPlay: experimental modern EME/HLS adapter supports an injected Shaka-compatible player, authorized server-side license-proxy URL, and certificate URL. It rejects clear-media fallback through a DRM session check, but is not yet licensed-playback-verified.
 
 None have been verified for universal screenshot exclusion.
 
@@ -41,6 +41,6 @@ The library controls element sizing and a native <video> surface; CSS controls t
 
 1. Genuine, licensed synthetic DRM media for a single known hardware/browser pairing.
 2. Validate screenshot, screen share, output policy and reconfiguration behavior on real devices.
-3. Add independent HLS/FairPlay pathway and documented compatibility fallback (block).
+3. Validate experimental HLS/FairPlay pathway on real Safari and document compatibility fallback (block).
 4. External security review and independent repeatable capture benchmark.
 5. Only then consider sensitive field support and public npm release.

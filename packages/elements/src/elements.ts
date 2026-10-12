@@ -1,4 +1,4 @@
-import { startSyntheticPlayback, type PlaybackHandle } from "@secure-display/core";
+import { startSyntheticPlayback, startSyntheticFairPlayPlayback, type PlaybackHandle, type ShakaPlayerFactory } from "@secure-display/core";
 import { validateSyntheticDrmAsset, type SyntheticDrmAsset } from "./assets.js";
 import { SecureDisplaySetupError } from "./errors.js";
 
@@ -7,6 +7,8 @@ export type SecureTag = "secure-text" | "secure-p" | "secure-h1";
 export interface SecureElementAdapters {
   /** Only opaque, non-identifying asset IDs should be used in HTML attributes. */
   resolveAsset: (assetId: string, signal: AbortSignal) => Promise<SyntheticDrmAsset>;
+  /** Optional injected Shaka Player for modern Safari FairPlay HLS. Loaded only when needed. */
+  createFairPlayPlayer?: ShakaPlayerFactory;
   /** Application forwards DRM challenges to its authenticated server-side license proxy. */
   requestLicense: (
     assetId: string,
@@ -129,28 +131,37 @@ export function registerSecureElements(adapters: SecureElementAdapters): void {
           if (controller.signal.aborted || run !== this.generation) return;
           validateSyntheticDrmAsset(asset, location.href);
           this.video.style.aspectRatio = String(asset.aspectRatio ?? 8);
-          const handle = await startSyntheticPlayback(this.video, {
-            classification: "synthetic-test-only",
-            encryptedMediaUrl: asset.encryptedMediaUrl,
-            keySystem: asset.keySystem,
-            contentType: asset.contentType,
-            robustness: asset.robustness,
-            serverCertificate: asset.serverCertificate,
-            requestLicense: (challenge, messageType) =>
-              adapters.requestLicense(id, challenge, messageType, controller.signal),
-            onStatus: (state) => {
-              if (controller.signal.aborted || run !== this.generation) return;
-              if (state === "blocked") {
-                this.setBlocked("DRM media or output policy was rejected.");
-              } else if (state === "license-usable") {
-                this.status.hidden = true;
-                this.setAttribute("data-state", "synthetic-test");
-                void this.video.play().catch(() => {
-                  if (run === this.generation) this.setBlocked("Playback is blocked.");
-                });
-              }
-            },
-          });
+          const onPlaybackStatus = (state:
+            "initializing" | "license-usable" | "synthetic-playback-available" | "blocked") => {
+            if (controller.signal.aborted || run !== this.generation) return;
+            if (state === "blocked") {
+              this.setBlocked("DRM media or output policy was rejected.");
+            } else if (state === "license-usable" || state === "synthetic-playback-available") {
+              this.status.hidden = true;
+              this.setAttribute("data-state", "synthetic-test");
+              void this.video.play().catch(() => {
+                if (run === this.generation) this.setBlocked("Playback is blocked.");
+              });
+            }
+          };
+          const handle = asset.format === "fairplay-hls"
+            ? await (async () => {
+                if (!adapters.createFairPlayPlayer) throw new SecureDisplaySetupError();
+                return startSyntheticFairPlayPlayback(
+                  this.video, asset, adapters.createFairPlayPlayer, onPlaybackStatus,
+                );
+              })()
+            : await startSyntheticPlayback(this.video, {
+                classification: "synthetic-test-only",
+                encryptedMediaUrl: asset.encryptedMediaUrl,
+                keySystem: asset.keySystem,
+                contentType: asset.contentType,
+                robustness: asset.robustness,
+                serverCertificate: asset.serverCertificate,
+                requestLicense: (challenge, messageType) =>
+                  adapters.requestLicense(id, challenge, messageType, controller.signal),
+                onStatus: onPlaybackStatus,
+              });
           if (controller.signal.aborted || run !== this.generation) {
             await handle.destroy();
             return;
