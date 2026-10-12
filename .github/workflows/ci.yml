@@ -45,3 +45,7 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Generate synthetic H.264 fixture without drawtext
         run: bun run fixture
+      - name: Generate full-page DRM experiment clear-video fixture
+        run: |
+          node tools/generate-protected-page-video.mjs
+          test -s fixtures/generated/protected-page-clear.mp4
