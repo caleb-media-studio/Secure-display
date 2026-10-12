@@ -21,3 +21,4 @@ coverage/
 secrets/
 private/
 fixtures/generated/
+bun.lock
