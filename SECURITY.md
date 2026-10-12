@@ -13,3 +13,9 @@ No production DRM credentials, license challenge responses, signing keys, or pri
 ## Scope
 
 Unintended plaintext disclosure, bypassing a block policy, secret leakage and unsanitized errors are vulnerabilities. Screenshot exclusion is an **unsolved and unverified product requirement**, not a current feature.
+
+## Public DRM test-vector experiment
+
+`bun run drm:demo:package` downloads a published Axinom **public test content key** and uses it to encrypt *synthetic* text video. The key and license entitlement are deliberately public. They cannot protect confidential data from extraction. This helper is solely for investigating whether the browser's genuine DRM output is omitted from screenshots and screen sharing.
+
+Never point the helper at customer records, student data or proprietary reports. Never put a real content key, Apple FairPlay certificate private key, provider account credential or DRM signing secret in browser source, HTML, generated JSON, Git or CI. Do not interpret a DRM license success as universal capture blocking.

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {parseVector,packagerArgs,manifestFromLayout} from "../package-test-document.mjs";
 test("public test vector parser",()=>{
- const data=parseVector("Key ID: 302f80dd-411e-4886-bca5-bb1f8018a024\nContent Key: FbKq+Qbr7GMJ1A+RKJEnuA==");
+ const data=parseVector("Key ID: 302f80dd-411e-4886-bca5-bb1f8018a024\nContent Key: AAAAAAAAAAAAAAAAAAAAAA==");
  assert.equal(data.kid,"302f80dd-411e-4886-bca5-bb1f8018a024");
  assert.equal(data.keyHex.length,32);
  assert.throws(()=>parseVector("not a key"));
@@ -22,4 +22,14 @@ test("geometry manifest does not contain raw key or plaintext",()=>{
  assert.equal(m.pages[0].media.keySystem,"com.apple.fps");
  assert.ok(!JSON.stringify(m).includes("Content Key"));
  assert.throws(()=>manifestFromLayout(l,"unprotected"));
+});
+
+test("generated fairplay and widevine descriptors validate with production schema",async()=>{
+ const {validateDocument}=await import("../../packages/document/dist/index.js");
+ const layout={page:{id:"synthetic-1",width:640,height:360,
+   lines:[{y:10,height:14,glyphs:[{index:0,x:10,width:8}]}]}};
+ for(const system of ["fairplay","widevine"]) {
+   const result=manifestFromLayout(layout,system);
+   assert.equal(validateDocument(result,"http://127.0.0.1:5173/").pages.length,1);
+ }
 });

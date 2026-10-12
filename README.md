@@ -82,3 +82,25 @@ Apache-2.0. See `LICENSE`.
 `bun run example:fairplay` launches the public test-media experiment under `examples/fairplay-capture`. Select FairPlay in Safari or Widevine in Chrome. It uses PBS/Axinom publicly documented encrypted sample media; a public test entitlement is fetched on demand rather than embedded in this repository. The earlier Dolby test manifest returned HTTP 403 and is no longer the default. The example intentionally uses *vendor test footage*, not Secure Display's proprietary text renderer or confidential documents.
 
 See `docs/FAIRPLAY.md`. Real-device screenshot exclusion remains unproven until a DRM playing frame has been compared with the capture result.
+
+## DRM protected document and selection (experimental)
+
+A reusable `@secure-display/document` library now provides:
+
+```html
+<secure-document asset-id="synthetic-report-fairplay" zoom="1"></secure-document>
+```
+
+The element renders each visible page as **licensed DRM video**, with coordinate-only selection and highlight overlays, keyboard selection, zoom and lazy page loading. It does not put readable text in HTML or JavaScript. Copying selected plaintext is deliberately disabled.
+
+To generate and run **our own synthetic test document**, not a third-party video:
+
+```bash
+bun install
+bun run drm:demo:package  # requires FFmpeg + official Shaka Packager binary
+bun run example:document
+```
+
+The packager script fetches Axinom's **public, test-only** key at runtime, encrypts the synthetic clip with CBCS and zero clear lead, and produces ignored FairPlay HLS/Widevine DASH files and matching glyph positions. Public keys provide no confidentiality and are for capture experiments only. Actual licensed playback from your localhost environment has **not yet been verified**.
+
+Read [docs/PROTECTED_DOCUMENT.md](docs/PROTECTED_DOCUMENT.md) for setup, architecture and limitations. The open-source project must not be advertised as screenshot-proof; OS/browser capture testing is still required.
