@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Secure Display | Protected document integration</title>
+<style>
+:root{color-scheme:dark;background:#101624;color:#edf4ff;font:16px/1.6 system-ui,sans-serif}
+main{max-width:980px;padding:24px;margin:4vh auto}
+a{color:#9ed1ff}
+.note{background:#263144;border-left:3px solid #f8b65d;padding:18px;border-radius:8px}
+small{color:#a3b5c9}
+</style>
+</head>
+<body><main>
+<p>SECURE DISPLAY · LIBRARY EXAMPLE</p>
+<h1>Protected document renderer</h1>
+<p class="note"><strong>Strictly synthetic prototype.</strong> The document remains
+blocked until a genuine DRM-encrypted test video, matching geometry map,
+and approved license service are configured. No canvas, plaintext fallback,
+or fake screenshot protection is used.</p>
+<secure-document asset-id="synthetic-report" zoom="1"></secure-document>
+<p id="selection-status" role="status">No selection.</p>
+<p><small>Selection highlights are geometric overlays. The selected words
+are not stored in HTML, text nodes or copied to clipboard. Accessibility and
+native selection semantics remain open limitations.</small></p>
+<p>Generate an unencrypted test clip with <code>bun run fixture:document</code>,
+then package it with authorized DRM infrastructure and provide a matching
+ignored <code>public/synthetic-document.json</code>.
+See <a href="https://github.com/caleb-media-studio/Secure-display/blob/feat/initial-research-framework/docs/PROTECTED_DOCUMENT.md">integration guide</a>.</p>
+<script type="module" src="/src/main.js"></script>
+</main></body>
+</html>

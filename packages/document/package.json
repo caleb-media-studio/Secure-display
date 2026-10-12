@@ -1,0 +1,23 @@
+{
+  "name": "@secure-display/document",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Synthetic DRM document surface and plaintext-free geometry selection",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@secure-display/core": "0.1.0"
+  }
+}
