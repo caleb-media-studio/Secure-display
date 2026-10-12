@@ -49,11 +49,20 @@ Plaintext children like `<secure-text>real secret</secure-text>` are **forbidden
 npm install
 npm run typecheck
 npm test
-npm run dev              # example diagnostics only; Bun-compatible without recursive workspace invocation
-npm run example:elements # native custom element example only
+npm run dev              # diagnostics example
+npm run example:elements # custom-element example
 ```
 
-Use `bun install` / `bun run dev` if preferred. Build the workspace before launching examples.
+Alternatively use Bun (all root scripts invoke tools directly, avoiding Bun workspace-script recursion):
+
+```bash
+bun install
+bun run typecheck
+bun run test
+bun run example:elements
+```
+
+Use `Ctrl+C` to stop an earlier runaway process before updating. Pull the latest feature branch, then rerun the commands.
 
 ## Roadmap
 

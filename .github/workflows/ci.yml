@@ -25,3 +25,17 @@ jobs:
           if git ls-files | grep -Ei '(^|/)(\.env([^/]*$)|secrets/|private/)|\.(pem|p12|pfx|key|jks|keystore)$'; then
             echo 'Potential secret material was committed'; exit 1
           fi
+
+  bun:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run typecheck
+      - run: bun run test
+      - run: bun run build

@@ -10,9 +10,9 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "npm run build -w @secure-display/core && npm run build -w @secure-display/elements && npm run build -w @secure-display/react && npm run build -w @secure-display/example-diagnostics && npm run build -w @secure-display/example-elements",
-    "typecheck": "npm run build -w @secure-display/core && npm run build -w @secure-display/elements && npm run build -w @secure-display/react && npm run typecheck -w @secure-display/example-diagnostics && npm run typecheck -w @secure-display/example-elements",
-    "test": "npm run build && node --test packages/core/test/*.test.mjs packages/elements/test/*.test.mjs",
+    "build": "tsc -p packages/core/tsconfig.json && tsc -p packages/elements/tsconfig.json && tsc -p packages/react/tsconfig.json && vite build examples/diagnostics && vite build examples/web-components",
+    "typecheck": "tsc -p packages/core/tsconfig.json && tsc -p packages/elements/tsconfig.json && tsc -p packages/react/tsconfig.json && tsc --noEmit -p examples/diagnostics/tsconfig.json && tsc --noEmit -p examples/web-components/tsconfig.json",
+    "test": "tsc -p packages/core/tsconfig.json && tsc -p packages/elements/tsconfig.json && node --test packages/core/test/*.test.mjs packages/elements/test/*.test.mjs",
     "dev": "vite examples/diagnostics --host 127.0.0.1",
     "example:diagnostics": "vite examples/diagnostics --host 127.0.0.1",
     "example:elements": "vite examples/web-components --host 127.0.0.1",
