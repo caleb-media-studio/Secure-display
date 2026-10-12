@@ -105,6 +105,6 @@ Public Axinom test vectors: https://github.com/Axinom/public-test-vectors
 
 ## First observed capture result — October 12, 2026
 
-A macOS tester reported successfully packaging and displaying the library's **own synthetic DRM document**, including the geometry-based selection/highlighting interaction. In both Chrome/Widevine and Safari/FairPlay, the tester reported that the visible text did **not** appear in screenshots, while surrounding page controls did. An accompanying screenshot showed a black protected-media region and a normal position-selection indicator.
+A macOS tester confirmed packaging, DRM playback and visual selection/highlighting for the library's **own synthetic text document** in Chrome/Widevine and Safari/FairPlay. In **both browsers**, the user explicitly reported successful **screenshot, screen recording and screen-sharing exclusion** for the protected text. Surrounding UI remained capture-visible; a supplied screenshot showed a black protected media rectangle and normal caret information.
 
-This is an important **user-reported, platform-specific observation**, not independently reproduced, and not a claim of universal screen-capture blocking. Exact macOS/browser versions and screen recording/screen-share results have not been recorded. See [VALIDATION_MATRIX.md](VALIDATION_MATRIX.md).
+These results are **user-observed and platform-specific**, not independently verified or generalized to every capture implementation. The screenshot evidence is attached in the conversation; recorded videos and screen-share artifacts were not provided. Exact macOS/browser and capture-application versions are unknown. See [VALIDATION_MATRIX.md](VALIDATION_MATRIX.md).

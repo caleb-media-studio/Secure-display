@@ -15,4 +15,6 @@ For each browser, OS, graphics driver and device, record:
 
 A passing EME probe, usable license key or HDCP check is **not** proof of screenshot blocking.
 
-**Observed preliminary result:** macOS screenshot exclusion of a locally DRM-packaged synthetic text document was reported in Chrome/Widevine and Safari/FairPlay on October 12, 2026. See [VALIDATION_MATRIX.md](VALIDATION_MATRIX.md). This does not certify capture resistance elsewhere.\n\nOpen blockers: recorded browser/OS versions, independent repeatability, screen recording/sharing tests, production authorization/secret-key licensing, output-policy negotiation, accessible alternatives, document reflow, native text selection/copy requirements, and security review.
+**User-verified preliminary result (October 12, 2026):** the protected synthetic text was visible on the display and omitted from **screenshots, screen recordings, and screen sharing** using Chrome/Widevine and Safari/FairPlay on the user's Mac. The two latter results are user-reported with no attached recording/sharing captures, and exact software/environment specifics are not recorded. See [VALIDATION_MATRIX.md](VALIDATION_MATRIX.md).
+
+Open blockers: independent reproduction, detailed environment/capture-method records and cross-platform testing, production authorization and private-key licensing, output-policy negotiation, accessibility, text reflow and copy semantics, and a security review.

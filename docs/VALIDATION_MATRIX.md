@@ -2,30 +2,32 @@
 
 ## Status and evidence
 
-**October 12, 2026 — User-observed test, not independently reproduced.**
+**October 12, 2026 — User-observed macOS tests; not independently reproduced.**
 
-The user tested Secure Display's **own synthetic rasterized text document**, packaged as DRM media using the local Shaka Packager/Axinom public-test-vector workflow. The user reported that the protected text was visible on the physical screen, that interactive selection/highlighting worked, and that screenshot output omitted the protected text region. The submitted screenshot shows the application chrome, zoom control, `Caret 6` position and a black protected media rectangle. This is **observational evidence for that capture path**, not cryptographic output attestation or a guarantee across capture mechanisms.
+The user tested Secure Display's **own synthetic rasterized text document**, packaged as encrypted DRM media using local Shaka Packager and Axinom public test vectors. The user confirmed that protected text was visible on the physical display and interactive text selection/highlighting worked in **Chrome/Widevine** and **Safari/FairPlay**. The user additionally explicitly confirmed that the protected content was omitted from **screenshots, screen recordings, and screen sharing in both browsers**.
 
-| Test | Platform | Displayed to user | Interaction | Screenshot result | Evidence |
+The supplied screenshot visually shows surrounding application chrome, zoom controls and `Caret 6` while the media rectangle is black. There are no uploaded screen-recording samples or screen-share captures: those two results are specifically **user-reported**, not independently inspected here.
+
+| Browser / DRM | Synthetic text visible on physical display | Selection / highlight | Screenshot exclusion | Screen recording exclusion | Screen sharing exclusion |
 | --- | --- | --- | --- | --- | --- |
-| Protected synthetic text, Widevine DASH | Chrome on macOS | User confirmed | User confirmed highlight/selection | Protected text area omitted | User report and screenshot, October 12, 2026 |
-| Protected synthetic text, FairPlay HLS | Safari on macOS | User confirmed | User confirmed highlight/selection | Protected text area omitted | User report, October 12, 2026 |
+| Chrome / Widevine DASH on macOS | User confirmed | User confirmed | User confirmed; screenshot supplied | User confirmed | User confirmed |
+| Safari / FairPlay HLS on macOS | User confirmed | User confirmed | User confirmed | User confirmed | User confirmed |
 
-Specific macOS release, exact browser versions, screenshot API, and hardware/CDM robustness tier **were not recorded**. No independent reproduction, capture-tool instrumentation, or screen recording/sharing result was supplied.
+**Unrecorded details:** exact macOS and browser versions, GPU/CDM robustness tier, screenshot API, recording application, sharing application, selected tab/window/display source, external monitor/HDCP configuration, and repeatability after OS updates.
 
 ## What this demonstrates
 
-The browser's DRM video output path can omit synthetic text pixels from a screenshot on the tested macOS/browser configurations, while the surrounding UI remains visible. It supports the feasibility of a DRM-backed, selectable-looking document using geometry-only overlays.
+The reported tests provide a **successful proof of concept for DRM-backed synthetic selectable-looking text and capture omission** across the three capture categories tested on this user's Mac. The DRM media path shows different capture behavior from the surrounding ordinary webpage UI.
 
-**It does not establish** that all screenshots, macOS screen recordings, `getDisplayMedia`, Zoom/Teams/Meet sharing, remote desktop, virtual displays, accessibility pipelines, printing, browser extension APIs, or external photography omit the content. Selection highlights are ordinary UI layers and can remain visible in screenshots. The public test content encryption keys are known and cannot protect confidential data from extraction.
+This is **not** an OS- or browser-wide guarantee that arbitrary capture engines, virtual machines/displays, remote desktop software, printing, debugger access, browser extensions, accessibility pathways or a camera cannot retrieve content. The selection overlay is ordinary HTML UI and may appear in captures. The DRM test encryption keys are public and provide **no confidentiality against content extraction**.
 
-## Next test matrix
+## Remaining validation and engineering
 
-- Repeat with macOS `Command + Shift + 4`, `Command + Shift + 5`, browser tab/window/full screen share, Zoom/Meet/Teams and ScreenCaptureKit-based recording.
-- Test while video is playing, paused, backgrounded, scrolled offscreen, zoomed, and after external display/HDCP changes.
-- Record browser and OS versions, hardware details, chosen DRM key system, license state, and actual media advancing.
-- Confirm selection highlights line up with the video when zooming, scrolling, selecting across lines/pages, and when a page unloads/reloads.
-- Re-test after browser or OS updates, and on Windows Edge, Android Chrome and iOS Safari if supported.
-- Add a licensed production-key backend, per-user authorization, revocation, no content leakage via logging/devtools, and external security review **before** any confidential reports are considered.
+- Collect test environment details and capture-tool names, and repeat screenshot, screen recording and screen sharing with recorded evidence and exact browser/OS versions.
+- Exercise other capture implementations, ScreenCaptureKit, remote desktop, virtual displays and external displays/HDCP transitions.
+- Verify pause, background, scrolling, zoom, multiple pages, mouse selection alignment, decoder lifecycle and license changes.
+- Re-test after OS/browser updates and on other supported platforms; do not infer Windows/Android/iOS outcomes from this macOS result.
+- Build a properly authorized production DRM key/license service with per-user authorization, expiry, revocation, auditability and security review, *before* evaluating confidential reports.
+- Provide accessibility strategy and clearly document that native DOM text selection and copying are not supported.
 
-The implementation remains research-only, with `classification:"synthetic-test-only"` enforced by the document schema.
+The implementation remains research-only and enforces `classification:"synthetic-test-only"`.
