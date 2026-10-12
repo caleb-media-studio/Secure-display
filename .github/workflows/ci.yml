@@ -39,3 +39,7 @@ jobs:
       - run: bun run typecheck
       - run: bun run test
       - run: bun run build
+      - name: Rebuild and boot HTML element example from empty dist
+        run: node tools/smoke-examples.mjs
+      - name: Generate synthetic H.264 fixture without drawtext
+        run: bun run fixture
