@@ -62,7 +62,7 @@ function draw(message, y, scale, color) {
 }
 draw("SYNTHETIC TEST ONLY", 105, 4, [244,247,250]);
 draw("EXAMPLE ID 000000", 165, 3, [112,229,197]);
-draw("NOT DRM ENCRYPTED - CAPTURABLE", 285, 2, [255,163,121]);
+draw(process.argv.includes("--drm-test") ? "PUBLIC DRM TEST" : "NOT DRM ENCRYPTED - CAPTURABLE", 285, 2, [255,163,121]);
 
 await mkdir(outputDir, {recursive:true});
 try {

@@ -12,7 +12,7 @@ const dir=resolve(root,"fixtures/generated");
 const lines=[
   {label:"SYNTHETIC TEST ONLY",y:105,scale:4},
   {label:"EXAMPLE ID 000000",y:165,scale:3},
-  {label:"NOT DRM ENCRYPTED - CAPTURABLE",y:285,scale:2},
+  {label:process.argv.includes("--drm-test") ? "PUBLIC DRM TEST" : "NOT DRM ENCRYPTED - CAPTURABLE",y:285,scale:2},
 ];
 const width=640,height=360;
 let offset=0;

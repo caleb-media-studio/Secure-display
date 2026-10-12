@@ -63,8 +63,8 @@ async function main() {
    console.log("Shaka Packager: public test CBCS, no clear lead, FairPlay HLS + Widevine DASH.");
    return;
  }
- mustRun(process.execPath,["tools/generate-synthetic-video.mjs"]);
- mustRun(process.execPath,["tools/generate-document-layout.mjs"]);
+ mustRun(process.execPath,["tools/generate-synthetic-video.mjs","--drm-test"]);
+ mustRun(process.execPath,["tools/generate-document-layout.mjs","--drm-test"]);
  const response=await fetch(vectorUrl,{signal:AbortSignal.timeout(20000)});
  if(!response.ok) throw Error("Axinom public test vector fetch failed (HTTP "+response.status+").");
  const {kid,keyHex}=parseVector(await response.text());
