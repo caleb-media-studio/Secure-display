@@ -15,18 +15,24 @@ small{color:#a3b5c9}
 <body><main>
 <p>SECURE DISPLAY · LIBRARY EXAMPLE</p>
 <h1>Protected document renderer</h1>
-<p class="note"><strong>Strictly synthetic prototype.</strong> The document remains
-blocked until a genuine DRM-encrypted test video, matching geometry map,
-and approved license service are configured. No canvas, plaintext fallback,
-or fake screenshot protection is used.</p>
-<secure-document asset-id="synthetic-report" zoom="1"></secure-document>
+<p class="note"><strong>Public test-key experiment only.</strong> To encrypt our synthetic rasterized
+text into real DRM HLS/DASH, run <code>bun run drm:demo:package</code> with Shaka Packager installed.
+The content key and licensing token are published by Axinom and provide
+no confidentiality; this tests rendering and screenshot exclusion only.
+No canvas or plaintext fallback is used.</p>
+<p><label for="drm">Protected playback system</label>
+<select id="drm">
+<option value="fairplay">Safari FairPlay HLS</option>
+<option value="widevine">Chrome Widevine DASH</option>
+</select></p>
+<secure-document asset-id="synthetic-report-fairplay" zoom="1"></secure-document>
 <p id="selection-status" role="status">No selection.</p>
 <p><small>Selection highlights are geometric overlays. The selected words
 are not stored in HTML, text nodes or copied to clipboard. Accessibility and
 native selection semantics remain open limitations.</small></p>
-<p>Generate an unencrypted test clip with <code>bun run fixture:document</code>,
-then package it with authorized DRM infrastructure and provide a matching
-ignored <code>public/synthetic-document.json</code>.
+<p>Run <code>bun run drm:demo:package</code> to generate synthetic text,
+geometry, and DRM packaged local test media. The script requires FFmpeg,
+Shaka Packager, and Axinom's publicly available test service.
 See <a href="https://github.com/caleb-media-studio/Secure-display/blob/feat/initial-research-framework/docs/PROTECTED_DOCUMENT.md">integration guide</a>.</p>
 <script type="module" src="/src/main.js"></script>
 </main></body>

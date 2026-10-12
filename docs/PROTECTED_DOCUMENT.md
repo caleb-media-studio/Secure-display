@@ -71,3 +71,34 @@ The user can visually select characters, but **cannot copy their plaintext**. Th
 The project's security claim remains narrow: a test-specific DRM video may be blacked out by tested screenshot paths. It **does not** establish resistance to every screenshot, capture application, browser extension, screen share, remote desktop, or physical camera. Ordinary highlight overlays may themselves appear in screenshots, but they contain no printable report text.
 
 **Real private reports remain unsupported/blocked.** No production content should use this before authorized DRM infrastructure, a complete capture test matrix, and security/accessibility review.
+
+## One-command PUBLIC test-only DRM packaging (macOS)
+
+The repository now has an experimental pipeline that packages the rasterized sample text using [Shaka Packager](https://github.com/shaka-project/shaka-packager), `cbcs`, **zero clear lead** and the content key Axinom openly published with its demo test vectors.
+
+First install official Shaka Packager from its [releases](https://github.com/shaka-project/shaka-packager/releases), ensuring `packager --version` works. FFmpeg must also be installed.
+
+```bash
+bun install
+bun run drm:demo:package
+bun run example:document
+```
+
+The packaging script generates:
+- Ignored `examples/protected-document/public/drm-synthetic/master.m3u8` for Safari FairPlay.
+- Ignored `examples/protected-document/public/drm-synthetic/master.mpd` for Chrome Widevine.
+- Ignored `synthetic-document-fairplay.json` and `synthetic-document-widevine.json` containing geometry and media descriptors.
+- Local, synthetic, rasterized text that is genuinely encrypted by Shaka Packager, **not** an HTML canvas.
+
+The browser retrieves the public Axinom demo entitlement at runtime. The license server is external and can refuse third-party test content, reject localhost, reject mismatched FairPlay signaling, or become unavailable. The test therefore might require adjustment to packaging or a licensed provider.
+
+**Critical security limit:** the key is PUBLIC. Anyone can decrypt this test fixture with ordinary tools. FairPlay/Widevine browser playback may still demonstrate capture exclusion for a specific mechanism, but these test vectors give **zero protection against deliberate content extraction**. Never pass production records, financial data, or other private material to this demo. For private content use your own authorized secret-key/DRM license infrastructure.
+
+Browser test:
+1. Open the page in Safari (FairPlay) or Chrome (Widevine).
+2. Ensure rasterized synthetic words are visibly playing on the device and the document selection overlays align with them.
+3. Select text with the mouse/keyboard. The overlay highlights a position range; clipboard copy intentionally remains disabled.
+4. Screenshot and screen-record the document. Test which capture paths omit the protected pixels. Do not generalize beyond tested browser/OS versions.
+
+Shaka Packager docs: https://shaka-project.github.io/shaka-packager/html/tutorials/raw_key.html
+Public Axinom test vectors: https://github.com/Axinom/public-test-vectors

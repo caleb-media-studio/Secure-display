@@ -27,3 +27,6 @@ bun.lock
 /.secure-display-local/
 
 /examples/protected-document/public/synthetic-document.json
+
+/examples/protected-document/public/drm-synthetic/
+/examples/protected-document/public/synthetic-document-*.json
