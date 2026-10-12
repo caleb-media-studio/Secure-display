@@ -1,49 +1,49 @@
-import { probeDrmPaths } from "@secure-display/core";
+import { probeDrmPaths, probeSoftwareWidevineBaseline } from "@secure-display/core";
 import { registerSecureElements, SecureDisplaySetupError } from "@secure-display/elements";
 
 /**
- * This example has no DRM provider or confidential inputs. The secure tags
- * MUST block until a licensed synthetic test stream and server-side license
- * proxy are configured. No canvas/plaintext rendering fallback.
+ * The example remains fail-closed. Software DRM probes are informational only,
+ * never a fallback for sensitive-media rendering.
  */
 registerSecureElements({
-  async resolveAsset() {
-    throw new SecureDisplaySetupError();
-  },
-  async requestLicense() {
-    throw new SecureDisplaySetupError();
-  },
+  async resolveAsset() { throw new SecureDisplaySetupError(); },
+  async requestLicense() { throw new SecureDisplaySetupError(); },
 });
 
-const checkButton = document.querySelector<HTMLButtonElement>("#check-drm");
-const checkStatus = document.querySelector<HTMLElement>("#drm-check-status");
-const checkResults = document.querySelector<HTMLUListElement>("#drm-check-results");
-
-if (!checkButton || !checkStatus || !checkResults) {
-  throw new Error("Diagnostic interface is missing.");
-}
-const button = checkButton;
-const status = checkStatus;
-const results = checkResults;
+const button = document.querySelector<HTMLButtonElement>("#check-drm");
+const status = document.querySelector<HTMLElement>("#drm-check-status");
+const results = document.querySelector<HTMLUListElement>("#drm-check-results");
+if (!button || !status || !results) throw Error("Diagnostic interface is missing.");
 
 button.addEventListener("click", () => {
   void (async () => {
     button.disabled = true;
-    status.textContent = "Checking EME configurations...";
+    status.textContent = "Checking EME configurations (no protected data is loaded)...";
     results.replaceChildren();
     try {
-      const candidates = await probeDrmPaths();
-      for (const candidate of candidates) {
-        const item = document.createElement("li");
-        item.textContent = candidate.kind + ": " + candidate.status +
-          ". Screen-capture exclusion: not verified.";
-        results.append(item);
+      const [strict, software] = await Promise.all([
+        probeDrmPaths(), probeSoftwareWidevineBaseline(),
+      ]);
+      for (const candidate of strict) {
+        const li = document.createElement("li");
+        li.textContent = candidate.kind + ": " + candidate.status +
+          ". Screenshot exclusion: not verified.";
+        results.append(li);
       }
-      status.textContent = candidates.some(candidate => candidate.status === "candidate")
-        ? "Some DRM configurations were accepted. No actual encrypted media or screenshot exclusion was tested."
-        : "No requested DRM configuration was accepted. This says nothing about GPU acceleration.";
+      const baseline = document.createElement("li");
+      baseline.textContent = "Widevine software baseline (diagnostic only): " +
+        software.status +
+        (software.rejectionName ? " (" + software.rejectionName + ")" : "") +
+        ". " + software.note;
+      results.append(baseline);
+      const strictCandidate = strict.some(c => c.status === "candidate");
+      status.textContent = strictCandidate
+        ? "A hardware DRM configuration was accepted, but screenshot exclusion is still unverified."
+        : software.status === "candidate"
+          ? "Software Widevine works, but hardware-protected output was not established. Secure fields remain blocked."
+          : "No requested EME configuration was accepted. This does not prove the device lacks DRM or GPU support.";
     } catch {
-      status.textContent = "The EME compatibility check failed; no private data was accessed.";
+      status.textContent = "EME capability check failed. Secure fields remain blocked.";
     } finally {
       button.disabled = false;
     }

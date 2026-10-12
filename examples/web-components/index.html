@@ -28,7 +28,7 @@
 
   <section aria-labelledby="diagnostics-title">
     <h3 id="diagnostics-title">Browser DRM capability check</h3>
-    <p>This requests DRM key-system availability only. It does not play licensed media or determine whether screenshots are blocked.</p>
+    <p>This checks strict hardware DRM candidates and an <strong>informational software Widevine baseline</strong>. A software result is never used to display confidential content. Chrome on macOS can reject hardware Widevine while accepting software Widevine. FairPlay should be investigated separately in Safari using actual encrypted HLS playback. No screenshot protection is certified by these checks.</p>
     <button id="check-drm" type="button">Check browser DRM candidates</button>
     <p id="drm-check-status" role="status" aria-live="polite">Not checked.</p>
     <ul id="drm-check-results"></ul>
