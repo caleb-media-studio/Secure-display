@@ -73,7 +73,7 @@ async function getPublicToken(){
   const match=(await r.text()).match(/X-AxDRM-Message header:\s*([\w-]+\.[\w-]+\.[\w-]+)/i);
   if(!match)throw Error("Public test entitlement is missing.");
   return match[1];
- })();
+ })().catch(error=>{publicToken=undefined;throw error;});
  return publicToken;
 }
 function reportError(error,label){
@@ -139,9 +139,12 @@ async function startPlayback(){
   if(instance.drmInfo()?.keySystem!==config.keySystem)
     throw Error("Selected EME DRM system could not be verified.");
   log("Verified EME key system: "+config.keySystem+". Awaiting actual video playback.");
-  await video.play();
+  // Never await a user-gesture-gated play promise indefinitely.
+  void video.play().catch(()=>{
+    if(id===run)log("Autoplay blocked; press Start / Retry DRM again with an active user gesture.");
+  });
   if(id!==run)return;
-  // The 'playing' event below enables the protected view.
+  // The playing event independently enables protected pixels.
  }catch(e){
   if(id!==run)return;
   if(e&&Number.isInteger(e.code))reportError(e,"Initialization");
