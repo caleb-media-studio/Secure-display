@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "vite build",
-    "dev": "vite --host 127.0.0.1"
+    "dev": "vite --host 0.0.0.0"
   },
   "dependencies": {
     "@secure-display/document": "0.1.0",

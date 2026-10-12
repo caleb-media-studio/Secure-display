@@ -7,7 +7,7 @@
   "scripts": {
     "build": "vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "dev": "vite --host 127.0.0.1"
+    "dev": "vite --host 0.0.0.0"
   },
   "dependencies": {
     "@secure-display/elements": "0.1.0",

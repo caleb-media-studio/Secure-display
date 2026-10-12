@@ -104,3 +104,28 @@ bun run example:document
 The packager script fetches Axinom's **public, test-only** key at runtime, encrypts the synthetic clip with CBCS and zero clear lead, and produces ignored FairPlay HLS/Widevine DASH files and matching glyph positions. Public keys provide no confidentiality and are for capture experiments only. Actual licensed playback from your localhost environment has **not yet been verified**.
 
 Read [docs/PROTECTED_DOCUMENT.md](docs/PROTECTED_DOCUMENT.md) for setup, architecture and limitations. The open-source project must not be advertised as screenshot-proof; OS/browser capture testing is still required.
+
+## Test the Vite examples over your local network
+
+All Vite examples now bind to `0.0.0.0`, so another device on the **same trusted LAN** can open the Network URL printed by Vite.
+
+```bash
+bun run example:document
+```
+
+A regular HTTP LAN address such as `http://192.168.1.50:5173` can show the webpage but **cannot reliably start protected DRM playback**, because non-localhost HTTP is not a secure browser context.
+
+For HTTPS on macOS (the local development certificate is ignored by Git):
+
+```bash
+brew install mkcert
+mkcert -install
+bun run network:cert
+bun run example:document
+```
+
+Vite automatically uses the generated, ignored `.secure-display-local/tls/cert.pem` and `key.pem` and prints HTTPS Local/Network URLs. Open the `https://<your Mac LAN IP>:5173` URL **on another device after that device trusts the mkcert development CA**. Trusting a development CA on a phone/tablet requires separate device configuration, and may be inappropriate for shared/unmanaged devices. Never bypass certificate errors with confidential reports.
+
+Stop the Vite server and rerun `bun run network:cert` if your network IP changes. Ports may increment if already in use; use the URL Vite actually prints. Allow the incoming connection in your Mac firewall and avoid public Wi-Fi, VPN exposure or router port forwarding. **Only synthetic test media is supported.**
+
+See [docs/NETWORK_TESTING.md](docs/NETWORK_TESTING.md).
