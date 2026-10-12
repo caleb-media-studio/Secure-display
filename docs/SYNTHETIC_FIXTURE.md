@@ -1,7 +1,11 @@
 # Generate a safe research fixture
 
-Run `npm run fixture` with FFmpeg (including libx264 and drawtext) installed. The script **does not read personal data**, accept real report content, or contact a server. It generates a three-second MP4 showing fake field data and a prominent **NOT DRM ENCRYPTED** warning.
+Run `bun run fixture` or `npm run fixture` with FFmpeg and the H.264 `libx264` encoder installed.
 
-Files appear under `fixtures/generated/` and are excluded from git. They are **ordinary capturable H.264 video**, **not DRM protected**. Generated video is solely an input to future authorized DRM packaging and device capture experiments.
+**No `drawtext` filter is needed.** The generator creates an RGB bitmap frame directly in JavaScript, then asks FFmpeg to encode it as a three-second H.264 MP4. Only hard-coded synthetic text is rendered. No records, passwords, credentials, user-supplied text, or network calls.
 
-Next experiment: encrypt every media sample using an approved DRM packaging workflow; issue short-lived playback licenses via a server-side provider integration; verify screenshot behavior on actual Chrome, Edge and Safari devices before making any guarantees. Do not emulate DRM with simple AES or Clear Key and call it protected.
+Generated files appear in `fixtures/generated/` and remain gitignored. The resulting clip is **clear and screenshot-capturable**, not DRM-encrypted. This synthetic fixture is an input for later authorized DRM packaging; do not treat it as protected media.
+
+To inspect the output: `ffprobe fixtures/generated/synthetic-clear.mp4`.
+
+Next experiment: encrypt each video sample with an approved DRM packaging workflow, issue licenses through a server-side provider integration, and verify screenshot behavior on real Chrome, Edge and Safari devices. Never represent Clear Key or plain Web Crypto as protected output.

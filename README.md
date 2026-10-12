@@ -66,7 +66,7 @@ bun run test
 bun run example:elements
 ```
 
-Use `Ctrl+C` to stop an earlier runaway process before updating. Pull the latest feature branch, then rerun the commands.
+Use `Ctrl+C` to stop an earlier runaway process before updating. Pull the latest feature branch, then rerun the commands. Starting either example now builds the dependent TypeScript packages first, so a fresh pull does not leave stale `dist` exports.
 
 ## Roadmap
 
