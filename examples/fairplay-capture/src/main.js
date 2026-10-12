@@ -1,107 +1,166 @@
 import shaka from "shaka-player";
+import {
+  PUBLIC_TOKEN_SOURCE, TEST_STREAMS, DRM_ENDPOINTS,
+  extractPublishedEntitlement, safePlaybackError, selectDefaultDrm,
+} from "./public-vectors.js";
 
 /**
- * Public vendor DEMO media only. These URLs were published by Dolby in its
- * browser test kit; no organization secrets, key material or user data.
- * Service availability and CORS from localhost are not guaranteed.
+ * Real, independently hosted DRM test media. Does not use protected user
+ * data. Fetches only a PUBLIC demonstration entitlement at runtime.
+ * Credentials and key material are not included in Secure Display source.
  */
-const SOURCE = Object.freeze({
-  playlist:"https://ott.dolby.com/browser_test_kit/cbcs/p81/24/master.m3u8",
-  license:"https://fps.ezdrm.com/api/licenses/auth?assetID=03854522-021f-45bb-a51c-93e7a63d3db9&pX=9d69c5",
-  certificate:"https://ott.dolby.com/OnDelKits/fairplay.cer",
-});
-const video=document.querySelector("#video");
-const start=document.querySelector("#start");
-const stop=document.querySelector("#stop");
-const status=document.querySelector("#status");
-const output=document.querySelector("#events");
-let player=null;
-let lastPosition=0;
-let reportedPlaying=false;
+const video = document.querySelector("#video");
+const start = document.querySelector("#start");
+const stop = document.querySelector("#stop");
+const status = document.querySelector("#status");
+const events = document.querySelector("#events");
+const drmSelect = document.querySelector("#drm-system");
+const streamSelect = document.querySelector("#stream-source");
+const tokenInput = document.querySelector("#test-token");
+drmSelect.value = selectDefaultDrm(navigator.userAgent);
+let player = null;
+let generation = 0;
+let lastReportedSecond = 0;
 
-function event(label){
-  const date=new Date().toLocaleTimeString();
-  const entry=`[${date}] ${label}`;
-  output.textContent=(output.textContent==="Ready."?"":output.textContent+"\n")+entry;
+function log(message) {
+  const safe = String(message);
+  events.textContent += "[" + new Date().toLocaleTimeString() + "] " + safe + "\n";
 }
-function reportError(error){
-  // Never log request bodies, responses, certificates, tokens or DRM messages.
-  const code=Number.isInteger(error?.code)?String(error.code):"unknown";
-  const category=Number.isInteger(error?.category)?String(error.category):"unknown";
-  event(`Playback failed. Shaka category=${category}, code=${code}. Check Safari Web Inspector for network/CORS issues.`);
-  status.textContent="DRM test failed or vendor test endpoint unavailable. No protection result established.";
+function report(error, stage) {
+  const {category, code, httpStatus} = safePlaybackError(error);
+  log(stage + " failed; Shaka category " + (category ?? "unknown") +
+    ", code " + (code ?? "unknown") +
+    (httpStatus === null ? "" : ", HTTP " + httpStatus) + ".");
+  status.textContent = httpStatus === 403
+    ? "The test media or DRM service rejected access (HTTP 403). No screenshot conclusion."
+    : "DRM playback not established. See diagnostic events; no screenshot conclusion.";
 }
-async function shutdown(){
-  start.disabled=false;
-  stop.disabled=true;
-  if(player){
-    const previous=player;
-    player=null;
-    await previous.destroy().catch(()=>undefined);
-  }
+async function shutdown() {
+  ++generation;
+  const old = player;
+  player = null;
+  video.hidden = true;
+  start.disabled = false;
+  stop.disabled = true;
+  if(old) await old.destroy().catch(() => undefined);
   video.pause();
   video.removeAttribute("src");
   video.load();
 }
-video.addEventListener("playing",()=>{
-  reportedPlaying=true;
-  event("Video playback started; DRM status is reported separately.");
+async function entitlementForTest() {
+  if (tokenInput.value.trim()) {
+    const value = tokenInput.value.trim();
+    if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value)) {
+      throw new Error("Invalid public test entitlement format.");
+    }
+    return value;
+  }
+  log("Fetching Axinom's published PUBLIC test vector (no secrets stored).");
+  const response = await fetch(PUBLIC_TOKEN_SOURCE, {
+    credentials:"omit", cache:"no-store", signal:AbortSignal.timeout(12000),
+  });
+  if (!response.ok) throw new Error("Public test vector unavailable");
+  const value = extractPublishedEntitlement(await response.text());
+  if (!value) throw new Error("Published entitlement was not found");
+  return value;
+}
+video.addEventListener("playing",() => {
+  log("Video is playing. If frames are visibly moving, test screenshots now.");
 });
 video.addEventListener("timeupdate",()=>{
-  const current=Math.floor(video.currentTime);
-  if(current>=lastPosition+3){
-    lastPosition=current;
-    event("Playback advanced past "+current+" seconds.");
+  const seconds=Math.floor(video.currentTime);
+  if(seconds>=lastReportedSecond+5){
+    lastReportedSecond=seconds;
+    log("Playback reached "+seconds+" seconds.");
   }
 });
 video.addEventListener("error",()=>{
-  event("Browser media error (numeric code "+(video.error?.code??"unknown")+").");
+  if(video.error) log("Native media element error code "+video.error.code+".");
 });
 stop.addEventListener("click",()=>{
-  void shutdown().then(()=>{status.textContent="Stopped.";event("Playback stopped.");});
+  void shutdown().then(()=>{status.textContent="Stopped.";log("Stopped.");});
 });
-start.addEventListener("click",()=>{
-  void (async()=>{
+start.addEventListener("click",()=>{void startTest();});
+
+async function startTest() {
+  await shutdown();
+  const run=++generation;
+  start.disabled=true;
+  stop.disabled=false;
+  lastReportedSecond=0;
+  events.textContent="";
+  const selectedDrm=drmSelect.value;
+  const selectedStream=streamSelect.value;
+  const drm=DRM_ENDPOINTS[selectedDrm];
+  const source=TEST_STREAMS[selectedStream];
+  if (!drm || !source) {
+    status.textContent="Unknown DRM or test source.";
     await shutdown();
-    output.textContent="";
-    lastPosition=0;
-    reportedPlaying=false;
-    start.disabled=true;
-    stop.disabled=false;
-    status.textContent="Requesting genuine licensed FairPlay-encrypted playback...";
-    event("Starting public Dolby FairPlay HLS test (not Apple development SDK).");
-    try{
-      if(!globalThis.isSecureContext) throw new Error("Secure browser context required");
-      if(!shaka.Player.isBrowserSupported()) throw new Error("Shaka reports unsupported browser");
-      shaka.polyfill.installAll();
-      player=new shaka.Player();
-      player.addEventListener("error",e=>reportError(e.detail));
-      await player.attach(video);
-      if(!player) return;
-      player.configure({
-        drm:{
-          servers:{"com.apple.fps":SOURCE.license},
-          advanced:{"com.apple.fps":{serverCertificateUri:SOURCE.certificate}},
-        },
-        streaming:{useNativeHlsForFairPlay:true},
-      });
-      const network=player.getNetworkingEngine();
-      network.registerRequestFilter(shaka.drm.FairPlay.ezdrmFairPlayRequest);
-      network.registerResponseFilter(shaka.drm.FairPlay.commonFairPlayResponse);
-      await player.load(SOURCE.playlist);
-      if(!player) return;
-      const drm=player.drmInfo();
-      if(drm?.keySystem!=="com.apple.fps"){
-        throw new Error("FairPlay did not initialize; blocked clear fallback.");
-      }
-      event("DRM key system initialized: com.apple.fps (does NOT certify capture exclusion).");
-      try{await video.play();}catch{
-        event("Autoplay rejected. Click the video's Play button.");
-      }
-      status.textContent="FairPlay DRM initialized. Confirm video plays, then try native screenshots and recordings.";
-    }catch(error){
-      reportError(error);
+    return;
+  }
+  status.textContent="Attempting real encrypted media playback with " + selectedDrm + "...";
+  try {
+    if(!globalThis.isSecureContext) throw Error("HTTPS/localhost required.");
+    shaka.polyfill.installAll();
+    if(!shaka.Player.isBrowserSupported()) throw Error("Shaka reports unsupported browser.");
+    let entitlement;
+    try {
+      entitlement=await entitlementForTest();
+    } catch {
+      if(run!==generation) return;
+      status.textContent="Could not fetch Axinom's PUBLIC entitlement. Open the linked vector and paste its X-AxDRM-Message value below, then retry.";
+      log("Public demo entitlement could not be fetched; check cross-origin permissions or paste it manually.");
       await shutdown();
+      return;
     }
-  })();
-});
+    if(run!==generation) return;
+
+    const instance=new shaka.Player();
+    player=instance;
+    instance.addEventListener("error",event=>{
+      if(run!==generation) return;
+      report(event.detail,"DRM/streaming");
+    });
+    await instance.attach(video);
+    if(run!==generation) return;
+    const advanced=selectedDrm==="fairplay"
+      ? {"com.apple.fps": {serverCertificateUri:drm.certificate}}
+      : {};
+    instance.configure({
+      drm:{
+        servers:{[drm.keySystem]:drm.license},
+        advanced,
+      },
+      streaming:{
+        useNativeHlsForFairPlay: true,
+      },
+    });
+    instance.getNetworkingEngine().registerRequestFilter((type, request)=>{
+      if(type!==shaka.net.NetworkingEngine.RequestType.LICENSE) return;
+      request.headers["X-AxDRM-Message"]=entitlement;
+      log("Sent licensed-media request to the public Axinom test server.");
+      // Never display the entitlement or challenge body in logs.
+    });
+    log("Loading "+source.label+". Media is DRM packaged, not a clear MP4.");
+    await instance.load(source.manifest);
+    if(run!==generation) return;
+    const actual=instance.drmInfo()?.keySystem;
+    if(actual && actual!==drm.keySystem) {
+      throw Error("Different DRM key system selected.");
+    }
+    if(actual===drm.keySystem) {
+      log("Actual EME DRM key system: "+actual+". Screenshot exclusion not established.");
+    } else {
+      log("No DRM key system reported by Shaka. Playback alone is not DRM verification.");
+    }
+    video.hidden=false;
+    try {await video.play();}
+    catch {log("Safari/Chrome needs a manual press of the video Play control.");}
+    if(run!==generation) return;
+    status.textContent="Playback initialized. Confirm moving frames, then screenshot and record; determine capture exclusion experimentally.";
+  } catch(error) {
+    if(run!==generation) return;
+    report(error,"Playback");
+    await shutdown();
+  }
+}

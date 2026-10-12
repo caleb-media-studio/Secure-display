@@ -92,11 +92,15 @@ bun install
 bun run example:fairplay
 ```
 
-Open the Vite localhost URL in Safari and press **Try licensed FairPlay playback**. It attempts Dolby's publicly documented FairPlay HLS test media with the paired public EZDRM test license and certificate. This needs no locally copied development credentials, and nothing private is committed. It can still fail from expired provider access, codecs, network policy or CORS; the page reports numeric Shaka error categories/codes and never logs license challenge bodies.
+Open the Vite localhost URL in Safari and choose **FairPlay — Safari**, then press **Try real DRM playback**. Chrome can use **Widevine — Chrome**. The default is the PBS synthetic test pattern encrypted using Axinom's public test vector. The example can also try Axinom's original H.264 demo stream.
+
+The example fetches the **public test entitlement** from the Axinom `public-test-vectors` repository when clicked. No entitlement, private key, content key or secret is embedded in Secure Display code. If CORS prevents this fetch, copy the value following `X-AxDRM-Message header:` from [Axinom's public vector](https://github.com/Axinom/public-test-vectors/blob/master/ContentKeys/Axinom-Encoding-Cmaf-H264-protected-SingleKey.txt) into the **optional test entitlement override** field. It is held only in page memory, not saved.
+
+This replaces the original Dolby stream, which returned HTTP 403 from `ott.dolby.com` on the user's Safari test. Do not work around a media provider's cross-origin restrictions by tunneling or replaying private license requests. If the public test service also denies playback, report the sanitized status/code and use an authorized provider. It attempts PBS/Axinom public test media with the official Axinom public test license and FairPlay certificate. This needs no locally copied Apple development credentials, and nothing private is committed. It can still fail from expired provider access, codecs, network policy or CORS; the page reports numeric Shaka error categories/codes and never logs license challenges, request URIs or test entitlements.
 
 **Important:** The streaming example is external media, **not a Secure Display custom text field**. First determine whether Safari actually initializes FairPlay and plays that protected media. Then compare screenshots, window sharing, and screen recording. Even if a particular capture returns black, that does not prove capture exclusion universally. The provider's public test service is not owned or controlled by Secure Display.
 
-References: https://ott.dolby.com/browser_test_kit/help_files/topics/r_test_signals_all.html and https://github.com/shaka-project/shaka-player/blob/main/docs/tutorials/fairplay.md
+References: https://github.com/pbs/test-streams, https://github.com/Axinom/public-test-vectors and https://github.com/shaka-project/shaka-player/blob/main/docs/tutorials/fairplay.md
 
 ### Cargo permission errors
 

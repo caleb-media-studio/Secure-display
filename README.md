@@ -75,3 +75,10 @@ Actual DRM-protected synthetic media packaging + authorized license integration;
 See `docs/ARCHITECTURE.md`, `docs/THREAT_MODEL.md`, and `SECURITY.md`.
 
 Apache-2.0. See `LICENSE`.
+
+
+## Run a real DRM browser experiment
+
+`bun run example:fairplay` launches the public test-media experiment under `examples/fairplay-capture`. Select FairPlay in Safari or Widevine in Chrome. It uses PBS/Axinom publicly documented encrypted sample media; a public test entitlement is fetched on demand rather than embedded in this repository. The earlier Dolby test manifest returned HTTP 403 and is no longer the default. The example intentionally uses *vendor test footage*, not Secure Display's proprietary text renderer or confidential documents.
+
+See `docs/FAIRPLAY.md`. Real-device screenshot exclusion remains unproven until a DRM playing frame has been compared with the capture result.
