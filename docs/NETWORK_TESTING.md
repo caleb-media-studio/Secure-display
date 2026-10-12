@@ -44,3 +44,21 @@ You can override the HTTPS files if necessary by setting **both** `SECURE_DISPLA
 - HTTPS does not by itself guarantee FairPlay or Widevine availability on another device. Hardware, browser support, output restrictions and DRM licensing can still prevent playback.
 - After a LAN address change, stop the server and regenerate the certificate with `bun run network:cert` to include the new address.
 - The app's configured manifest URL must remain reachable from that other device, and any DRM license endpoint must permit the requests.
+
+## Troubleshooting: page visible on LAN, document rejected
+
+If the test page appears at `192.168.1.243` but the status says **"DRM blocked: HTTP on a LAN address"**, the page was served over `http://192.168.1.243:5173`. That URL is not an HTTPS secure context even though `http://127.0.0.1:5173` works on the host Mac. The encrypted media descriptor uses a relative `/drm-synthetic/...` URL; the validator correctly refuses an HTTP LAN media URL. Do **not** weaken this security check.
+
+Use the existing `mkcert` workflow:
+
+```sh
+brew install mkcert
+mkcert -install
+bun run network:cert
+# Stop any existing Vite dev server, then restart:
+bun run example:document
+```
+
+Confirm Vite now prints `https://` addresses, then visit the **HTTPS** Network URL and verify `window.isSecureContext` is `true` in the browser console. The device opening it must trust the local mkcert root CA. For Safari running on the same Mac, `mkcert -install` should configure the Mac's trust; other devices require separate trust.
+
+If you still see **"Protected document unavailable or manifest rejected"** after HTTPS is trusted, check that `/synthetic-document-fairplay.json` (Safari) or `/synthetic-document-widevine.json` (Chrome) returns a JSON response rather than a 404, and rerun `bun run drm:demo:package` if the files are missing. Never expose real keys or protected records in browser logs.

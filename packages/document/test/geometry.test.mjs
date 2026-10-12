@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {validateDocument,hitTest,select,highlights,caret,limits} from "../dist/index.js";
+import {validateDocument,hitTest,select,highlights,caret,limits,documentSecureContextError} from "../dist/index.js";
 const page={id:"p1",width:400,height:180,media:{
   keySystem:"com.apple.fps",format:"hls",
   manifestUrl:"https://example.test/video.m3u8",licenseUrl:"https://example.test/license",
@@ -43,4 +43,19 @@ test("multi-page hit testing and selection stay ordered",()=>{
  const d=validateDocument({...sample,pages:[page,next]});
  assert.equal(hitTest(d,1,300,20),6);
  assert.deepEqual(highlights(d,select(d,4,6)).map(h=>h.page),[0,1]);
+});
+
+test("LAN HTTP reports the actual secure-context problem while staying blocked",()=>{
+ const origin="http://192.168.1.243:5173/";
+ const msg=documentSecureContextError(origin,false);
+ assert.match(msg,/LAN address/);
+ assert.match(msg,/network:cert/);
+ assert.equal(documentSecureContextError("https://192.168.1.243:5173/",true),undefined);
+ assert.equal(documentSecureContextError("http://127.0.0.1:5173/",true),undefined);
+ assert.match(documentSecureContextError("https://192.168.1.243:5173/",false),/trusted development certificate/);
+});
+test("relative encrypted manifests cannot load over LAN HTTP but work over HTTPS",()=>{
+ const document={...sample,pages:[{...page,media:{...page.media,manifestUrl:"/drm-synthetic/master.m3u8"}}]};
+ assert.throws(()=>validateDocument(document,"http://192.168.1.243:5173/"));
+ assert.doesNotThrow(()=>validateDocument(document,"https://192.168.1.243:5173/"));
 });

@@ -1,4 +1,17 @@
 /** Geometry-only document model: never carries plaintext or printable glyphs. */
+/** Clear user-facing cause for insecure DRM browser contexts without leaking URLs. */
+export function documentSecureContextError(pageUrl:string,secure:boolean):string|undefined {
+  if(secure) return undefined;
+  try {
+    const origin=new URL(pageUrl);
+    if(origin.protocol==="http:" &&
+       !["localhost","127.0.0.1","[::1]"].includes(origin.hostname)) {
+      return "DRM blocked: HTTP on a LAN address is not a secure context. Run bun run network:cert, restart Vite, and open the HTTPS Network URL on a device that trusts the development CA.";
+    }
+  } catch {/* A malformed origin must never allow DRM playback. */}
+  return "DRM blocked: this browser does not trust the secure context. Use HTTPS with a trusted development certificate.";
+}
+
 export interface Glyph { index:number; x:number; width:number }
 export interface Line { y:number; height:number; glyphs:readonly Glyph[] }
 export interface MediaDescriptor {

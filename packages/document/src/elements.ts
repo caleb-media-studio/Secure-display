@@ -1,4 +1,5 @@
 import {
+  documentSecureContextError,
   type SyntheticDocument, type Page, type Selection, validateDocument,
   hitTest, select, highlights, caret, limits,
 } from "./geometry.js";
@@ -172,6 +173,13 @@ export function registerSecureDocumentElement(adapters:DocumentAdapters):void {
         this.status("Missing or invalid asset-id.");
         return;
       }
+      const contextError=documentSecureContextError(location.href,globalThis.isSecureContext===true);
+      if(contextError) {
+        this.setAttribute("data-reason","insecure-context");
+        this.status(contextError);
+        return;
+      }
+      this.removeAttribute("data-reason");
       const controller=new AbortController();
       this.sessionController=controller;
       this.status("Checking synthetic DRM document...");
