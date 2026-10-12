@@ -1,0 +1,24 @@
+{
+  "name": "secure-display-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Research toolkit for browser DRM capability detection and fail-closed sensitive-display experiments",
+  "license": "Apache-2.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @secure-display/core && npm run build -w @secure-display/react && npm run build -w @secure-display/lab",
+    "test": "npm run build && node --test packages/core/test/*.test.mjs",
+    "dev": "npm run dev -w @secure-display/lab",
+    "typecheck": "npm run build -w @secure-display/core && npm run build -w @secure-display/react && npm run typecheck -w @secure-display/lab"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
