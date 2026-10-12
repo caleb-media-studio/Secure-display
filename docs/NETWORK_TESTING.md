@@ -9,7 +9,7 @@ bun install
 bun run example:document
 ```
 
-All four Vite examples now bind to `0.0.0.0`, and Vite should print `Local:` and `Network:` URLs. You can also run `bun run example:fairplay`, `bun run example:elements`, or `bun run example:diagnostics`.
+All four Vite examples now bind to `0.0.0.0`, and Vite should print `Local:` and `Network:` URLs. You can also run `bun run example:fairplay`, `bun run example:elements`, or `bun run example:diagnostics`, or `bun run example:page` for the new full-page capture test.
 
 Without a TLS certificate, the server uses ordinary HTTP. The UI is accessible over LAN, but the DRM browser API may reject non-localhost HTTP: `http://localhost` is a secure-context exception, while `http://192.168.x.x` typically is not.
 

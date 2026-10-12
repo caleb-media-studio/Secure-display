@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Secure Display experimental full-page DRM vs transparent video overlay capture test. Synthetic data only.">
+<title>Secure Display | Full-page protected pixel experiment</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,sans-serif;color-scheme:dark;background:#0e1626;color:#edf6ff}
+*{box-sizing:border-box}
+body{margin:0}
+main{width:min(1160px,96%);margin:3rem auto}
+h1{font-size:clamp(1.65rem,3vw,2.5rem);letter-spacing:-.035em;margin:.3rem 0}
+p{color:#a8bad0;line-height:1.55}
+h2{font-size:1.1rem}
+header .eyebrow{color:#75dcc1;font-size:.8rem;letter-spacing:.12em;font-weight:700}
+.note{border-left:3px solid #f0b96c;background:#202b3e;padding:12px 16px;border-radius:6px}
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:18px 0}
+.group{display:flex;gap:5px;flex-wrap:wrap}
+button,select{font:inherit;padding:11px 14px;color:#eff8ff;background:#263750;border:1px solid #456077;border-radius:9px}
+button{cursor:pointer}
+button:hover{border-color:#a2c3df}
+button.active{background:#1f6559;color:#ecfff9;border-color:#7ce5c8}
+button:focus-visible,select:focus-visible{outline:2px solid #7ce5c8}
+#start{background:#78e5bc;color:#14273c;font-weight:750}
+#start:disabled{opacity:.5;cursor:wait}
+#status{padding:10px 13px;background:#1b2a40;border-radius:8px;font-weight:600}
+#mode-description{font-size:.9rem;margin:8px 0 18px}
+.frame{background:#070c15;border:1px solid #35465d;border-radius:14px;overflow:hidden}
+#experiment{width:100%;aspect-ratio:16/9;position:relative;background:#000;isolation:isolate;overflow:hidden}
+#protected-video{display:block;width:100%;height:100%;object-fit:fill;position:absolute;inset:0;pointer-events:none;z-index:2}
+#protected-video[hidden]{display:none!important}
+#dom-page{position:absolute;inset:0;background:linear-gradient(135deg,#101c31,#192843);font-family:system-ui,sans-serif;color:#eaf5ff;z-index:1}
+#dom-page[hidden]{display:none!important}
+.dom-header{height:13%;padding:2.25% 6%;font-weight:800;letter-spacing:.08em;background:#0f1a2c}
+.dom-header span{color:#5be1b8}
+.dom-panel{position:absolute;inset:21% 6% 14%;border:5px solid #243752;background:#141e32;text-align:center;padding:4% 2%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5%}
+.dom-label{background:#264f4f;color:#93efce;border-radius:7px;padding:5px 14px;font-weight:bold;font-size:clamp(8px,1vw,14px)}
+.dom-text{color:white;font-size:clamp(12px,2.8vw,36px);line-height:1.5;font-weight:700;max-width:85%;margin:0}
+.dom-action{background:#65ddb4;color:#0f2934;border:0;font-size:clamp(9px,1.4vw,18px);font-weight:800;padding:1.2% 4%;border-radius:8px}
+.dom-footer{position:absolute;bottom:3%;width:100%;font-size:clamp(9px,1.1vw,14px);letter-spacing:.14em;text-align:center}
+#protected-hotspot{position:absolute;left:37.65625%;top:70.27778%;width:24.6875%;height:10.27778%;z-index:3;background:transparent;border:0;padding:0;cursor:pointer}
+#protected-hotspot[hidden]{display:none!important}
+#protected-hotspot:focus-visible{outline:3px solid #78e6bb}
+#interactions{font-variant-numeric:tabular-nums}
+#diagnostic{white-space:pre-wrap;overflow-wrap:anywhere;background:#0a1220;padding:14px;color:#b8d3e4;font:12px/1.6 ui-monospace,monospace;min-height:60px;max-height:260px;overflow:auto}
+details{margin:20px 0}
+footer{color:#92a7bc;font-size:.8rem;margin:1.4rem 0}
+</style></head>
+<body><main>
+<header><div class="eyebrow">SECURE DISPLAY · CAPTURE RESEARCH</div>
+<h1>Full-page protected pixels</h1>
+<p>Compare an actual full-frame DRM video with ordinary HTML underneath a nearly transparent DRM layer. This is a synthetic test, not a deployable whole-DOM protection API.</p></header>
+<div class="note">The exact test sentence is rendered into encrypted FairPlay/Widevine video for <strong>Full protected page</strong>. The two comparison modes deliberately expose the same public sentence as normal HTML. Never place confidential data in this experiment.</div>
+<div class="controls">
+<label>DRM <select id="drm"><option value="fairplay">Safari / FairPlay</option><option value="widevine">Chrome / Widevine</option></select></label>
+<button id="start">Start / Retry DRM</button>
+<div class="group" role="group" aria-label="Compare rendering modes">
+<button class="active" data-mode="protected" aria-pressed="true">Full protected page</button>
+<button data-mode="overlay" aria-pressed="false">DOM + DRM overlay</button>
+<button data-mode="normal" aria-pressed="false">Unprotected DOM control</button>
+</div>
+</div>
+<div id="status" role="status">Protected mode blocked until DRM playback starts.</div>
+<p id="mode-description">All content must come from the protected video.</p>
+<div class="frame"><div id="experiment" data-mode="protected">
+<div id="dom-page" hidden>
+  <div class="dom-header"><span>▌</span> SECURE DISPLAY</div>
+  <div class="dom-panel">
+    <div class="dom-label">DRM PROTECTED</div>
+    <p class="dom-text">This page is protected by Security Display GitHub repo, and this is a test.</p>
+    <button class="dom-action">CLICK HERE</button>
+  </div>
+  <div class="dom-footer">SYNTHETIC PAGE TEST</div>
+</div>
+<video id="protected-video" muted autoplay loop playsinline hidden aria-hidden="true"></video>
+<button id="protected-hotspot" hidden disabled aria-label="Activate protected-page demo button" title="Activate test"></button>
+</div></div>
+<p id="interactions" role="status">Interaction count: 0 (this counter is ordinary, capturable DOM)</p>
+<h2>Capture experiment</h2>
+<p>With DRM playing, switch between the three modes and take screenshots or screen recordings. The protected mode must not show the sentence until genuine licensed playback is active. The overlay mode blends its video at 1.5% opacity using CSS; <strong>this is not alpha-channel DRM video</strong>. Observe whether the underlying ordinary DOM remains visible in captures. A black rectangle with no moving DRM playback is not proof of protection.</p>
+<details><summary>Sanitized playback diagnostics</summary><pre id="diagnostic">Ready.</pre></details>
+<footer>Public Axinom test encryption keys are known. Does not protect confidential data or certify cross-platform capture resistance.</footer>
+<script type="module" src="/src/main.js"></script>
+</main></body></html>

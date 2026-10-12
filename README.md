@@ -129,3 +129,18 @@ Vite automatically uses the generated, ignored `.secure-display-local/tls/cert.p
 Stop the Vite server and rerun `bun run network:cert` if your network IP changes. Ports may increment if already in use; use the URL Vite actually prints. Allow the incoming connection in your Mac firewall and avoid public Wi-Fi, VPN exposure or router port forwarding. **Only synthetic test media is supported.**
 
 See [docs/NETWORK_TESTING.md](docs/NETWORK_TESTING.md).
+
+## Full-page capture experiment
+
+The independent `examples/protected-page` lab tests whether wrapping ordinary DOM in a near-transparent DRM video layer achieves capture exclusion, compared with genuinely DRM-rendering **every visible page pixel**. It renders this exact public test sentence:
+
+> This page is protected by Security Display GitHub repo, and this is a test.
+
+```bash
+bun run drm:page:package  # requires FFmpeg and Shaka Packager
+bun run example:page
+```
+
+Switch among **Full protected page**, **DOM + DRM overlay**, and **Unprotected DOM control**. Test in Safari/FairPlay and Chrome/Widevine. The overlay uses `opacity: 0.015` rather than alpha-channel DRM; it is an experiment, not a known protection mechanism. No live screenshot behavior is claimed until tested on an actual device.
+
+See [docs/PROTECTED_PAGE.md](docs/PROTECTED_PAGE.md).
