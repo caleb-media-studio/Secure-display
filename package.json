@@ -2,24 +2,27 @@
   "name": "secure-display-workspace",
   "version": "0.1.0",
   "private": true,
-  "description": "Research toolkit for browser DRM capability detection and fail-closed sensitive-display experiments",
-  "license": "Apache-2.0",
+  "description": "Experimental DRM media protection libraries; applications live only in examples/",
   "type": "module",
+  "license": "Apache-2.0",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "examples/*"
   ],
   "scripts": {
-    "build": "npm run build -w @secure-display/core && npm run build -w @secure-display/react && npm run build -w @secure-display/lab",
-    "test": "npm run build && node --test packages/core/test/*.test.mjs",
-    "dev": "npm run dev -w @secure-display/lab",
-    "typecheck": "npm run build -w @secure-display/core && npm run build -w @secure-display/react && npm run typecheck -w @secure-display/lab",
+    "build": "npm run build -w @secure-display/core && npm run build -w @secure-display/elements && npm run build -w @secure-display/react && npm run build -w @secure-display/example-diagnostics && npm run build -w @secure-display/example-elements",
+    "typecheck": "npm run build -w @secure-display/core && npm run build -w @secure-display/elements && npm run build -w @secure-display/react && npm run typecheck -w @secure-display/example-diagnostics && npm run typecheck -w @secure-display/example-elements",
+    "test": "npm run build && node --test packages/core/test/*.test.mjs packages/elements/test/*.test.mjs",
+    "dev": "vite examples/diagnostics --host 127.0.0.1",
+    "example:diagnostics": "vite examples/diagnostics --host 127.0.0.1",
+    "example:elements": "vite examples/web-components --host 127.0.0.1",
     "fixture": "node tools/generate-synthetic-video.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^7.1.0"
   }
 }

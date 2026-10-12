@@ -1,28 +1,46 @@
-# Architecture
+# Secure Display Architecture
 
-## Modules
+**Objective:** non-installable HTML tags that display server-encoded **DRM-protected media representing text**, ideally through a hardware-secure CDM path. No ordinary canvas-rendered plaintext.
 
-- `@secure-display/core`: EME capability probes, strict disclosure-policy evaluator and synthetic-only CENC playback.
-- `@secure-display/react`: accessible, fail-closed React UI with no plaintext-report props.
-- `@secure-display/lab`: browser compatibility diagnostic with no secrets or actual reports.
-
-## Experimental pathway
+## Trust model
 
 ```text
-synthetic text -> offline video encoding -> provider DRM packaging
-  -> encrypted media CDN -> browser EME/CDM -> synthetic test playback
-                                ^
-                        authorized license service
+authorized backend obtains text
+ -> text laid out as glyphs on SERVER
+ -> video encoder -> provider DRM packager
+ -> encrypted media CDN
+ -> <secure-text asset-id="opaque-id">
+ -> Encrypted Media Extensions / browser Content Decryption Module
+ -> licensed hardware-robustness decode/output, if supported
+ -> device compositor/display
 ```
 
-Production would require provider-specific Widevine, PlayReady and FairPlay adapters, genuine DRM packaging and key management, server authorization, license controls, HLS/DASH integration, revocation, and extensive hardware tests. Nothing in this research repo certifies output capture exclusion.
+The encoding step is normally server-side; the device performs **decoding**. No JavaScript or WebGPU shader receives plaintext report text.
 
-Canvas, WebGL, WebGPU and Web Crypto cannot mark arbitrary pixels as DRM-protected. The DRM media pipeline is being evaluated because hardware-protected output paths are not exposed to arbitrary JavaScript UI.
+`@secure-display/elements` exposes `secure-text`, `secure-p`, `secure-h1`, using the existing experimental `@secure-display/core` CENC EME player. Its resolver accepts only opaque IDs; **never supply plaintext as a child or attribute**.
 
-## Roadmap
+**Current prototype only allows synthetic DRM tests.** It is not a production confidentiality mechanism. An accepted EME request, a usable license, or HDCP capability is not proof that a screenshot, screen sharing software, virtual display, or another camera cannot capture content.
 
-1. Honest capability probes, strict blocking, synthetic-only experiments, unit tests.
-2. Legally provisioned test streams, licenses and device test fixtures.
-3. Real-device capture tests on Chrome, Safari, Edge and selected mobile browsers.
-4. Third-party security review and public compatibility matrix.
-5. Remove package `private` flags and publish only after release checks pass.
+## Supported adapters
+
+- PlayReady SL3000 candidate: encrypted CENC MP4 via EME on compatible Edge/Windows hardware.
+- Widevine `HW_SECURE_ALL` candidate: CENC experiment on browsers/OSes supporting this robustness; software Widevine is explicitly rejected.
+- FairPlay: intentionally blocked pending native HLS/FairPlay adapter and provider authorization.
+
+None have been verified for universal screenshot exclusion.
+
+## Not an ordinary text engine
+
+Text metrics, glyph reflow, fonts, accessibility, text selection, copy and editable cursor behavior are **not native DOM text** when presented through encoded media. Recreate interactions only as non-plaintext overlays if needed, with careful risk review. Re-encoding content on every resize may be costly. Existing readable HTML must never be replaced after it has already rendered: the secret is already exposed.
+
+## Layout
+
+The library controls element sizing and a native <video> surface; CSS controls the outer box. The server controls the text's appearance and pixel dimensions.
+
+## Future milestones
+
+1. Genuine, licensed synthetic DRM media for a single known hardware/browser pairing.
+2. Validate screenshot, screen share, output policy and reconfiguration behavior on real devices.
+3. Add independent HLS/FairPlay pathway and documented compatibility fallback (block).
+4. External security review and independent repeatable capture benchmark.
+5. Only then consider sensitive field support and public npm release.

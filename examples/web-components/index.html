@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Secure Display native HTML elements (research)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 5vh auto; padding: 20px; line-height: 1.5; }
+    secure-h1 { width: 100%; }
+    secure-p { width: 100%; }
+  </style>
+</head>
+<body>
+  <h2>Secure Display: HTML custom elements</h2>
+  <p>These tags have no plaintext children. They use DRM-encoded media IDs, not canvas or WebGPU text.</p>
+  <p><strong>Research-only example:</strong> no provider is configured. All protected fields stay blocked.</p>
+  <secure-h1 asset-id="synthetic-title"></secure-h1>
+  <secure-p asset-id="synthetic-paragraph"></secure-p>
+  <secure-text asset-id="synthetic-number"></secure-text>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

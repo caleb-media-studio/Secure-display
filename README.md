@@ -1,37 +1,64 @@
 # Secure Display
 
-**Experimental open-source research into browser DRM and capture-resistant rendering for sensitive reports.**
+Experimental, library-first, Apache-2.0-licensed research into **hardware DRM-backed rendering of server-encoded text** in ordinary browsers.
 
 > [!WARNING]
-> Research alpha. No production screenshot protection is claimed. Do not use it with private reports, student data, DRM secrets, or license keys. Browser EME capability checks are not proof of screen-capture exclusion.
+> Screenshot prevention is **NOT demonstrated**. This alpha must not display confidential data. EME/DRM support does not prove that every screenshot or screen share will omit output. Strict confidential display remains blocked.
 
-The project explores protected video paths exposed by **Encrypted Media Extensions** (EME) in ordinary Chrome, Safari, and Edge. A GPU canvas is ordinarily capturable. The first milestone is a fail-closed research lab: real sensitive content is never rendered unless demonstrable platform protection is available. No such general browser attestation exists today.
+## Architecture
 
-## Goals
+```text
+   trusted service: report text -> glyph layout -> video encode -> DRM packaging
+                         |                            |
+                         |                encrypted CENC/HLS media
+                         |                            |
+  <secure-text asset-id="opaque-key">  ->  browser CDM  ->  protected decoder/output
+       <secure-p> / <secure-h1>              (hardware when supported)
+```
 
-- TypeScript packages for browser capabilities, an experimental licensed-media pipeline, and React bindings.
-- No browser extensions or installed apps.
-- No credentials or personal information in source, fixtures or logs.
-- Per-browser and per-device testing before any claims of capture protection.
-- Privately develop first, then publish source and potentially npm packages after review.
+Unlike GPU-canvas experiments, this approach targets **actual browser DRM**, where decryption and protected output can be delegated to the CDM/OS/hardware. Encoding normally happens on the trusted server; the browser performs licensed decoding. No text is passed in HTML children, React props, or DOM attributes.
 
-## Setup
+A CDM or robustness probe is not evidence that a screenshot is blocked. Supported DRM differs across Chrome, Safari, and Edge. FairPlay needs a provider-specific adapter and is not part of the initial CENC experiment.
 
-```sh
+## Repository
+
+- `packages/core`: EME capabilities, strict disclosure policy, experimental synthetic CENC playback.
+- `packages/elements`: **`<secure-text>`, `<secure-p>`, `<secure-h1>`** custom elements routed through that DRM media pipeline.
+- `packages/react`: React security-status component (full element wrappers planned).
+- `examples/diagnostics`: optional browser capability lab.
+- `examples/web-components`: plain HTML example, intentionally blocked until a licensed synthetic DRM source exists.
+- `docs`: architecture, threat model, compatibility and validation plans.
+
+The repository root is a **library workspace**, not a deployed web application.
+
+## Usage (synthetic DRM research only)
+
+```html
+<secure-h1 asset-id="fake-heading"></secure-h1>
+<secure-p asset-id="fake-report-paragraph"></secure-p>
+<secure-text asset-id="fake-total"></secure-text>
+```
+
+Register the tags once using `registerSecureElements({resolveAsset, requestLicense})`. The asset resolver must return **only a synthetic encrypted-media descriptor**; license requests are processed by an authorized **server-side DRM license proxy**. See `examples/web-components`.
+
+Plaintext children like `<secure-text>real secret</secure-text>` are **forbidden**: HTML parsing would already expose that secret. The library is fail-closed and refuses to display inline content.
+
+## Develop
+
+```bash
 npm install
 npm run typecheck
 npm test
-npm run dev
+npm run dev              # example diagnostics only; Bun-compatible without recursive workspace invocation
+npm run example:elements # native custom element example only
 ```
 
-The repo will use an npm-compatible workspace, runnable with Bun where supported. Package publishing is intentionally disabled until release review.
+Use `bun install` / `bun run dev` if preferred. Build the workspace before launching examples.
 
-## Security status
+## Roadmap
 
-A supported DRM key system means only that the browser accepted a request. It does **not** guarantee a screenshot will be blank. Standard browser APIs cannot generally enforce screenshot exclusion for a text div or canvas. All strict protected-display requests remain blocked.
+Actual DRM-protected synthetic media packaging + authorized license integration; FairPlay adapter; hardware/OS capture testing; accessibility, size/layout, security review. Publishing to npm is disabled until validated.
 
-See `SECURITY.md`, `docs/THREAT_MODEL.md`, and `docs/TEST_PLAN.md` for limitations and testing.
-
-## License
+See `docs/ARCHITECTURE.md`, `docs/THREAT_MODEL.md`, and `SECURITY.md`.
 
 Apache-2.0. See `LICENSE`.

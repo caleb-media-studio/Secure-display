@@ -1,9 +1,9 @@
 # Contributing
 
-Private-first development, with the intention to publish the source later. Do not include confidential, licensed, customer, student, or other identifiable report content in patches or tests.
+This is a **library-first** open-source research project maintained privately until release review. Do not include confidential records, credentials, DRM license responses or personally identifying data in patches or tests.
 
-Development: `npm install`, `npm run typecheck`, `npm test`, `npm run dev`. Bun is compatible with npm-style workspace scripts; CI uses npm.
+Build with `npm install && npm run typecheck && npm test`. For demos use `npm run dev` (diagnostics) or `npm run example:elements`. Bun users may use `bun install && bun run dev` without recursively invoking the root dev script.
 
-Pull requests should explain the threat model, browser/device combinations tested, and any failure modes. Claims about capture prevention require reproducible hardware tests. Never weaken a disclosure policy to make a demo pass. Never post license responses, tokens, or private keys.
+Every new DRM adapter must fail closed on unsupported platforms. Content must be encoded and encrypted *before delivery*. Plaintext HTML attributes, child text, React props or JS decryption are prohibited for sensitive content. No CSS screenshot illusions or WebGPU canvas renderer should be described as hardware output protection.
 
-Packages are marked `private: true` until the team resolves npm scope ownership, provider eligibility, release review and integration tests.
+PR descriptions should document provider licensing, OS/browser/CDM tested, output-policy constraints, screenshot/recording results, and regressions. Packages remain marked `private: true` until release review.
