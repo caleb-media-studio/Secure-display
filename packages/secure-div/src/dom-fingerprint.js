@@ -6,7 +6,7 @@
 export function serializeProtectedChildren(host) {
   function walk(node) {
     if (node.nodeType === 3) {
-      const normalized = node.textContent.replace(/\\s+/g, " ").trim();
+      const normalized = node.textContent.replace(/\s+/g, " ").trim();
       return normalized ? ["text", normalized] : null;
     }
     if (node.nodeType !== 1) return null;
