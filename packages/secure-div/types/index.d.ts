@@ -4,3 +4,5 @@ export declare class SecureDiv extends HTMLElement {}
 export declare function registerSecureDiv(adapter:SecureDivPlaybackAdapter):void;
 export declare function selectionGeometry(host:Element,selection:Selection|null,maxRects?:number):Array<{left:number;top:number;width:number;height:number}>;
 export declare function updateSelectionIndicator(root:Element,rects:Array<{left:number;top:number;width:number;height:number}>,doc?:Document):void;
+export declare function serializeProtectedChildren(host:Element):string;
+export declare function hashProtectedChildren(host:Element):Promise<string>;

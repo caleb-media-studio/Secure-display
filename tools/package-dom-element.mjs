@@ -10,6 +10,7 @@ import {readFileSync,mkdirSync,writeFileSync,existsSync,rmSync} from "node:fs";
 import {dirname,join,resolve} from "node:path";
 import {fileURLToPath,pathToFileURL} from "node:url";
 import {parseVector,vectorUrl,packagerArgs} from "./package-test-document.mjs";
+import {serializeProtectedChildren} from "../packages/secure-div/src/dom-fingerprint.js";
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const EXAMPLE=join(ROOT,"examples/auto-secure-element");
@@ -54,7 +55,10 @@ async function snapshotDOM(){
    const box=el.getBoundingClientRect();
    return {width:box.width,height:box.height};
   }));
+  const serialized=await card.evaluate(serializeProtectedChildren);
+  const rootClassName=await card.getAttribute("class");
   await card.screenshot({path:IMAGE,animations:"disabled",scale:"css"});
+  return {domSha256:createHash("sha256").update(serialized).digest("hex"),rootClassName};
  }finally{await browser?.close();}
 }
 async function main(){
@@ -70,7 +74,7 @@ async function main(){
  // Fail closed if the packaging flow exits early. Do not serve stale assets.
  rmSync(join(PUBLIC,"asset-info.json"),{force:true});
  console.log("Rendering the ACTUAL source HTML/CSS, not rebuilding card pixels manually...");
- await snapshotDOM();
+ const {domSha256,rootClassName}=await snapshotDOM();
  command("ffmpeg",["-hide_banner","-loglevel","error","-y","-loop","1","-framerate","24",
   "-i",IMAGE,"-t","3","-an","-c:v","libx264","-pix_fmt","yuv420p",
   "-r","24","-movflags","+faststart",CLEAR]);
@@ -90,7 +94,7 @@ async function main(){
  writeFileSync(join(PUBLIC,"asset-info.json"),JSON.stringify({
   kind:"automated-dom-drm-v1",classification:"synthetic-test-only",
   assetId:"demo-card",width:EXPECTED.width,height:EXPECTED.height,
-  screenshotSha256:signature,
+  screenshotSha256:signature,domSha256,rootClassName,
   sourceSha256:createHash("sha256").update(markup).digest("hex"),
   generatedAt:new Date().toISOString()
  },null,2)+"\n");

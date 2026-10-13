@@ -1,5 +1,6 @@
 
 import {selectionGeometry,updateSelectionIndicator} from "./selection-geometry.js";
+import {hashProtectedChildren} from "./dom-fingerprint.js";
 const ElementBase=typeof HTMLElement==="undefined"?class {}:HTMLElement;
 let playbackAdapter=null;
 let installedAdapter=null;
@@ -14,7 +15,7 @@ const dimensionsMatch=(box,meta)=>Math.abs(box.width-meta.width)<1&&Math.abs(box
  * nonprotected pixels from appearing in captures.
  */
 export class SecureDiv extends ElementBase {
- static get observedAttributes(){return ["data-asset-id","data-source-sha256"];}
+ static get observedAttributes(){return ["data-asset-id","data-source-sha256","data-dom-sha256"];}
  #player=null;
  #assetDimensions=null;
  #video=null;
@@ -170,6 +171,14 @@ export class SecureDiv extends ElementBase {
    if(!/^[a-f0-9]{64}$/i.test(sourceSha256||""))
     throw Error("Missing SHA256 binding for encrypted DOM snapshot.");
    if(!playbackAdapter)throw Error("No protected asset playback adapter configured.");
+   const expectedDomSha256=this.getAttribute("data-dom-sha256");
+   if(expectedDomSha256){
+    if(!/^[a-f0-9]{64}$/i.test(expectedDomSha256))
+     throw Error("Malformed packaged DOM fingerprint.");
+    if((await hashProtectedChildren(this))!==expectedDomSha256)
+     throw Error("React HTML differs from the encrypted snapshot. Regenerate the DRM media.");
+    if(controller.signal.aborted||this.#controller!==controller)return;
+   }
    handle=await playbackAdapter(this.#video,controller.signal,assetId,sourceSha256);
    if(controller.signal.aborted||this.#controller!==controller){
     await handle?.destroy();
@@ -181,6 +190,13 @@ export class SecureDiv extends ElementBase {
     throw Error("Protected DOM dimensions do not match the encrypted asset.");
    if(typeof handle?.destroy!=="function"||typeof handle?.drm!=="string")
     throw Error("Invalid DRM playback handle.");
+   // A mutation during license acquisition must not reveal stale pixels.
+   if(expectedDomSha256 && (await hashProtectedChildren(this))!==expectedDomSha256)
+    throw Error("DOM changed during DRM loading; encrypted snapshot is stale.");
+   if(controller.signal.aborted||this.#controller!==controller){
+    await handle.destroy();
+    return;
+   }
    this.#player=handle;
    this.#assetDimensions={width:handle.width,height:handle.height};
    this.#active=true;

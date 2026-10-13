@@ -15,6 +15,9 @@
       "types": "./types/index.d.ts",
       "default": "./src/index.js"
     },
-    "./secure-div.css": "./secure-div.css"
+    "./secure-div.css": {
+      "types": "./types/secure-div.css.d.ts",
+      "default": "./secure-div.css"
+    }
   }
 }
