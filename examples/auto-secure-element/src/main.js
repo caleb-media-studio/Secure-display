@@ -15,13 +15,17 @@ async function main(){
  registerSecureDiv();
  const r=await fetch("/secure-content.html",{cache:"no-store"});
  if(!r.ok)throw Error("Synthetic HTML source unavailable.");
- const doc=new DOMParser().parseFromString(await r.text(),"text/html");
+ const text=await r.text();
+ const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(text));
+ const checksum=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
+ const doc=new DOMParser().parseFromString(text,"text/html");
  const source=doc.querySelector("#snapshot-source");
  const rules=doc.querySelector("#secure-fixture-style");
  if(!source||!rules)throw Error("Source HTML or CSS missing.");
  document.head.appendChild(document.importNode(rules,true));
  const secure=document.createElement("secure-div");
  secure.setAttribute("data-asset-id","demo-card");
+ secure.setAttribute("data-source-sha256",checksum);
  secure.className=source.className;
  // Preserve the original HTML structure and styling. No handcrafted DRM
  // screenshot pixels exist anywhere in client JS.

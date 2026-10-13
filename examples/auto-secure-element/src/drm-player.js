@@ -25,7 +25,7 @@ async function publicToken(){
  })().catch(e=>{tokenPromise=undefined;throw e;});
  return tokenPromise;
 }
-export async function startEncryptedVideo(video,signal){
+export async function startEncryptedVideo(video,signal,sourceSha256){
  if(!window.isSecureContext)throw Error("Protected playback requires trusted HTTPS (or localhost).");
  const provider=supportedDRM();
  const [meta,token]=await Promise.all([
@@ -38,6 +38,8 @@ export async function startEncryptedVideo(video,signal){
  if(meta?.kind!=="automated-dom-drm-v1"||meta?.classification!=="synthetic-test-only"||
     meta?.assetId!=="demo-card"||meta?.width!==960||meta?.height!==540)
    throw Error("Synthetic encrypted DOM package invalid or stale.");
+ if(!/^[a-f0-9]{64}$/i.test(sourceSha256)||meta.sourceSha256!==sourceSha256)
+   throw Error("HTML/CSS source differs from the encrypted build. Re-run bun run drm:element:package.");
  if(signal.aborted)throw Error("Session canceled.");
  shaka.polyfill.installAll();
  if(!shaka.Player.isBrowserSupported())throw Error("Browser does not support the Shaka DRM playback path.");

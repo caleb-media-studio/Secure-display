@@ -86,7 +86,9 @@ async function main(){
  writeFileSync(join(PUBLIC,"asset-info.json"),JSON.stringify({
   kind:"automated-dom-drm-v1",classification:"synthetic-test-only",
   assetId:"demo-card",width:EXPECTED.width,height:EXPECTED.height,
-  screenshotSha256:signature,generatedAt:new Date().toISOString()
+  screenshotSha256:signature,
+  sourceSha256:createHash("sha256").update(markup).digest("hex"),
+  generatedAt:new Date().toISOString()
  },null,2)+"\n");
  console.log("Real HTML screenshot encoded into encrypted FairPlay/Widevine media. Run: bun run example:auto-element");
  console.log("Visitor requires NO Chrome install: only the developer's build step uses headless Chrome.");

@@ -26,6 +26,12 @@ export class SecureDiv extends HTMLElement {
   this.#video.setAttribute("tabindex","-1");
   this.#video.muted=true;
   this.#video.playsInline=true;
+  this.#video.addEventListener("error",()=>{
+   if(this.#active)this.#block("Licensed video decoder failed.");
+  });
+  this.#video.addEventListener("pause",()=>{
+   if(this.#active)this.#block("Protected playback paused. Capture state unknown.");
+  });
   this.#video.style.cssText=[
     "position:fixed","z-index:2000000000","pointer-events:none",
     "opacity:0","background:transparent","display:block","margin:0",
@@ -47,7 +53,12 @@ export class SecureDiv extends HTMLElement {
     detail:{state:"stale",reason:"DOM content changed; regenerate the encrypted asset."}
    }));
   });
-  this.#observer.observe(this,{childList:true,subtree:true,characterData:true});
+  // Class/style edits can invalidate the captured pixels too. Do not
+  // observe data-secure-state, which is our own internal status attribute.
+  this.#observer.observe(this,{
+    childList:true,subtree:true,characterData:true,attributes:true,
+    attributeFilter:["class","style","src","value","hidden"],
+  });
   void this.#load();
  }
  disconnectedCallback(){
@@ -68,9 +79,20 @@ export class SecureDiv extends HTMLElement {
    width:box.width+"px",height:box.height+"px",
   });
  }
+ #block(reason){
+  this.#active=false;
+  this.dataset.secureState="blocked";
+  if(this.#video)this.#video.style.opacity="0";
+  this.dispatchEvent(new CustomEvent("secure-state-change",{
+   detail:{state:"blocked",reason}
+  }));
+ }
  async #load(){
   try{
-   const {player,provider,meta}=await startEncryptedVideo(this.#video,this.#controller.signal);
+   if(this.getAttribute("data-asset-id")!=="demo-card")
+     throw Error("Unknown synthetic asset identifier.");
+   const {player,provider,meta}=await startEncryptedVideo(
+     this.#video,this.#controller.signal,this.getAttribute("data-source-sha256"));
    this.#player=player;
    const box=this.getBoundingClientRect();
    if(box.width<=0||box.height<=0)throw Error("Protected DOM element has no visible layout.");
