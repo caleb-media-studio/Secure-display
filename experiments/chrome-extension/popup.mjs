@@ -33,7 +33,7 @@ async function authorizeOrigins(){
 }
 async function run(type,callback=async()=>{}){
  enableButtons(true);display("Working…");
- try{await callback();display(type+" completed.");}
+ try{const message=await callback();display(message||type+" completed.");}
  catch(e){display("Error: "+e.message);}
  finally{try{await refresh();}catch(e){display("Error: "+e.message);enableButtons(false);}}
 }
@@ -48,10 +48,10 @@ $("view").addEventListener("click",()=>run("Document view",async()=>{
 }));
 $("reveal").addEventListener("click",()=>run("DOM reveal",async()=>{
  const res=await send("REVEAL",{documentId:$("document").value.trim()});
- display(res.warning);
+ return res.warning;
 }));
 $("probe").addEventListener("click",()=>run("Native probe",async()=>{
  const res=await send("PROBE");
- display("Capture backend: "+(res.backend||"none")+"\nAvailable: "+res.supported+"\n"+res.reason);
+ return "Capture backend: "+(res.backend||"none")+"\nAvailable: "+res.supported+"\n"+res.reason;
 }));
 refresh().catch(e=>{display(e.message);enableButtons(false)});

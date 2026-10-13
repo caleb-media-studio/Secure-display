@@ -32,6 +32,7 @@ export function validateEnterpriseConfig(input){
   allowedOrigin:allow.origin,
   tenantId:cfg.tenantId,clientId:cfg.clientId,
   allowDomReveal:cfg.allowDomReveal,
+  scope:typeof cfg.scope==="string"&&/^[A-Za-z0-9_:/ .-]{1,500}$/.test(cfg.scope)?cfg.scope:"openid profile",
  });
 }
 export function validateRect(x){
@@ -55,8 +56,10 @@ export function validateEnvelope(x,id,origin){
   throw Error("Invalid encrypted document envelope");
  return e;
 }
-export function validateWrappedKey(x){
+export function validateWrappedKey(x,expectedId,expectedNonce,expectedKeyId){
  const w=assertObject(x,"wrapped key response");
+ if(w.documentId!==expectedId||w.nonce!==expectedNonce||w.keyId!==expectedKeyId)
+  throw Error("Wrapped key authorization response does not match the document challenge");
  if(w.algorithm!=="RSA-OAEP-256"||typeof w.wrappedKeyBase64url!=="string"||
  !base64url.test(w.wrappedKeyBase64url)||w.wrappedKeyBase64url.length>2048)
   throw Error("Invalid wrapped key response");
