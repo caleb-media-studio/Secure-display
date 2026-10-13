@@ -14,6 +14,7 @@ const dimensionsMatch=(box,meta)=>Math.abs(box.width-meta.width)<1&&Math.abs(box
  * nonprotected pixels from appearing in captures.
  */
 export class SecureDiv extends ElementBase {
+ static get observedAttributes(){return ["data-asset-id","data-source-sha256"];}
  #player=null;
  #assetDimensions=null;
  #video=null;
@@ -24,6 +25,27 @@ export class SecureDiv extends ElementBase {
  #position=()=>{this.#syncRect();this.#syncSelection();};
  #selectionUpdate=()=>this.#syncSelection();
  #active=false;
+
+ attributeChangedCallback(name,oldValue,newValue){
+  if(oldValue===newValue||!this.isConnected||!this.#controller)return;
+  // A hash may arrive after the first React render. Keep native DOM hidden.
+  void this.#restart();
+ }
+ async #restart(){
+  this.#controller?.abort();
+  const controller=new AbortController();
+  this.#controller=controller;
+  const old=this.#player;
+  this.#player=null;
+  this.#active=false;
+  this.#assetDimensions=null;
+  if(this.#video)this.#video.style.opacity="0";
+  this.dataset.secureState="loading";
+  this.#syncSelection();
+  if(old)await old.destroy().catch(()=>{});
+  if(controller.signal.aborted||this.#controller!==controller||!this.isConnected)return;
+  await this.#load();
+ }
 
  connectedCallback(){
   this.dataset.secureState="loading";

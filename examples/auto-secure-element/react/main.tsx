@@ -35,7 +35,7 @@ function App(){
  return <section>
   <p id="status" role="status">{status}</p>
   <div className="demo">
-   {hash&&<SecureDiv
+   <SecureDiv
       className="secure-card"
       assetId="demo-card"
       sourceSha256={hash}
@@ -53,7 +53,7 @@ function App(){
         Click this real HTML button
       </button>
       <div className="footer">Normal DOM interactions remain enabled · Synthetic test data only</div>
-    </SecureDiv>}
+    </SecureDiv>
   </div>
   <p id="clicks">React click counter: {clicks}</p>
   <p id="selection-status">Selected characters: {selection}. Selection highlights are ordinary capturable DOM.</p>

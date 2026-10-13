@@ -33,9 +33,7 @@ export function SecureDiv({
   onSecureStateChange, onSecureSelectionChange, style, ...rest
 }: SecureDivProps): ReactElement {
   const ref = useRef<HTMLElement | null>(null);
-  useEffect(() => {
-    if (playbackAdapter) registerSecureDiv(playbackAdapter);
-  }, [playbackAdapter]);
+  // Subscribe before registering. Upgrading a custom element can emit immediately.
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
@@ -52,6 +50,9 @@ export function SecureDiv({
       node.removeEventListener("secure-selection-change", onSelection);
     };
   }, [onSecureStateChange, onSecureSelectionChange]);
+  useEffect(() => {
+    if (playbackAdapter) registerSecureDiv(playbackAdapter);
+  }, [playbackAdapter]);
 
   // First HTML paint is transparent, including SSR markup. The consumer must
   // ALSO import the !important CSS guard in document head before first paint.
