@@ -1,4 +1,5 @@
 import {startEncryptedVideo} from "./drm-player.js";
+import {selectionGeometry,updateSelectionIndicator} from "./selection-geometry.js";
 
 /**
  * Research-only custom element. Keeps the *real children* in the light DOM:
@@ -10,10 +11,12 @@ import {startEncryptedVideo} from "./drm-player.js";
 export class SecureDiv extends HTMLElement {
  #player=null;
  #video=null;
+ #selectionOverlay=null;
  #controller=null;
  #observer=null;
  #resize=null;
- #position=()=>this.#syncRect();
+ #position=()=>{this.#syncRect();this.#syncSelection();};
+ #selectionUpdate=()=>this.#syncSelection();
  #active=false;
 
  connectedCallback(){
@@ -38,6 +41,19 @@ export class SecureDiv extends HTMLElement {
     "padding:0","border:0","object-fit:fill","overflow:hidden"
   ].join(";");
   document.body.appendChild(this.#video);
+  // The real browser Selection/Range remains inside the original DOM.
+  // Only selection *geometry* is painted outside the transparent host.
+  // This is a text-free, ordinary-DOM indicator (capturable in screenshots).
+  this.#selectionOverlay=document.createElement("div");
+  this.#selectionOverlay.setAttribute("data-sd-selection-overlay","");
+  this.#selectionOverlay.setAttribute("aria-hidden","true");
+  this.#selectionOverlay.style.cssText=[
+   "position:fixed","inset:0","width:100vw","height:100vh",
+   "z-index:2000000001","pointer-events:none","overflow:hidden",
+   "contain:layout paint style"
+  ].join(";");
+  document.body.appendChild(this.#selectionOverlay);
+  document.addEventListener("selectionchange",this.#selectionUpdate);
   this.#syncRect();
   this.#resize=new ResizeObserver(this.#position);
   this.#resize.observe(this);
@@ -49,6 +65,7 @@ export class SecureDiv extends HTMLElement {
    this.dataset.secureState="stale";
    // Source DOM changed but DRM pixels are fixed. Fail closed.
    if(this.#video)this.#video.style.opacity="0";
+   this.#syncSelection();
    this.dispatchEvent(new CustomEvent("secure-state-change",{
     detail:{state:"stale",reason:"DOM content changed; regenerate the encrypted asset."}
    }));
@@ -67,6 +84,8 @@ export class SecureDiv extends HTMLElement {
   this.#resize?.disconnect();
   removeEventListener("resize",this.#position);
   removeEventListener("scroll",this.#position,true);
+  document.removeEventListener("selectionchange",this.#selectionUpdate);
+  this.#selectionOverlay?.remove();
   this.#video?.remove();
   void this.#player?.destroy();
   this.#active=false;
@@ -79,10 +98,23 @@ export class SecureDiv extends HTMLElement {
    width:box.width+"px",height:box.height+"px",
   });
  }
+ #syncSelection(){
+  if(!this.#selectionOverlay)return;
+  const selection=window.getSelection();
+  const rects=this.#active?selectionGeometry(this,selection):[];
+  updateSelectionIndicator(this.#selectionOverlay,rects);
+  const selectedLength=rects.length>0 && selection && selection.rangeCount===1
+   ? selection.getRangeAt(0).toString().length:0;
+  this.dispatchEvent(new CustomEvent("secure-selection-change",{detail:{
+   native:true,highlightRects:rects.length,selectedCharacters:selectedLength,
+   visibleIndicatorIsCapturable:true
+  }}));
+ }
  #block(reason){
   this.#active=false;
   this.dataset.secureState="blocked";
   if(this.#video)this.#video.style.opacity="0";
+  this.#syncSelection();
   this.dispatchEvent(new CustomEvent("secure-state-change",{
    detail:{state:"blocked",reason}
   }));
@@ -104,6 +136,7 @@ export class SecureDiv extends HTMLElement {
    this.dataset.secureState="playing";
    this.#syncRect();
    this.#video.style.opacity="1";
+   this.#syncSelection();
    this.dispatchEvent(new CustomEvent("secure-state-change",{detail:{
     state:"playing",drm:provider.type,source:"encrypted-dom-snapshot"
    }}));
