@@ -32,3 +32,6 @@ bun.lock
 /examples/protected-document/public/synthetic-document-*.json
 
 /examples/protected-page/public/drm-page/
+
+/examples/protected-page/public/drm-probe/
+/examples/protected-page/public/probe-clear.mp4
