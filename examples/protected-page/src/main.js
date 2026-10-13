@@ -34,7 +34,8 @@ function updateMode(){
  root.dataset.mode=mode;
  dom.hidden=!rule.showDom;
  video.hidden=!rule.showVideo && !(player && mode!=="normal");
- video.style.opacity=String(rule.videoOpacity);
+ // CSS must receive decimal syntax, never scientific notation such as 1e-9.
+ video.style.opacity=rule.videoOpacity.toFixed(9);
  guard.hidden=mode!=="protected" || rule.showVideo;
  hotspot.hidden=!rule.enableProtectedHotspot;
  hotspot.disabled=!rule.enableProtectedHotspot;
