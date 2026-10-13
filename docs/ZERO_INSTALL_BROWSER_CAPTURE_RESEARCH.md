@@ -100,3 +100,11 @@ But an autonomous HTML custom element such as `<secure-div>` is not literally a 
 ### Next decision
 
 **Build Candidate A1 as the next research experiment.** It can test the only stock-browser output plane we have actually seen excluded from screenshots. We can investigate browser-native APIs concurrently, but currently have no source-supported claim that any ordinary website can call native screenshot exclusion. If A1 succeeds, evaluate update latency and DOM interaction; if it fails, narrow to native browser support and clearly state that the zero-install version requires a platform change.
+
+## Implemented A1 example (October 13, 2026)
+
+**Implementation committed, native capture results not yet verified:** `examples/auto-secure-element` now exercises the A1 static DOM-to-protected-media route with no viewer installation. The developer maintains a single ordinary `div` source in `public/secure-content.html`, including the original classes, styles, and button. `tools/package-dom-element.mjs` uses headless Chrome (developer machine) to render that actual element to a PNG, encodes H264 with FFmpeg, and packages it as separately licensed FairPlay HLS and Widevine DASH using the established Axinom publicly available test key. The browser instantiates `<secure-div>` with those **real** HTML children, removes their normal paint through `opacity:0` while preserving DOM layout/hit testing, and positions the protected video at the component bounds. It checks the original HTML SHA256 against build metadata and blocks on any child-text/style mutation instead of showing outdated pixels.
+
+**Developer:** `bun run drm:element:package`, then `bun run example:auto-element`. Browser user: ordinary HTTPS URL only. See [the runnable A1 experiment](../docs/AUTO_SECURE_ELEMENT.md).
+
+This is **not a solution for live arbitrary DOM**, native carat/selection animations, or cross-platform screenshot certification. It needs static build-time media generation and cannot honestly promise the same simple semantics for every HTML component yet. No native screenshot-exclusion API has been discovered for an unprivileged website. The next research step is real-time DOM re-encoding with measured latency, followed by per-browser screenshot verification; keep unsupported browsers fail-closed.
