@@ -49,6 +49,13 @@ jobs:
         run: |
           node tools/generate-protected-page-video.mjs
           test -s fixtures/generated/protected-page-clear.mp4
+      - name: Generate and verify vivid H264 reference media
+        run: |
+          node tools/generate-protected-page-video.mjs --probe
+          test -s fixtures/generated/protected-probe-clear.mp4
+          set -o pipefail
+          ffmpeg -v error -i fixtures/generated/protected-probe-clear.mp4 -frames:v 1 -pix_fmt rgb24 -f rawvideo - |
+            python3 -c 'import sys; frame=sys.stdin.buffer.read(); assert len(frame)==1280*720*3, len(frame); assert max(frame)>230 and min(frame)<80, "Probe is visually indistinguishable from black"'
       - name: Verify decoded H264 frame is fully black
         run: |
           set -o pipefail
