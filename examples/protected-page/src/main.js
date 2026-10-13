@@ -110,7 +110,11 @@ modeButtons.forEach(button=>button.addEventListener("click",()=>setMode(button.d
 opacitySlider.addEventListener("input",()=>{
  opacityIndex=Number(opacitySlider.value);
  // No DRM teardown or new license request: this only updates video.style.opacity.
- if(mode!=="overlay")mode="overlay";
+ if(mode!=="overlay") {
+   // This control uses BLACK encrypted media, not the neutral WHITE fixture.
+   setMode("overlay");
+   return;
+ }
  updateMode();
  updateOverlayMetrics();
 });
