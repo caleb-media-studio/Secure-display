@@ -108,3 +108,37 @@ bun run example:page
 ```
 
 If the old giant DRM lettering is still visible after that, stop the test and inspect the newly generated `fixture-info.json`, manifest and Vite cache. The only readable sentence in overlay mode must be the normal HTML text. The black video itself contains no selectable or readable information. The effect on screenshot/recording behavior with a black DRM video is **not yet verified**.
+
+## Actual protected-plane verification: encrypted versus clear color reference
+
+**Why this is necessary:** Previously the DRM overlay video itself was pure black. If the screenshot showed a black area, we could not distinguish genuine exclusion of the protected video plane from ordinary black media or CSS opacity. A successful Shaka `drmInfo().keySystem` check and advancing video time verify encrypted playback, not how the operating system captures its compositor output.
+
+The package step now builds **two visually identical vivid magenta/cyan cross-pattern test videos**:
+
+- **Encrypted DRM reference**: `/drm-probe/master.m3u8` (FairPlay) or `/drm-probe/master.mpd` (Widevine), using the same **Axinom published public test vectors and license service** as the working document demo.
+- **Unencrypted control**: `/probe-clear.mp4`, copied from the *same* locally generated H.264 source used to package the DRM reference. These media files are generated locally and ignored by Git.
+
+To run:
+
+```sh
+git pull origin feat/initial-research-framework
+SECURE_DISPLAY_PACKAGER="$PWD/.secure-display-local/bin/packager" bun run drm:page:package
+bun run example:page
+```
+
+Open with trusted HTTPS when using a network IP. **Select the Unprotected DOM control, or turn the black overlay slider to 0%, so it cannot darken the comparison.** Scroll to **Is DRM actually excluded from the screenshot?**, then click **Run encrypted vs clear reference**. Both media tiles should visibly show the same bright pattern **on the physical screen**. Then capture a screenshot:
+
+| Physical display | Screenshot | Supported interpretation |
+| --- | --- | --- |
+| Both tiles display the same colors | Encrypted left becomes black/empty, clear right remains colorful | Protected pixels are excluded from that capture path; the DRM integration reaches a capture-excluded output plane |
+| Both display the same colors | Both tiles remain colorful | Protected pixels are captured by that method/configuration; EME playback alone was not sufficient |
+| One or both tiles fail to play | Any | No capture conclusion; diagnose media/load/license first |
+| Both visible | Encrypted left disappears but DOM beneath remains visible | DRM video plane is excluded but underlying DOM does **not** inherit DRM protection |
+
+This is a differential test of **capture-plane behavior**, not an assertion of universal screenshots prevention. It isolates the media path from the unrelated CSS opacity trick. The black overlay experiment remains available, independently, to test whether a capture-excluded media plane affects pixels beneath it.
+
+### Architectural finding
+
+The W3C Encrypted Media Extensions API enables encrypted media playback on `HTMLMediaElement`. It does **not** provide a standard API that assigns a protected output policy to an ordinary DOM subtree. The browser/OS compositor may omit protected video layers from a snapshot while leaving the nonprotected background visible. Consequently, whether a protected video layer blocks underlying ordinary DOM is a separate question from whether the video pixels themselves are protected, and must be tested separately.
+
+See [W3C Encrypted Media Extensions](https://www.w3.org/TR/encrypted-media/) and [Mozilla bug 2078388](https://bugzilla.mozilla.org/show_bug.cgi?id=2078388) for descriptions of EME media layers and omitted protected layers leaving the underlying background exposed in macOS window snapshots.
