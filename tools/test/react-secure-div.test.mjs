@@ -71,4 +71,5 @@ test("minimal entrypoint never handles DRM asset data, status hook is optional",
  assert.ok(!app.includes("useEffect("));
  assert.ok(hook.includes("useSecureDisplayStatus"));
  assert.ok(hook.includes("onSecureStateChange"));
+ assert.match(hook,/reason\?:undefined/,"Initial loading state must expose optional diagnostics.");
 });

@@ -18,6 +18,13 @@ test("auto-packager always snapshots a real DOM element with fixed test dimensio
  assert.match(source,/\.screenshot\(\{path:IMAGE/);
  assert.match(source,/--clear_lead|packagerArgs\(/);
  assert.match(source,/parseVector/);
+ assert.match(source,/https:false/,"Developer screenshot must use HTTP even with local TLS configured.");
+ assert.match(get("tools/browser-react-dom-fingerprint-smoke.mjs"),/https:false/,
+  "Browser fingerprint smoke must use HTTP regardless of local HTTPS settings.");
+ assert.match(get("examples/auto-secure-element/react/setup.js"),/content-type/,
+  "React resolver must reject Vite SPA HTML fallback instead of JSON.parse.");
+ assert.match(get("examples/auto-secure-element/src/drm-player.js"),/content-type/,
+  "Runtime DRM loader must reject Vite SPA HTML fallback.");
 });
 test("one HTML/CSS source powers both real DOM and encrypted visual copy",()=>{
  const fixture=get("examples/auto-secure-element/public/secure-content.html");

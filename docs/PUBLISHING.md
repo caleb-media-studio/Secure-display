@@ -42,3 +42,11 @@ The single distribution build bundles the private internal runtime code into one
 No standalone Shaka/DRM key server or private licensing credentials ship in the tarball. The one-time app configuration and the fixed build-time encrypted media are still required.
 
 See [npm scoped package publishing](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/), [Bun publishing](https://bun.com/docs/pm/cli/publish) and [security limitations](THREAT_MODEL.md).
+
+## npm organization team setup and the first publish
+
+An npm **team is not a package namespace reservation**. The package does not appear under the organization's team until it is published under `@caleb-media-studio-llc/secure-display` and the team has been granted access. Searching for `secure-display` under **Add Existing Package** before the first publish can show nothing. A **Forbidden** page can also mean the npm account lacks organization management permissions; check the npm organization owner/admin role if it persists after publication.
+
+The CLI command is **`npm publish`**, not `npm upload`. For a publicly available, explicitly approved experimental release: authenticate using `npm login`, confirm `npm whoami` and `npm org ls caleb-media-studio-llc`, run all release smoke checks, inspect `npm pack --dry-run --workspace @caleb-media-studio-llc/secure-display`, then (only after explicit approval and removing `private: true` **from the one distribution manifest**) run `npm publish --access public --tag experimental` inside `packages/secure-display`. Do not remove the private guard from internal workspaces. Ensure the version was explicitly chosen and does not already exist; npm published versions cannot be overwritten.
+
+Once the package is listed under the npm organization, open the team's access page and grant the `secure-display` team the required read/write privileges. npm publishing may prompt for a 2FA code or other supported authentication; never paste tokens or codes into issues or chat. Public publication makes the included bundled JavaScript publicly accessible even if the GitHub repository remains private.

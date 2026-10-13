@@ -16,7 +16,9 @@ const resolveAsset=async(_host,signal)=>{
   fetch("/secure-asset/asset-info.json",{signal,cache:"no-store"}),
   fetch("/secure-content.html",{signal,cache:"no-store"})
  ]);
- if(!assetResponse.ok)throw Error("Encrypted media not packaged. Run bun run drm:element:package.");
+ if(!assetResponse.ok ||
+    !assetResponse.headers.get("content-type")?.toLowerCase().includes("application/json"))
+  throw Error("Encrypted asset metadata is missing (server returned HTML or another response). Run bun run drm:element:package successfully, then restart the React demo.");
  if(!sourceResponse.ok)throw Error("Synthetic fixture stylesheet is missing.");
  const asset=await assetResponse.json();
  const source=await sourceResponse.text();

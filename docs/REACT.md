@@ -82,7 +82,9 @@ See [validation matrix](VALIDATION_MATRIX.md) and [status definitions](STATUS.md
 
 | Symptom | Action |
 | --- | --- |
-| `Encrypted media not packaged` | Run `drm:element:package`, confirm `public/secure-asset/asset-info.json` exists |
+| `Encrypted media not packaged` or HTML returned instead of JSON | The packager did not finish and Vite fell back to its HTML page. Run `drm:element:package`, confirm `public/secure-asset/asset-info.json` exists and then refresh. |
+| `page.goto: net::ERR_EMPTY_RESPONSE` during packaging, after `mkcert` setup | Older snapshot code tried HTTP against an auto-HTTPS Vite server. Update the branch: the developer snapshot now explicitly uses loopback HTTP; the visitor-facing app can still use HTTPS. |
+| `TS2339: drm/reason` on status | Fixed in the updated `SecureDivObservedState` typing. Pull the latest commit, then run `bun run typecheck`. |
 | Blank card | Read `blocked` state and console/network diagnostics, verify DRM licensing |
 | `React HTML differs` or SHA mismatch | Repackage the current JSX and CSS |
 | Dimensions differ | The synthetic fixture requires 960 × 540 |

@@ -43,7 +43,10 @@ async function snapshotDOM(){
   server=await createServer({
    root:EXAMPLE,
    configFile:join(EXAMPLE,"vite.config.mjs"),
-   server:{host:"127.0.0.1",port:0,strictPort:false,https:undefined},
+   // The developer snapshot always uses loopback HTTP, even if local HTTPS
+   // certificates enable TLS for the visitor-facing Vite examples.
+   // Passing undefined does not override Vite's configured HTTPS.
+   server:{host:"127.0.0.1",port:0,strictPort:false,https:false},
    logLevel:"error",
   });
   await server.listen();

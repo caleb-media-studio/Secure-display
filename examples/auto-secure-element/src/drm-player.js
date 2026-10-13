@@ -30,7 +30,8 @@ export async function startEncryptedVideo(video,signal,sourceSha256){
  const provider=supportedDRM();
  const [meta,token]=await Promise.all([
   fetch("/secure-asset/asset-info.json",{cache:"no-store",signal}).then(async r=>{
-    if(!r.ok)throw Error("Encrypted DOM asset missing. Run bun run drm:element:package.");
+    if(!r.ok || !r.headers.get("content-type")?.toLowerCase().includes("application/json"))
+      throw Error("Encrypted DOM asset metadata missing or not JSON. Finish bun run drm:element:package and refresh.");
     return r.json();
   }),
   publicToken(),

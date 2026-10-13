@@ -1,7 +1,7 @@
 import {useCallback, useState} from "react";
 import type {SecureDivState} from "./SecureDiv.js";
 
-export type SecureDivObservedState = SecureDivState | {state:"loading"};
+export type SecureDivObservedState = SecureDivState | {state:"loading";drm?:undefined;reason?:undefined};
 /**
  * Optional diagnostics for a <SecureDiv>. Render the hook's callback as
  * onSecureStateChange. The protected component works without this hook.
