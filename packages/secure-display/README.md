@@ -6,14 +6,14 @@ This is the sole intended registry artifact. It bundles the internal runtime imp
 
 ## Proposed installation after publication
 
-\`\`\`bash
+```bash
 bun add @caleb-media-studio-llc/secure-display
 # or npm install @caleb-media-studio-llc/secure-display
-\`\`\`
+```
 
 ## Minimal React usage
 
-\`\`\`tsx
+```tsx
 import {SecureDiv, useSecureDisplayStatus} from "@caleb-media-studio-llc/secure-display";
 import "@caleb-media-studio-llc/secure-display/secure-div.css";
 
@@ -26,18 +26,18 @@ export default function Example() {
     <output>{status.state}</output>
   </>;
 }
-\`\`\`
+```
 
-This illustrates the component syntax only. You **must also configure** \`configureSecureDisplay({resolveAsset, playbackAdapter})\` once at application startup and provide prebuilt DRM media matching the JSX. A bare \`SecureDiv\` will not generate a protected rendering dynamically. See the [real synthetic React demo](../../examples/auto-secure-element/react/App.tsx) and [one-time setup](../../examples/auto-secure-element/react/setup.js).
+This illustrates the component syntax only. You **must also configure** `configureSecureDisplay({resolveAsset, playbackAdapter})` once at application startup and provide prebuilt DRM media matching the JSX. A bare `SecureDiv` will not generate a protected rendering dynamically. See the [real synthetic React demo](../../examples/auto-secure-element/react/App.tsx) and [one-time setup](../../examples/auto-secure-element/react/setup.js).
 
 ## Exports
 
-- \`SecureDiv\`: React wrapper over a real DOM element and licensed video surface
-- \`configureSecureDisplay\`: app-wide asset resolver + DRM playback adapter
-- \`useSecureDisplayStatus\`: optional loading/playing/blocked/stale status hook
-- \`registerSecureDiv\` / \`SecureDivElement\`: lower-level custom element API
+- `SecureDiv`: React wrapper over a real DOM element and licensed video surface
+- `configureSecureDisplay`: app-wide asset resolver + DRM playback adapter
+- `useSecureDisplayStatus`: optional loading/playing/blocked/stale status hook
+- `registerSecureDiv` / `SecureDivElement`: lower-level custom element API
 - Browser DRM capability diagnostics
-- \`./secure-div.css\`: first-paint guard; ensure it is loaded before any protected content is painted
+- `./secure-div.css`: first-paint guard; ensure it is loaded before any protected content is painted
 
 ## What this does not do
 
