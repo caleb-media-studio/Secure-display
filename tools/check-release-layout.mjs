@@ -24,6 +24,10 @@ try{
  assert.equal(pkg.version,"0.1.0-alpha.2","Next npm release must use a new immutable version.");
  assert.deepEqual(Object.keys(pkg.peerDependencies||{}),["react"]);
  assert.deepEqual(Object.keys(pkg.exports||{}),[".","./secure-div.css"]);
+ const config=readFileSync(resolve(root,"packages/secure-display/vite.config.mjs"),"utf8");
+ for(const part of ["../react/src/index.ts","../core/src/index.ts","../secure-div/src/index.js"]){
+  assert.ok(config.includes(part),"Distribution bundler needs direct internal source alias: "+part);
+ }
  for(const entry of Object.values(pkg.exports)){
   for(const file of [entry.types,entry.default]){
    assert.ok(file);
