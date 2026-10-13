@@ -32,7 +32,8 @@
     "experiment:macos:capture-region": "bash experiments/macos-capture-region/run.sh",
     "drm:element:package": "node tools/package-dom-element.mjs",
     "example:auto-element": "tsc -p packages/core/tsconfig.json && tsc -p packages/react/tsconfig.json && vite examples/auto-secure-element --host 0.0.0.0",
-    "test:browser-selection": "node tools/browser-selection-smoke.mjs"
+    "test:browser-selection": "node tools/browser-selection-smoke.mjs",
+    "test:browser-asset-hydration": "node tools/browser-asset-hydration-smoke.mjs"
   },
   "engines": {
     "node": ">=20"

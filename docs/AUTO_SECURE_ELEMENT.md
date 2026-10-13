@@ -135,3 +135,17 @@ routes share the fixed synthetic DRM asset and Shaka demo adapter.
 React markup/CSS synchronized with the fixture; this demo does **not** check
 arbitrary React child trees against the recorded image. Do not reuse the public
 asset or the public Axinom entitlement for confidential customer documents.
+
+### Unconditional React mount and editor typing
+
+The React example now mounts its actual `<SecureDiv>` immediately, even if the
+SHA256 source binding is still loading. The native element remains opacity zero
+before binding, retries DRM playback when the bound asset ID or source hash changes,
+and blocks when the binding becomes invalid. It never displays ordinary HTML as a
+fallback. A Chrome browser test with a **fake adapter** checks late hash hydration,
+native button click handling and invalidation. The mock is not DRM evidence.
+
+Editor support includes a local React example `tsconfig.json`, `@types/react`,
+and a synthetic demo Shaka adapter declaration. `bun run typecheck` now checks the
+React JSX example alongside packages, and CI builds validate the same configuration.
+The hash binding is still required for the current prepackaged synthetic asset.

@@ -27,3 +27,16 @@ test("static asset dimensions, missing adapter and no plaintext fallback are enf
  assert.match(core,/this\.#video\.style\.opacity="0"/);
  assert.match(css,/opacity:\s*0\s*!important/);
 });
+
+test("example mounts the component without a hash conditional",()=>{
+ const app=source("examples/auto-secure-element/react/main.tsx");
+ const pkg=JSON.parse(source("examples/auto-secure-element/package.json"));
+ const root=JSON.parse(source("package.json"));
+ const runtime=source("packages/secure-div/src/secure-div.js");
+ assert.match(app,/<SecureDiv\\s/);
+ assert.doesNotMatch(app,/\\{hash\\s*&&\\s*<SecureDiv/);
+ assert.equal(pkg.devDependencies["@types/react"],"^19.2.0");
+ assert.match(root.scripts.typecheck,/examples\\/auto-secure-element\\/tsconfig\\.json/);
+ assert.match(runtime,/attributeChangedCallback/);
+ assert.match(runtime,/void this\\.#restart\\(\\)/);
+});

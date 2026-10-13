@@ -45,6 +45,8 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Verify native selection and text-free highlights on invisible DOM in Chrome
         run: bun run test:browser-selection
+      - name: Verify late asset hash hydration and fail-closed native element in Chrome
+        run: bun run test:browser-asset-hydration
       - name: Browser-render real HTML to H264 for zero-install component test
         run: |
           node tools/package-dom-element.mjs --snapshot-only
