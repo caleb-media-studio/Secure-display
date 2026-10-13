@@ -16,7 +16,7 @@ try{
  assert.equal(pkg.type,"module");
  assert.equal(pkg.repository?.url,"git+https://github.com/caleb-media-studio/Secure-display.git");
  assert.equal(pkg.repository?.directory,"packages/secure-display");
- assert.equal(pkg.homepage,"https://github.com/caleb-media-studio/Secure-display/tree/feat/initial-research-framework");
+ assert.equal(pkg.homepage,"https://github.com/caleb-media-studio/Secure-display/tree/main");
  assert.equal(pkg.bugs?.url,"https://github.com/caleb-media-studio/Secure-display/issues");
  assert.ok(!pkg.devDependencies || Object.keys(pkg.devDependencies).length===0,
   "The published package must not advertise private workspace dev dependencies");

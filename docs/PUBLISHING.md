@@ -1,62 +1,78 @@
-# One package: npm and Bun release preparation
+# npm publishing: automated experimental releases
 
-The **only registry artifact** planned for this repository is `@caleb-media-studio-llc/secure-display`. The user's npm organization is [caleb-media-studio-llc](https://www.npmjs.com/org/caleb-media-studio-llc). The internal `core`, `react`, `secure-div`, `document` and `elements` folders remain **private research workspaces**, not separate npm releases.
+The **only** public npm package is [`@caleb-media-studio-llc/secure-display`](https://www.npmjs.com/package/@caleb-media-studio-llc/secure-display). All core, React and native internal workspaces are **private source packages**, bundled into this one artifact. React remains a peer dependency.
 
-**The first experimental release (`0.1.0-alpha.1`) has been published.** The checked-in next-release manifest retains `private: true` to prevent accidental additional releases. This project remains research-only, uses public synthetic DRM test media, exposes original DOM text to inspection, and does not guarantee screenshot protection.
+This remains research software. Its synthetic public DRM test keys are not confidential, the live DOM is inspectable, and hardware screenshot exclusion is not guaranteed.
 
-## Experimental consumer install
+## What happens after a push to main?
 
-All installers use the same npm registry package. Only one Secure Display dependency is needed.
+[GitHub Actions `.github/workflows/publish.yml`](../.github/workflows/publish.yml) runs for pushes to `main`. A full test-and-pack job runs **without publish credentials**. It installs the monorepo, typechecks, tests, builds all examples, checks the single package's layout, performs both isolated npm and Bun consumer tests, and runs browser DOM smoke checks.
+
+Only if all checks pass, a tiny CI helper temporarily edits the **one** distributable package manifest in the runner to remove `private: true` and generate a unique SemVer prerelease. The tracked manifest stays private. The runner packs and uploads **exactly one npm tarball**.
+
+A separate job downloads that tested artifact and publishes it using **npm Trusted Publishing with GitHub Actions OIDC**. It needs no npm token or repository secrets. npm provenance links the release to GitHub.
+
+Publishing happens automatically only after you complete the one-time npm Trusted Publisher configuration below. The first workflow run will fail at publish until configured.
+
+### Versioning and tags
+
+The tracked `packages/secure-display/package.json` version is the SemVer **base**. For example, from base `0.1.0-alpha.2`, GitHub Actions run 7 attempt 1 builds `0.1.0-main.7.1`. Retrying produces `0.1.0-main.7.2`; each version is immutable.
+
+All automatic builds publish to the **`experimental`** npm dist-tag. They do not change `latest` and do not create Git commits or Git tags. `bun add @caleb-media-studio-llc/secure-display@experimental` fetches the newest experimental build.
+
+Rapid consecutive pushes may be coalesced while a publish workflow is pending; the latest successful `main` run should ultimately lead the `experimental` tag. CI failures prevent publication.
+
+For a new base release line, explicitly update the package version and the internal example workspace references together. Do not bump internal private packages' versions as independent registry releases.
+
+## One-time npm Trusted Publishing setup (required)
+
+Open [the npm package page](https://www.npmjs.com/package/@caleb-media-studio-llc/secure-display) and choose **Settings → Trusted Publishing → GitHub Actions**.
+
+Use exactly:
+
+| npm field | Value |
+| --- | --- |
+| GitHub organization or username | `caleb-media-studio` |
+| GitHub repository | `Secure-display` |
+| Workflow filename | `publish.yml` |
+| GitHub environment | **Leave blank** |
+| Allowed actions | **Enable `npm publish`** |
+
+GitHub repo owner is **not** the same as the npm organization name `caleb-media-studio-llc`. The workflow filename is case-sensitive and must not include `.github/workflows/` in the npm form. npm may require account authentication to save the trust relationship. There is no `NPM_TOKEN` secret.
+
+Official documentation: [npm Trusted Publishers](https://docs.npmjs.com/trusted-publishers/).
+
+The build uses a GitHub-hosted Linux runner, Node 24, and a compatible npm 11 CLI, with `id-token: write` only on the final publishing job.
+
+## Local validation (never publishes)
 
 ```bash
-npm install @caleb-media-studio-llc/secure-display@experimental
-# or
-bun add @caleb-media-studio-llc/secure-display@experimental
-# or
-pnpm add @caleb-media-studio-llc/secure-display@experimental
-```
-
-React is a peer dependency for the React component. The package exports `SecureDiv`, `configureSecureDisplay`, optional status utilities, native `registerSecureDiv`, DRM probes and a `./secure-div.css` first-paint guard.
-
-## Test locally without publishing
-
-```bash
+git switch main
+git pull --ff-only
 bun install
+bun run typecheck
+bun run test
 bun run build
 bun run release:inspect
 bun run release:smoke:npm
 bun run release:smoke:bun
-npm pack --dry-run --workspace @caleb-media-studio-llc/secure-display
 ```
 
-The single distribution build bundles the private internal runtime code into one ESM entrypoint and carries self-contained TypeScript declarations and CSS. The release check rejects old multi-package dependencies and inspects the actual packed artifact. npm and Bun install the same **one tarball** into temporary projects and check imports and declarations. Neither `npm pack` nor these tests publishes anything.
+The tracked npm manifest's `private: true` flag is intentional and is checked by `release:inspect`. Do not remove it or commit a publishable manifest. Never save an npm token in repository files.
 
-## Publishing later, after approval
+After a successful automatic run, verify:
 
-1. Confirm publishing rights for the `caleb-media-studio-llc` npm organization (`npm login`, `npm whoami`, `npm org ls caleb-media-studio-llc`).
-2. This branch prepares **`0.1.0-alpha.2`** for `@caleb-media-studio-llc/secure-display` because `0.1.0-alpha.1` is immutable on npm. No three-package version synchronization.
-3. Pass the release inspection, npm and Bun isolated install smoke tests, real-device test matrix, security and accessibility review. Read the tarball contents for sensitive files and confirm proper license and notices.
-4. After explicit approval, remove `private: true` from **only** the one distribution manifest and publish from `packages/secure-display/` with `npm publish --access public --tag experimental`. Leave the internal research workspace packages private.
-5. Verify the package and both installers in clean external projects. No publish automation or credentials are configured in this PR.
+```bash
+npm view @caleb-media-studio-llc/secure-display@experimental version
+npm view @caleb-media-studio-llc/secure-display@experimental dependencies
+npm view @caleb-media-studio-llc/secure-display@experimental devDependencies
+npm view @caleb-media-studio-llc/secure-display@experimental repository homepage
+```
 
-No standalone Shaka/DRM key server or private licensing credentials ship in the tarball. The one-time app configuration and the fixed build-time encrypted media are still required.
+If the publishing job fails with `ENEEDAUTH`, `E404` or `E403`, check the exact npm Trusted Publisher settings, including **`npm publish` allowed actions**, rather than creating a token. A browser-tested build does not prove universal screenshot exclusion.
 
-See [npm scoped package publishing](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/), [Bun publishing](https://bun.com/docs/pm/cli/publish) and [security limitations](THREAT_MODEL.md).
+### Changing to stable releases later
 
-## npm organization team setup and publishing updates
+Leave `experimental` until browser and hardware tests substantiate the product. Making a stable release or moving `latest` should be a separate, deliberate release policy change.
 
-An npm **team is not a package namespace reservation**. The first experimental package is now published; the `secure-display` team may be granted access from the npm organization once its permission is confirmed. A **Forbidden** page can also mean the npm account lacks organization management permissions; check the npm organization owner/admin role if it persists after publication.
-
-The CLI command is **`npm publish`**, not `npm upload`. For a publicly available, explicitly approved experimental release: authenticate using `npm login`, confirm `npm whoami` and `npm org ls caleb-media-studio-llc`, run all release smoke checks, inspect `npm pack --dry-run --workspace @caleb-media-studio-llc/secure-display`, then (only after explicit approval and removing `private: true` **from the one distribution manifest**) run `npm publish --access public --tag experimental` inside `packages/secure-display`. Do not remove the private guard from internal workspaces. Ensure the version was explicitly chosen and does not already exist; npm published versions cannot be overwritten.
-
-Once the package is listed under the npm organization, open the team's access page and grant the `secure-display` team the required read/write privileges. npm publishing may prompt for a 2FA code or other supported authentication; never paste tokens or codes into issues or chat. Public publication makes the included bundled JavaScript publicly accessible even if the GitHub repository remains private.
-
-## Linked GitHub repository and clean package metadata
-
-- Repository: [caleb-media-studio/Secure-display](https://github.com/caleb-media-studio/Secure-display). The URL in `repository.url` is the canonical Git endpoint. The `repository.directory` field is `packages/secure-display`.
-- Homepage: [current source on `feat/initial-research-framework`](https://github.com/caleb-media-studio/Secure-display/tree/feat/initial-research-framework) while that PR remains a draft. GitHub `main` does not yet contain the complete package implementation.
-- Issue tracker: [GitHub Issues](https://github.com/caleb-media-studio/Secure-display/issues).
-- The single distributed tarball has no normal dependencies and **no devDependencies**; React remains in `peerDependencies`. Workspace packages still exist as unpublished local build-time inputs and are bundled by Vite. Do not put their names back into the distributable manifest.
-- npm versions are immutable. The `0.1.0-alpha.1` metadata still lists those old development dependencies, but a new `0.1.0-alpha.2` tarball can omit them. `experimental` will move to the new version after publication. Consumers of the previous version will still see its historical metadata.
-
-After a successful publish of the cleaned version, check: `npm view @caleb-media-studio-llc/secure-display@experimental devDependencies` (should be empty), `npm view @caleb-media-studio-llc/secure-display@experimental repository homepage bugs`, and the [npm package page](https://www.npmjs.com/package/@caleb-media-studio-llc/secure-display).
+Apache-2.0. © Caleb Media Studio LLC.

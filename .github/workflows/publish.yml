@@ -1,0 +1,94 @@
+# Publishes ONLY the one tested, packed research artifact.
+# Requires npm Trusted Publisher setup for caleb-media-studio/Secure-display
+# with the workflow filename "publish.yml" and npm publish permission.
+name: Publish npm experimental
+on:
+  push:
+    branches: [main]
+
+# Serialize npm releases. GitHub may coalesce pending pushes; the latest
+# successful main commit is what the experimental dist-tag should track.
+concurrency:
+  group: secure-display-npm-experimental
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-pack:
+    if: github.repository == 'caleb-media-studio/Secure-display'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: oven-sh/setup-bun@v2
+      - name: Install workspace dependencies
+        run: bun install
+      - name: Typecheck all packages and examples
+        run: bun run typecheck
+      - name: Test package and release safeguards
+        run: bun run test
+      - name: Build everything including the single npm bundle
+        run: bun run build
+      - name: Inspect the one-package tarball and check scope
+        run: bun run release:inspect
+      - name: Fresh consumer import tests (npm)
+        run: bun run release:smoke:npm
+      - name: Fresh consumer import tests (Bun)
+        run: bun run release:smoke:bun
+      - name: Run browser-based React and DOM checks
+        run: |
+          bun run test:browser-selection
+          bun run test:browser-asset-hydration
+          bun run test:browser-react-fingerprint
+      - name: Prepare unique main prerelease (CI working copy only)
+        run: node tools/prepare-npm-release.mjs
+      - name: Pack exactly one public npm tarball
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/npm-release"
+          npm pack --workspace @caleb-media-studio-llc/secure-display --pack-destination "$RUNNER_TEMP/npm-release"
+          shopt -s nullglob
+          files=("$RUNNER_TEMP"/npm-release/*.tgz)
+          test "${#files[@]}" -eq 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: secure-display-npm-tarball
+          path: ${{ runner.temp }}/npm-release/*.tgz
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: validate-and-pack
+    if: github.repository == 'caleb-media-studio/Secure-display'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+      - name: Ensure npm supports OIDC trusted publishing
+        run: npm install --global 'npm@^11.15.0'
+      - uses: actions/download-artifact@v4
+        with:
+          name: secure-display-npm-tarball
+          path: npm-release
+      - name: Publish tested tarball to npm (experimental, with provenance)
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(npm-release/*.tgz)
+          test "${#files[@]}" -eq 1
+          npm publish "${files[0]}" --access public --tag experimental --provenance --ignore-scripts

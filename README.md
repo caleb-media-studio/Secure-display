@@ -2,7 +2,7 @@
 
 **Experimental browser DRM rendering for React and native HTML. One npm package, no visitor extension.**
 
-Secure Display is an Apache-2.0-licensed research project from Caleb Media Studio LLC. The GitHub repository is now public, but the implementation is still experimental and the primary research PR remains in draft. It explores showing the pixels of a **prebuilt, DRM-encrypted rendering of HTML** while retaining the original browser DOM for clicks, focus, layout, and text selection. The React integration centers on a single component named `SecureDiv`.
+Secure Display is an Apache-2.0-licensed research project from Caleb Media Studio LLC. The GitHub repository is now public, but the implementation is still experimental and the initial research PR has merged into main. It explores showing the pixels of a **prebuilt, DRM-encrypted rendering of HTML** while retaining the original browser DOM for clicks, focus, layout, and text selection. The React integration centers on a single component named `SecureDiv`.
 
 > [!CAUTION]
 > **Not production-ready or generally screenshot-proof.** The project has shown promising protected-media capture behavior in specific user-reported macOS tests, but it has **not** proven universal screenshot, recording, or screen-sharing protection. The test assets use publicly known keys; the original text remains readable in the DOM and developer tools. Do not use Secure Display for confidential, financial, customer, student, medical, or other sensitive information.
@@ -12,7 +12,7 @@ Secure Display is an Apache-2.0-licensed research project from Caleb Media Studi
 | Question | Answer |
 | --- | --- |
 | What do developers install? | **One package:** `@caleb-media-studio-llc/secure-display` |
-| Is it on npm yet? | **Yes.** Experimental `0.1.0-alpha.1` is public. A metadata-cleanup update is being prepared. |
+| Is it on npm yet? | **Yes.** Experimental releases are on [npm](https://www.npmjs.com/package/@caleb-media-studio-llc/secure-display); commits to main will publish a new prerelease once npm Trusted Publishing is configured. |
 | What is the React component? | `<SecureDiv>` |
 | Do end users install an extension? | No, the experiment runs on a normal browser with a compatible DRM system. |
 | Can it wrap any JSX and protect it immediately? | **No.** JSX currently needs a matching encrypted **build-time** asset. |
@@ -22,7 +22,7 @@ Secure Display is an Apache-2.0-licensed research project from Caleb Media Studi
 
 ## Try the React demo locally
 
-The demo is part of this repository, **not** an npm-installed app. You need the development branch because `main` has not received the draft implementation.
+The demo is part of this repository, **not** an npm-installed app. Use the `main` branch, where the initial research implementation has been merged.
 
 ### 1. Prerequisites
 
@@ -40,7 +40,7 @@ If you already cloned the repository:
 ```bash
 cd /path/to/Secure-display
 git fetch origin
-git switch feat/initial-research-framework
+git switch main
 git pull --ff-only
 bun install
 ```
