@@ -3,7 +3,7 @@ import {
   assertMediaUrl,
   validateFairPlayConfiguration,
   type SyntheticFairPlayConfig,
-} from "@secure-display/core";
+} from "@caleb-media-studio-llc/core";
 
 export interface SyntheticCencDrmAsset {
   classification: "synthetic-test-only";

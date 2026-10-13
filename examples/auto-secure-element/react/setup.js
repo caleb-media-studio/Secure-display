@@ -2,7 +2,7 @@
  * One-time synthetic/demo adapter setup. A real app configures its licensed
  * asset service here, not inside each <SecureDiv>. Public test keys ONLY.
  */
-import {configureSecureDisplay} from "@secure-display/react";
+import {configureSecureDisplay} from "@caleb-media-studio-llc/react";
 import {startEncryptedVideo} from "../src/drm-player.js";
 
 const playbackAdapter=async(video,signal,assetId,sourceSha256)=>{

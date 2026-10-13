@@ -1,5 +1,5 @@
 import {createElement, useEffect, useRef, type HTMLAttributes, type ReactNode, type ReactElement} from "react";
-import {hashProtectedChildren, registerSecureDiv, type SecureDivPlaybackAdapter} from "@secure-display/secure-div";
+import {hashProtectedChildren, registerSecureDiv, type SecureDivPlaybackAdapter} from "@caleb-media-studio-llc/secure-div";
 import {getSecureDisplayConfiguration} from "./configureSecureDisplay.js";
 
 export interface SecureDivState {

@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {probeDrmPaths, evaluateDisplayPolicy, type DrmProbe, type DisclosurePolicy} from "@secure-display/core";
+import {probeDrmPaths, evaluateDisplayPolicy, type DrmProbe, type DisclosurePolicy} from "@caleb-media-studio-llc/core";
 
 export interface SecureDisplayProps {
   /** Strict policy blocks every attempt to display confidential content. */

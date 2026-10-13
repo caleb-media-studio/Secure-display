@@ -1,4 +1,4 @@
-import type {SecureDivPlaybackAdapter} from "@secure-display/secure-div";
+import type {SecureDivPlaybackAdapter} from "@caleb-media-studio-llc/secure-div";
 
 /** Built-time encrypted asset binding returned by the integrator. */
 export interface ProtectedAssetBinding {

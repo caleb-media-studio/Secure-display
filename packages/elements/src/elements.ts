@@ -1,4 +1,4 @@
-import { startSyntheticPlayback, startSyntheticFairPlayPlayback, type PlaybackHandle, type ShakaPlayerFactory } from "@secure-display/core";
+import { startSyntheticPlayback, startSyntheticFairPlayPlayback, type PlaybackHandle, type ShakaPlayerFactory } from "@caleb-media-studio-llc/core";
 import { validateSyntheticDrmAsset, type SyntheticDrmAsset } from "./assets.js";
 import { SecureDisplaySetupError } from "./errors.js";
 
