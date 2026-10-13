@@ -6,7 +6,8 @@
   "type": "module",
   "license": "Apache-2.0",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "exports": {
     ".": {
@@ -27,5 +28,13 @@
   "devDependencies": {
     "@types/react": "^19.2.0",
     "react": "^19.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caleb-media-studio/Secure-display.git"
+  },
+  "homepage": "https://github.com/caleb-media-studio/Secure-display#readme",
+  "bugs": {
+    "url": "https://github.com/caleb-media-studio/Secure-display/security/advisories"
   }
 }

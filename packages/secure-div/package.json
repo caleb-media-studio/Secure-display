@@ -8,7 +8,8 @@
   "files": [
     "src",
     "types",
-    "secure-div.css"
+    "secure-div.css",
+    "README.md"
   ],
   "exports": {
     ".": {
@@ -19,5 +20,13 @@
       "types": "./types/secure-div.css.d.ts",
       "default": "./secure-div.css"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caleb-media-studio/Secure-display.git"
+  },
+  "homepage": "https://github.com/caleb-media-studio/Secure-display#readme",
+  "bugs": {
+    "url": "https://github.com/caleb-media-studio/Secure-display/security/advisories"
   }
 }

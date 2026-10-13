@@ -6,7 +6,8 @@
   "license": "Apache-2.0",
   "description": "Research-stage browser EME security probe and experimental media playback",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "exports": {
     ".": {
@@ -19,5 +20,13 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caleb-media-studio/Secure-display.git"
+  },
+  "homepage": "https://github.com/caleb-media-studio/Secure-display#readme",
+  "bugs": {
+    "url": "https://github.com/caleb-media-studio/Secure-display/security/advisories"
   }
 }

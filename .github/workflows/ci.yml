@@ -39,6 +39,8 @@ jobs:
       - run: bun run typecheck
       - run: bun run test
       - run: bun run build
+      - name: Verify publishable artifact layouts without publishing
+        run: bun run release:inspect
       - name: Rebuild and boot HTML element example from empty dist
         run: node tools/smoke-examples.mjs
       - name: Install FFmpeg for synthetic fixture test
