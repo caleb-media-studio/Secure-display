@@ -19,6 +19,11 @@ const metrics=document.querySelector("#overlay-metrics");
 const opacitySlider=document.querySelector("#opacity-slider");
 const opacityValue=document.querySelector("#opacity-value");
 const opacityCSS=document.querySelector("#opacity-css");
+const referenceButton=document.querySelector("#reference-start");
+const referenceStatus=document.querySelector("#reference-status");
+const drmReference=document.querySelector("#drm-reference-video");
+const clearReference=document.querySelector("#clear-reference-video");
+
 const query=new URLSearchParams(location.search);
 let mode=MODES.includes(query.get("mode"))?query.get("mode"):"overlay";
 const requestedPreset=query.has("opacity")?Number(query.get("opacity")):1;
@@ -273,3 +278,103 @@ updateOverlayMetrics();
 
 // Begin the public test EME workflow on load; the button remains a retry.
 void startPlayback();
+
+/**
+ * Differential capture calibration: same synthetic magenta/cyan pixels in a
+ * FairPlay/Widevine encrypted video and in a clear H.264 video side-by-side.
+ * Unlike the black overlay, this probe is visibly non-black on the display,
+ * so comparing its screenshot result directly tests protected pixel omission.
+ * It does not imply that DOM pixels below an overlay inherit DRM protection.
+ */
+let referencePlayer=null;
+let referenceGeneration=0;
+let referencePlaying=false;
+function referenceMessage(text){
+ referenceStatus.textContent=String(text);
+}
+async function stopReference(){
+ ++referenceGeneration;
+ referencePlaying=false;
+ const previous=referencePlayer;
+ referencePlayer=null;
+ drmReference.pause();
+ clearReference.pause();
+ if(previous)await previous.destroy().catch(()=>undefined);
+ drmReference.removeAttribute("src");
+ drmReference.load();
+ clearReference.removeAttribute("src");
+ clearReference.load();
+}
+async function startReference(){
+ await stopReference();
+ const id=++referenceGeneration;
+ referenceButton.disabled=true;
+ referenceMessage("Checking the encrypted color probe media...");
+ try {
+  if(!window.isSecureContext)throw Error("Trusted HTTPS is required for DRM on this network address.");
+  const meta=await fetch("/drm-probe/fixture-info.json",{cache:"no-store",credentials:"same-origin"});
+  if(!meta.ok)throw Error("Color DRM probe missing. Re-run bun run drm:page:package.");
+  const info=await meta.json().catch(()=>null);
+  if(info?.kind!=="color-probe-v1"||info.width!==1280||info.height!==720)
+    throw Error("Old color probe detected. Re-run bun run drm:page:package.");
+  const config=drmSource(drmSelect.value);
+  const manifest=drmSelect.value==="fairplay"?"/drm-probe/master.m3u8":"/drm-probe/master.mpd";
+  const manifestCheck=await fetch(manifest,{cache:"no-store",credentials:"same-origin"});
+  if(!manifestCheck.ok)throw Error("Encrypted color probe manifest missing. Repackage the full-page test.");
+  const token=await getPublicToken();
+  if(id!==referenceGeneration)return;
+
+  clearReference.muted=true;
+  clearReference.loop=true;
+  clearReference.src="/probe-clear.mp4";
+  void clearReference.play().catch(()=>undefined);
+  const instance=new shaka.Player();
+  referencePlayer=instance;
+  instance.addEventListener("error",event=>{
+   if(id!==referenceGeneration)return;
+   const code=event.detail?.code??"unknown";
+   referenceMessage("Encrypted probe failed: Shaka error "+code+". No capture conclusion.");
+  });
+  await instance.attach(drmReference);
+  if(id!==referenceGeneration)return;
+  instance.configure({
+   drm:{servers:{[config.keySystem]:config.licenseUrl},
+    advanced:config.certificateUrl?{[config.keySystem]:{serverCertificateUri:config.certificateUrl}}:{}},
+   streaming:{useNativeHlsForFairPlay:drmSelect.value==="fairplay"},
+  });
+  instance.getNetworkingEngine().registerRequestFilter((type,request)=>{
+   if(type!==shaka.net.NetworkingEngine.RequestType.LICENSE)return;
+   request.headers??={};
+   request.headers["X-AxDRM-Message"]=token;
+  });
+  drmReference.muted=true;
+  drmReference.loop=true;
+  drmReference.playsInline=true;
+  referenceMessage("Loading the licensed DRM color probe...");
+  await instance.load(manifest);
+  if(id!==referenceGeneration)return;
+  if(instance.drmInfo()?.keySystem!==config.keySystem)
+    throw Error("Encrypted probe DRM key system was not verified.");
+  referencePlaying=true;
+  void drmReference.play().catch(error=>{
+   if(id===referenceGeneration)referenceMessage("Encrypted probe autoplay blocked: "+(error?.name??"unknown")+". Retry via button.");
+  });
+  referenceMessage("Expected: both tiles colorful on your display. Compare an OS screenshot to see whether ONLY the encrypted left tile disappears.");
+ }catch(error){
+  if(id!==referenceGeneration)return;
+  referencePlaying=false;
+  referenceMessage("Comparison unavailable: "+(error instanceof Error?error.message:"unknown playback error"));
+ }finally{
+  if(id===referenceGeneration)referenceButton.disabled=false;
+ }
+}
+referenceButton.addEventListener("click",()=>void startReference());
+drmSelect.addEventListener("change",()=>void stopReference().then(()=>{
+ referenceMessage("DRM changed. Run the encrypted vs clear reference again.");
+}));
+drmReference.addEventListener("error",()=>{
+ if(referencePlayer)referenceMessage("Encrypted color video decoder error "+(drmReference.error?.code??"unknown")+".");
+});
+clearReference.addEventListener("error",()=>{
+ referenceMessage("Unencrypted reference failed to decode. Check the locally packaged probe-clear.mp4.");
+});
