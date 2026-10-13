@@ -218,12 +218,15 @@ function updateOverlayMetrics(){
  const style=getComputedStyle(video);
  const quality=video.getVideoPlaybackQuality?.();
  const frames=quality?.totalVideoFrames;
+ const bounds=video.getBoundingClientRect();
+ const fullViewport=bounds.width>=innerWidth && bounds.height>=innerHeight;
  metrics.textContent="DRM verified: "+(drmVerified?"yes":"no")
    +" | Playback: "+(video.paused?"paused":"running")
    +" | Video time: "+video.currentTime.toFixed(2)+"s"
    +" | Decoded frames: "+(Number.isFinite(frames)?frames:"unavailable")
    +" | CSS opacity: "+style.opacity
-   +" | Pointer events: "+style.pointerEvents;
+   +" | Pointer events: "+style.pointerEvents
+   +" | Overlay covers viewport: "+(fullViewport?"yes":"no");
 }
 video.addEventListener("playing",updateOverlayMetrics);
 video.addEventListener("timeupdate",updateOverlayMetrics);
