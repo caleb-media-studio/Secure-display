@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {TEST_SENTENCE,PAGE_WIDTH,PAGE_HEIGHT,BUTTON_BOX,wrapWords,assertSupportedGlyphs,rasterize,rasterizeBlack,rasterizeProbe} from "../generate-protected-page-video.mjs";
+import {TEST_SENTENCE,PAGE_WIDTH,PAGE_HEIGHT,BUTTON_BOX,wrapWords,assertSupportedGlyphs,rasterize,rasterizeBlack,rasterizeProbe,rasterizeWhite} from "../generate-protected-page-video.mjs";
 import {packagedPageFiles} from "../package-test-page.mjs";
 import {readFileSync} from "node:fs";
 test("user requested sentence is preserved exactly, including capitalization",()=>{
@@ -53,4 +53,15 @@ test("package script provides the same clear control and encrypted probe",()=>{
  assert.ok(source.includes('drm-probe'));
  assert.ok(source.includes('color-probe-v1'));
  assert.ok(source.includes('probe-clear.mp4'));
+});
+
+test("neutral DRM source is fully white for multiply blending",()=>{
+ const white=rasterizeWhite();
+ assert.equal(white.length,PAGE_WIDTH*PAGE_HEIGHT*3);
+ assert.ok(white.every(v=>v===255),"White encrypted source must be a neutral white plane");
+ assert.notDeepEqual(white.subarray(0,64),rasterizeBlack().subarray(0,64));
+ const packageScript=readFileSync(new URL("../package-test-page.mjs",import.meta.url),"utf8");
+ assert.match(packageScript,/protected-white-clear.mp4/);
+ assert.match(packageScript,/solid-white-v1/);
+ assert.match(packageScript,/drm-white/);
 });
