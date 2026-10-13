@@ -1,4 +1,4 @@
-import {registerSecureDiv} from "@secure-display/secure-div";
+import {registerSecureDiv} from "@caleb-media-studio-llc/secure-div";
 import {startEncryptedVideo} from "./drm-player.js";
 
 // One authoritative HTML/CSS source is also used by the build-time renderer.

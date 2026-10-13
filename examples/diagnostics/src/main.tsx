@@ -1,6 +1,6 @@
 import React from "react";
 import {createRoot} from "react-dom/client";
-import {SecureDisplay} from "@secure-display/react";
+import {SecureDisplay} from "@caleb-media-studio-llc/react";
 import "./style.css";
 
 function Lab() {

@@ -1,5 +1,5 @@
-import { probeDrmPaths, probeSoftwareWidevineBaseline } from "@secure-display/core";
-import { registerSecureElements, SecureDisplaySetupError } from "@secure-display/elements";
+import { probeDrmPaths, probeSoftwareWidevineBaseline } from "@caleb-media-studio-llc/core";
+import { registerSecureElements, SecureDisplaySetupError } from "@caleb-media-studio-llc/elements";
 
 /**
  * The example remains fail-closed. Software DRM probes are informational only,

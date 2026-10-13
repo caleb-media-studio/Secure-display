@@ -1,5 +1,5 @@
 import shaka from "shaka-player";
-import {registerSecureDocumentElement} from "@secure-display/document";
+import {registerSecureDocumentElement} from "@caleb-media-studio-llc/document";
 
 // This demo uses Axinom's publicly documented TEST key and entitlement.
 // It is intentionally unsuitable for confidential or production information.

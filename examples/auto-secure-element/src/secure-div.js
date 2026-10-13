@@ -1,1 +1,1 @@
-export {SecureDiv,registerSecureDiv} from "@secure-display/secure-div";
+export {SecureDiv,registerSecureDiv} from "@caleb-media-studio-llc/secure-div";
