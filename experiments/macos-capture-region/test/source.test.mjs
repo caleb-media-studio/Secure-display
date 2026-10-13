@@ -32,7 +32,8 @@ test("real DOM and button actions are preserved in WKWebView",()=>{
  assert.match(source,/onclick=/);
  assert.match(source,/CLICK LEFT/);
  assert.match(source,/CLICK RIGHT/);
- assert.match(source,/This page is protected by Security Display GitHub repo, and this is a test/);
+ assert.match(source,/Secure Display GitHub repo<\/a>, and this is a test/);
+ assert.ok(source.includes("https://github.com/caleb-media-studio/Secure-display"));
 });
 test("the lab changes its own window only and cleans up on exit",()=>{
  assert.match(source,/self\.blackBacking/);

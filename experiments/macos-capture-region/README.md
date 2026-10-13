@@ -19,7 +19,7 @@ Requires macOS 13 or newer and Xcode Command Line Tools. If `clang` is missing, 
 
 The native window contains a `WKWebView` rendering two side-by-side **real, interactive HTML** sections:
 
-- **Left:** the exact public test sentence, *This page is protected by Security Display GitHub repo, and this is a test*, and a real JavaScript-driven clickable button.
+- **Left:** the exact public test sentence, *This page is protected by [Secure Display GitHub repo](https://github.com/caleb-media-studio/Secure-display), and this is a test*, and a real JavaScript-driven clickable button.
 - **Right:** an ordinary HTML comparison section with another real clickable button.
 
 There is also a separate **unprotected black window behind** the foreground test window. If macOS completely omits protected foreground pixels during capture, the black backing helps show black rather than an unrelated app/desktop in that hole. That backing is visible only to capture if the foreground truly gets excluded. It isn't an overlay painted over the foreground UI.

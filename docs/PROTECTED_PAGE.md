@@ -26,7 +26,7 @@ This is a stand-alone **synthetic test** of how a licensed, featureless **black 
 
 ## Exact sample sentence
 
-> This page is protected by Security Display GitHub repo, and this is a test.
+> This page is protected by [Secure Display GitHub repo](https://github.com/caleb-media-studio/Secure-display), and this is a test.
 
 This public sentence exists **only in the ordinary HTML underneath the DRM video** in the active experiment. The encrypted media source is solid black; it contains no text or controls. Do not substitute confidential documents.
 

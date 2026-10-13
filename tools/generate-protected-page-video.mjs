@@ -9,7 +9,7 @@ import {mkdir,writeFile,rm} from "node:fs/promises";
 import {resolve,dirname} from "node:path";
 import {fileURLToPath} from "node:url";
 
-export const TEST_SENTENCE="This page is protected by Security Display GitHub repo, and this is a test.";
+export const TEST_SENTENCE="This page is protected by Secure Display GitHub repo, and this is a test.";
 export const PAGE_WIDTH=1280, PAGE_HEIGHT=720;
 export const BUTTON_BOX=Object.freeze({x:482,y:506,width:316,height:74});
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),"..");

@@ -104,7 +104,8 @@ async function main(){
   return;
  }
  const markup=readFileSync(HTML,"utf8");
- if(!markup.includes("This page is protected by Security Display GitHub repo, and this is a test."))
+ if(!markup.includes('href="https://github.com/caleb-media-studio/Secure-display"') ||
+    !markup.includes("Secure Display GitHub repo</a>, and this is a test."))
   throw Error("The synthetic DOM source sentence was unexpectedly changed.");
  mkdirSync(BUILD,{recursive:true});
  mkdirSync(PUBLIC,{recursive:true});

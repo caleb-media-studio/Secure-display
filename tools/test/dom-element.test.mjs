@@ -29,7 +29,9 @@ test("auto-packager always snapshots a real DOM element with fixed test dimensio
 test("one HTML/CSS source powers both real DOM and encrypted visual copy",()=>{
  const fixture=get("examples/auto-secure-element/public/secure-content.html");
  const app=get("examples/auto-secure-element/src/main.js");
- assert.match(fixture,/This page is protected by Security Display GitHub repo, and this is a test\./);
+ assert.match(fixture,/href="https:\/\/github\.com\/caleb-media-studio\/Secure-display"/);
+ assert.match(fixture,/Secure Display GitHub repo<\/a>, and this is a test\./);
+ assert.match(get("examples/auto-secure-element/react/App.tsx"),/href="https:\/\/github\.com\/caleb-media-studio\/Secure-display"/);
  assert.match(fixture,/id="snapshot-source"/);
  assert.match(fixture,/id="secure-fixture-style"/);
  assert.match(fixture,/id="real-button"/);

@@ -4,7 +4,7 @@ import {TEST_SENTENCE,PAGE_WIDTH,PAGE_HEIGHT,BUTTON_BOX,wrapWords,assertSupporte
 import {packagedPageFiles} from "../package-test-page.mjs";
 import {readFileSync} from "node:fs";
 test("user requested sentence is preserved exactly, including capitalization",()=>{
- assert.equal(TEST_SENTENCE,"This page is protected by Security Display GitHub repo, and this is a test.");
+ assert.equal(TEST_SENTENCE,"This page is protected by Secure Display GitHub repo, and this is a test.");
  assert.deepEqual(wrapWords(TEST_SENTENCE).join(" "),TEST_SENTENCE);
  assert.equal(wrapWords(TEST_SENTENCE).length,3);
  assert.doesNotThrow(()=>assertSupportedGlyphs(TEST_SENTENCE));

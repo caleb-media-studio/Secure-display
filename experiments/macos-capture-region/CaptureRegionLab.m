@@ -149,7 +149,7 @@ static void *SDFindSymbol(const char *name) {
   "</style></head><body><div class='columns'>"
   "<section id='left'><div class='label'>LEFT — CAPTURE EXCLUSION CANDIDATE</div>"
   "<h2>Protected section?</h2>"
-  "<p>This page is protected by Security Display GitHub repo, and this is a test.</p>"
+  "<p>This page is protected by <a href='https://github.com/caleb-media-studio/Secure-display'>Secure Display GitHub repo</a>, and this is a test.</p>"
   "<button onclick=\"document.getElementById('countL').textContent=++window.l\">CLICK LEFT</button>"
   "<span id='countL' class='count'>0</span></section>"
   "<section id='right'><div class='label'>RIGHT — NORMAL HTML CONTROL</div>"

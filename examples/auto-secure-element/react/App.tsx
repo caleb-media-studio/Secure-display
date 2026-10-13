@@ -11,7 +11,7 @@ export function App(){
     <div className="orb" aria-hidden="true"/>
     <div className="eyebrow">Secure Display · DOM-driven prototype</div>
     <h2>Real HTML. Protected pixels.</h2>
-    <p>This page is protected by Security Display GitHub repo, and this is a test.</p>
+    <p>This page is protected by <a href="https://github.com/caleb-media-studio/Secure-display">Secure Display GitHub repo</a>, and this is a test.</p>
     <button type="button" id="real-button" onClick={()=>setClicks(n=>n+1)}>
      Click this real HTML button
     </button>
