@@ -68,3 +68,21 @@ jobs:
           set -o pipefail
           ffmpeg -v error -i fixtures/generated/protected-page-clear.mp4 -frames:v 1 -pix_fmt rgb24 -f rawvideo - |
             python3 -c 'import sys; frame=sys.stdin.buffer.read(); assert len(frame)==1280*720*3, len(frame); assert not any(frame), "Encoded DRM source contains visible nonblack pixels"'
+
+  native-capture-region-compile:
+    # The macOS runner is more costly for private repositories. Compile this
+    # research harness only on an explicitly tagged push, not every PR.
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[macos-compile]')
+    runs-on: macos-15
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile private-CGS macOS research harness (no GUI claim)
+        shell: bash
+        run: |
+          set -euo pipefail
+          clang -x objective-c -std=gnu11 -fobjc-arc -mmacosx-version-min=13.0 \
+            -framework Cocoa -framework WebKit -framework CoreGraphics \
+            -framework ApplicationServices -ldl \
+            experiments/macos-capture-region/CaptureRegionLab.m -o /tmp/secure-display-region-lab
+          test -x /tmp/secure-display-region-lab
