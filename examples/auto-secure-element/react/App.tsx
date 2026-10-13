@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {SecureDiv} from "@caleb-media-studio-llc/react";
+import {SecureDiv} from "@caleb-media-studio-llc/secure-display";
 
 /** Everything below is normal JSX. DRM configuration is NOT repeated here. */
 export function App(){
