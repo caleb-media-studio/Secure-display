@@ -121,3 +121,17 @@ guarantee against a first-paint leak if an app overrides inline opacity.
 The long-term one-line API requires a compiler/bundler transform or encrypted
 rendering service to generate and invalidate protected media for JSX/CSS/state.
 A website cannot simply flag arbitrary native pixels as DRM-protected.
+
+### React JSX browser demo
+
+After `bun install` and the existing `bun run drm:element:package` step,
+run `bun run example:auto-element` and open **`/react/`** (native JavaScript
+example remains at `/`). This new route creates the HTML children as real
+**React JSX**, not `dangerouslySetInnerHTML`, and wires an actual React
+`onClick` handler to the original transparent button. The native and React
+routes share the fixed synthetic DRM asset and Shaka demo adapter.
+
+**Important:** matching the build-time screenshot still relies on keeping the
+React markup/CSS synchronized with the fixture; this demo does **not** check
+arbitrary React child trees against the recorded image. Do not reuse the public
+asset or the public Axinom entitlement for confidential customer documents.

@@ -31,7 +31,7 @@
     "example:page": "vite examples/protected-page --host 0.0.0.0",
     "experiment:macos:capture-region": "bash experiments/macos-capture-region/run.sh",
     "drm:element:package": "node tools/package-dom-element.mjs",
-    "example:auto-element": "vite examples/auto-secure-element --host 0.0.0.0",
+    "example:auto-element": "tsc -p packages/core/tsconfig.json && tsc -p packages/react/tsconfig.json && vite examples/auto-secure-element --host 0.0.0.0",
     "test:browser-selection": "node tools/browser-selection-smoke.mjs"
   },
   "engines": {
