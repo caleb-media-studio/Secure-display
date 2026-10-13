@@ -74,9 +74,9 @@ function updateMode(){
  if(mode==="protected"&&!playing)
    status.textContent=playbackError||phase;
  else if(mode==="protected")
-   status.textContent="Encrypted BLACK video playing at 100% opacity (control). The frame itself contains no text.";
+   status.textContent="Encrypted black video is playing. This status does not verify screenshot exclusion; compare with the color reference below.";
  else if(mode==="overlay")
-   status.textContent=playing?"BLACK DRM overlay active at "+preset.label+". DOM remains untouched; compare the visible DOM text with an OS screenshot.":(playbackError||phase);
+   status.textContent=playing?"Encrypted black video playing at "+preset.label+". DOM remains ordinary and capturable until tested otherwise.":(playbackError||phase);
  else status.textContent="Unprotected DOM control. Screenshots should contain the sentence.";
 }
 function setMode(value) {
@@ -261,7 +261,7 @@ function updateOverlayMetrics(){
  const frames=quality?.totalVideoFrames;
  const bounds=video.getBoundingClientRect();
  const fullViewport=bounds.width>=innerWidth && bounds.height>=innerHeight;
- metrics.textContent="Media: SOLID BLACK DRM | DRM verified: "+(drmVerified?"yes":"no")
+ metrics.textContent="Media: ENCRYPTED BLACK VIDEO | EME key system selected: "+(drmVerified?"yes":"no")
    +" | Playback: "+(video.paused?"paused":"running")
    +" | Video time: "+video.currentTime.toFixed(2)+"s"
    +" | Decoded frames: "+(Number.isFinite(frames)?frames:"unavailable")
@@ -359,7 +359,7 @@ async function startReference(){
   void drmReference.play().catch(error=>{
    if(id===referenceGeneration)referenceMessage("Encrypted probe autoplay blocked: "+(error?.name??"unknown")+". Retry via button.");
   });
-  referenceMessage("Expected: both tiles colorful on your display. Compare an OS screenshot to see whether ONLY the encrypted left tile disappears.");
+  referenceMessage("EME system selected. Both tiles should appear colorful physically. Take an OS screenshot: if only the encrypted left disappears, protected capture omission is demonstrated.");
  }catch(error){
   if(id!==referenceGeneration)return;
   referencePlaying=false;
