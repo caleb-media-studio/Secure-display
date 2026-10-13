@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Package only the fixed synthetic-page clear intermediate into actual
+ * Package the default solid-black synthetic clear intermediate into real
  * FairPlay HLS and Widevine DASH using the same published Axinom TEST vector
  * as the validated protected-document example. Not production licensing.
  */
 import {spawnSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
-import {mkdirSync,existsSync} from "node:fs";
+import {mkdirSync,existsSync,rmSync,writeFileSync} from "node:fs";
 import {dirname,join,resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 import {vectorUrl,parseVector,packagerArgs} from "./package-test-document.mjs";
@@ -22,6 +22,10 @@ async function main() {
    console.log("Synthetic full-page fixture: public test CBCS, FairPlay HLS and Widevine DASH, no clear lead.");
    return;
  }
+ // Repackage the blank DRM layer explicitly; never reuse old text-bearing
+ // fixture metadata as proof that a fresh black video is in place.
+ mkdirSync(OUTPUT,{recursive:true,mode:0o700});
+ rmSync(join(OUTPUT,"fixture-info.json"),{force:true});
  const result=spawnSync(process.execPath,["tools/generate-protected-page-video.mjs"],{cwd:ROOT,stdio:"inherit"});
  if(result.error||result.status!==0) throw Error("Synthetic page rasterizer failed.");
  const response=await fetch(vectorUrl,{signal:AbortSignal.timeout(20000)});
@@ -32,7 +36,14 @@ async function main() {
  const packaged=spawnSync(packager,packagerArgs(INPUT,OUTPUT,kid,keyHex,randomBytes(16).toString("hex")),{cwd:ROOT,stdio:"inherit"});
  if(packaged.error||packaged.status!==0) throw Error("Shaka Packager required: "+packager+" (use SECURE_DISPLAY_PACKAGER for its absolute path).");
  for(const name of ["master.m3u8","master.mpd"])if(!existsSync(join(OUTPUT,name)))throw Error("DRM packaging did not create "+name);
- console.log("FairPlay and Widevine full-page encrypted fixtures ready.");
+ writeFileSync(join(OUTPUT,"fixture-info.json"),JSON.stringify({
+  kind:"solid-black-v1",
+  width:1280,
+  height:720,
+  purpose:"DRM overlay compositing over ordinary DOM",
+  generatedAt:new Date().toISOString(),
+ },null,2)+"\n");
+ console.log("FairPlay and Widevine SOLID BLACK DRM overlay fixture ready.");
  console.log("Run: bun run example:page");
  console.log("WARNING: content keys are publicly known test vectors, never private keys.");
 }
