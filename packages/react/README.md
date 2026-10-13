@@ -1,3 +1,5 @@
+> **Internal research workspace, not an npm release.** For consuming applications, install and import `@caleb-media-studio-llc/secure-display` only.
+
 # @caleb-media-studio-llc/react
 
 **Research-only React UI for prepackaged, licensed DRM media.** Native React children stay inspectable; visible pixels are supplied from a separate encrypted video. Not arbitrary live JSX capture protection.

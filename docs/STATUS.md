@@ -3,7 +3,7 @@
 `SecureDiv` works without any status UI. For debugging, it emits `secure-state-change` with a state, optional reason and DRM type. Its host also uses `data-secure-state`.
 
 ```tsx
-import {SecureDiv,useSecureDisplayStatus} from "@caleb-media-studio-llc/react";
+import {SecureDiv,useSecureDisplayStatus} from "@caleb-media-studio-llc/secure-display";
 
 function Inspector(){
  const {status,onSecureStateChange}=useSecureDisplayStatus();

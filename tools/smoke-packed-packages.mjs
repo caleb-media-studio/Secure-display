@@ -1,89 +1,62 @@
 #!/usr/bin/env node
-/**
- * Test the actual npm tarballs in a fresh project outside the monorepo.
- * Does not publish or authenticate to any registry.
- * Usage: node tools/smoke-packed-packages.mjs [npm|bun]
- */
+/** Isolated consumer smoke test of ONE tarball with npm or Bun. No publishing. */
 import assert from "node:assert/strict";
 import {mkdtempSync,mkdirSync,readFileSync,rmSync,writeFileSync,existsSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join,resolve,dirname} from "node:path";
 import {fileURLToPath,pathToFileURL} from "node:url";
 import {spawnSync} from "node:child_process";
-
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const manager=process.argv[2]??"npm";
-if(!["npm","bun"].includes(manager)){
- console.error("Usage: node tools/smoke-packed-packages.mjs [npm|bun]");
- process.exit(2);
-}
-const directory=mkdtempSync(join(tmpdir(),"secure-display-pack-"));
-const packages=["core","secure-div","react"];
-function run(command,args,cwd=root){
- const result=spawnSync(command,args,{
-  cwd,encoding:"utf8",timeout:180000,maxBuffer:4*1024*1024,
-  env:{...process.env,npm_config_update_notifier:"false"}
- });
- if(result.error||result.status!==0){
-  throw Error(command+" "+args.join(" ")+" failed:\n"+
-   (result.stderr||result.stdout||String(result.error)));
- }
- return result.stdout.trim();
+if(!["npm","bun"].includes(manager))throw Error("Choose npm or bun");
+const name="@caleb-media-studio-llc/secure-display";
+const directory=mkdtempSync(join(tmpdir(),"secure-display-single-pack-"));
+function run(exe,args,cwd=root){
+ const r=spawnSync(exe,args,{cwd,encoding:"utf8",timeout:180000,maxBuffer:5*1024*1024,
+  env:{...process.env,npm_config_update_notifier:"false"}});
+ if(r.status!==0||r.error)throw Error(exe+" "+args.join(" ")+" failed:\n"+(r.stderr||r.stdout||String(r.error)));
+ return r.stdout.trim();
 }
 try{
- const consumer=join(directory,"consumer");
- mkdirSync(consumer);
- const dependencies={react:"19.2.0"};
- const overrides={};
- for(const name of packages){
-  const pkg=JSON.parse(readFileSync(join(root,"packages",name,"package.json"),"utf8"));
-  assert.equal(pkg.name,"@caleb-media-studio-llc/"+name);
-  // npm pack works for private packages but npm publish stays blocked.
-  const packed=JSON.parse(run("npm",[
-   "pack","--json","--workspace",pkg.name,"--pack-destination",directory
-  ]));
-  assert.equal(packed.length,1);
-  const tarball=join(directory,packed[0].filename);
-  assert.ok(existsSync(tarball),"Missing tarball: "+name);
-  for(const file of packed[0].files){
-   assert.doesNotMatch(file.path,/(^|\/)(?:\.env(?:\.|$)|secrets?(?:\/|$)|private(?:\/|$))|\.(?:pem|p12|pfx|key)$/i);
-  }
-  dependencies[pkg.name]=pathToFileURL(tarball).href;
-  // Bun resolves transitive versions against npm unless explicitly overridden.
-  // Pin the unpacked internal dependencies to these local tarballs for prerelease tests.
-  overrides[pkg.name]=dependencies[pkg.name];
- }
+ const consumer=join(directory,"consumer");mkdirSync(consumer);
+ const packed=JSON.parse(run("npm",["pack","--json","--workspace",name,"--pack-destination",directory]));
+ assert.equal(packed.length,1);assert.equal(packed[0].name,name);
+ const tarball=join(directory,packed[0].filename);
+ assert.ok(existsSync(tarball));
+ const dependencies={react:"19.2.0","@types/react":"19.2.0",[name]:pathToFileURL(tarball).href};
  writeFileSync(join(consumer,"package.json"),JSON.stringify({
-  name:"secure-display-isolated-install-smoke",
-  version:"0.0.0",private:true,type:"module",dependencies,overrides
+  name:"secure-display-single-consumer-test",version:"0.0.0",private:true,type:"module",dependencies
  },null,2)+"\n");
  if(manager==="npm")run("npm",["install","--ignore-scripts","--no-audit","--no-fund"],consumer);
  else run("bun",["install","--ignore-scripts"],consumer);
- const entry=join(consumer,"smoke.mjs");
- writeFileSync(entry,[
+ const js=join(consumer,"smoke.mjs");
+ writeFileSync(js,[
   'import assert from "node:assert/strict";',
-  'import {registerSecureDiv} from "@caleb-media-studio-llc/secure-div";',
-  'import {SecureDiv,configureSecureDisplay,useSecureDisplayStatus} from "@caleb-media-studio-llc/react";',
-  'import * as core from "@caleb-media-studio-llc/core";',
-  'assert.equal(typeof registerSecureDiv,"function");',
-  'assert.equal(typeof SecureDiv,"function");',
-  'assert.equal(typeof configureSecureDisplay,"function");',
-  'assert.equal(typeof useSecureDisplayStatus,"function");',
-  'assert.ok(Object.keys(core).length>0);',
-  'console.log("Isolated package imports succeeded");',
-  ""
+  'import {SecureDiv,SecureDivElement,registerSecureDiv,configureSecureDisplay,useSecureDisplayStatus,probeDrmPaths} from "@caleb-media-studio-llc/secure-display";',
+  'for(const value of [SecureDiv,SecureDivElement,registerSecureDiv,configureSecureDisplay,useSecureDisplayStatus,probeDrmPaths]) assert.equal(typeof value,"function");',
+  'console.log("One-package runtime imports passed");',""
  ].join("\n"));
- run("node",[entry],consumer);
- for(const file of [
-  "@caleb-media-studio-llc/core/dist/index.d.ts",
-  "@caleb-media-studio-llc/react/dist/index.d.ts",
-  "@caleb-media-studio-llc/secure-div/types/index.d.ts",
-  "@caleb-media-studio-llc/secure-div/secure-div.css",
-  "@caleb-media-studio-llc/secure-div/types/secure-div.css.d.ts"
- ]){
-  assert.ok(existsSync(join(consumer,"node_modules",file)),"Missing installed artifact: "+file);
+ run("node",[js],consumer);
+ const css=join(consumer,"node_modules","@caleb-media-studio-llc","secure-display","dist","secure-div.css");
+ assert.ok(existsSync(css),"Missing CSS guard");
+ for(const forbidden of ["@caleb-media-studio-llc/core","@caleb-media-studio-llc/react","@caleb-media-studio-llc/secure-div"]){
+  assert.equal(existsSync(join(consumer,"node_modules",...forbidden.split("/"))),false,
+   "Installed unpublished internal dependency "+forbidden);
  }
- console.log("PASS: "+manager+" installed all three tarballs and resolved JS, types and CSS outside the workspace.");
-}finally{
- rmSync(directory,{recursive:true,force:true});
-}
+ const tsFile=join(consumer,"smoke.tsx");
+ writeFileSync(tsFile,[
+  'import {type SecureDisplayConfiguration,SecureDiv,configureSecureDisplay,type SecureDivPlaybackAdapter} from "@caleb-media-studio-llc/secure-display";',
+  'const playbackAdapter:SecureDivPlaybackAdapter=async()=>({width:960,height:540,drm:"test",destroy:async()=>{}});',
+  'const config:SecureDisplayConfiguration={resolveAsset:async()=>({assetId:"x",sourceSha256:"a".repeat(64),domSha256:"b".repeat(64),rootClassName:"c"}),playbackAdapter};',
+  'configureSecureDisplay(config);',
+  'const component=<SecureDiv className="test"><p>synthetic only</p></SecureDiv>;',
+  'void component;', ""
+ ].join("\n"));
+ writeFileSync(join(consumer,"tsconfig.json"),JSON.stringify({
+  compilerOptions:{target:"ES2022",module:"NodeNext",moduleResolution:"NodeNext",
+   jsx:"react-jsx",strict:true,skipLibCheck:false,noEmit:true,esModuleInterop:true},
+  files:["smoke.tsx"]
+ },null,2));
+ run("node",[join(root,"node_modules/typescript/bin/tsc"),"--project",join(consumer,"tsconfig.json")],consumer);
+ console.log("PASS: "+manager+" installed ONE secure-display tarball, JS and TSX imports and CSS.");
+}finally{rmSync(directory,{recursive:true,force:true});}

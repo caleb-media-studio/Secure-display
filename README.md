@@ -5,10 +5,14 @@
 > [!WARNING]
 > **Research, not screenshot-proof software.** Do not use real credentials, customer records, student information or other confidential material. The demo uses public DRM test keys, the underlying DOM is inspectable, and cross-platform screenshot exclusion is not certified.
 
+## One installable package
+
+The only proposed npm package is `@caleb-media-studio-llc/secure-display`. React, native custom-element helpers, and browser capability code come bundled in that single tarball. React itself remains a peer dependency, as usual for React libraries.
+
 ## The React API
 
 ```tsx
-import {SecureDiv} from "@caleb-media-studio-llc/react";
+import {SecureDiv} from "@caleb-media-studio-llc/secure-display";
 
 export function Page(){
   return <SecureDiv className="secure-card">
@@ -73,12 +77,12 @@ See [evidence and research](docs/RESEARCH.md), [validation matrix](docs/VALIDATI
 
 | Location | Responsibility |
 | --- | --- |
-| `packages/react/` | Primary React API, optional status hook |
-| `packages/secure-div/` | Native element, fingerprint validation, selection overlay |
+| `packages/secure-display/` | Sole distributable npm package, React and native APIs |
+| `packages/react/`, `packages/secure-div/` | Private internal source modules bundled at build time |
 | `examples/auto-secure-element/react/App.tsx` | Smallest real JSX implementation |
 | `examples/auto-secure-element/react/setup.js` | App-wide synthetic asset and DRM integration |
 | `tools/package-dom-element.mjs` | Build-time JSX render and DRM packaging |
-| `packages/core/`, `packages/elements/`, `packages/document/` | Prior EME, HTML-tag and document research |
+| `packages/core/`, `packages/elements/`, `packages/document/` | Internal DRM implementation and earlier research |
 | `examples/diagnostics/`, `examples/fairplay-capture/`, `examples/protected-document/`, `examples/protected-page/` | Research labs and controls |
 | `experiments/macos-capture-region/` | Native capture exclusion research, not a web implementation |
 | `docs/` | Evidence, compatibility, threat model, tutorials |
@@ -106,6 +110,6 @@ bun run release:smoke:bun
 
 Node/npm also works: `npm install`, `npm run typecheck`, `npm test`, `npm run build`.
 
-**Nothing has been published to npm or Bun.** All packages deliberately remain `private: true`. [Publication requirements](docs/PUBLISHING.md) must be satisfied before releasing a research build.
+**Nothing has been published to npm.** Only `@caleb-media-studio-llc/secure-display` is intended for the registry. All research workspaces remain `private: true`. [Publication requirements](docs/PUBLISHING.md) must be satisfied before releasing a research build.
 
 Apache-2.0. See [LICENSE](LICENSE), [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).

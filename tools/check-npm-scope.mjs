@@ -1,42 +1,33 @@
 #!/usr/bin/env node
-/**
- * Check the real npm scope before any package is packed or published.
- * Archived historical lab logs intentionally retain their original wording.
- */
+/** Prevent the old three-package release design from reappearing. */
 import assert from "node:assert/strict";
 import {readFileSync,readdirSync} from "node:fs";
 import {join,resolve,dirname,relative} from "node:path";
 import {fileURLToPath} from "node:url";
-
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
-const scope="@caleb-media-studio-llc";
-const oldScope="@"+"secure-display/";
-const excludedDirs=new Set([
-  ".git","node_modules","dist","build","coverage",".secure-display-local",
-  "fixtures",".next"
-]);
-const failures=[];
+const single="@caleb-media-studio-llc/secure-display";
+const excluded=new Set([".git","node_modules","dist","build","coverage",".secure-display-local","fixtures",".next"]);
+const violations=[];
 function scan(dir){
- for(const entry of readdirSync(dir,{withFileTypes:true})){
-  const path=join(dir,entry.name),rel=relative(root,path).replaceAll("\\","/");
-  if(entry.isDirectory()){
-   if(excludedDirs.has(entry.name)||rel==="docs/history")continue;
+ for(const item of readdirSync(dir,{withFileTypes:true})){
+  const path=join(dir,item.name);
+  const relativePath=relative(root,path).replaceAll("\\","/");
+  if(item.isDirectory()){
+   if(excluded.has(item.name)||relativePath==="docs/history")continue;
    scan(path);
-  }else if(entry.isFile()&&/\.(?:md|mjs|js|ts|tsx|json|yml|yaml|html|css)$/.test(entry.name)){
-   if(readFileSync(path,"utf8").includes(oldScope))failures.push(rel);
+  }else if(item.isFile()&&/\.(?:md|mjs|js|ts|tsx|json|yml|yaml|html|css)$/.test(item.name)){
+   const contents=readFileSync(path,"utf8");
+   if(contents.includes("@"+"secure-display/"))violations.push(relativePath+": stale old scope");
   }
  }
 }
-for(const name of ["core","secure-div","react","elements","document"]){
- const file=join(root,"packages",name,"package.json");
- const pkg=JSON.parse(readFileSync(file,"utf8"));
- assert.equal(pkg.name,scope+"/"+name);
- assert.equal(pkg.private,true,"Keep research packages unpublished pending review.");
- for(const dep of Object.keys(pkg.dependencies??{})){
-  if(dep.startsWith("@")&&dep.includes("secure-display"))
-    assert.ok(dep.startsWith(scope+"/"),"Unexpected scoped dependency in "+name+": "+dep);
- }
-}
 scan(root);
-assert.deepEqual(failures,[],"Legacy npm imports remain in active files");
-console.log("PASS: active source/docs use "+scope+"; all research packages stay private.");
+const pkg=JSON.parse(readFileSync(join(root,"packages/secure-display/package.json"),"utf8"));
+assert.equal(pkg.name,single);
+assert.equal(pkg.private,true);
+for(const internal of ["core","react","secure-div","document","elements"]){
+ const p=JSON.parse(readFileSync(join(root,"packages",internal,"package.json"),"utf8"));
+ assert.equal(p.private,true);
+}
+assert.deepEqual(violations,[]);
+console.log("PASS: one proposed npm package "+single+"; internal research remains private.");

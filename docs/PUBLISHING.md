@@ -1,52 +1,24 @@
-# Publishing to npm, using npm or Bun
+# One package: npm and Bun release preparation
 
-**No packages are published.** The workspace currently sets `"private": true` to prevent unreviewed publication. Do not remove that guard without explicit release approval.
+The **only registry artifact** planned for this repository is `@caleb-media-studio-llc/secure-display`. The user's npm organization is [caleb-media-studio-llc](https://www.npmjs.com/org/caleb-media-studio-llc). The internal `core`, `react`, `secure-div`, `document` and `elements` folders remain **private research workspaces**, not separate npm releases.
 
-## One registry, several installers
+**No publication is authorized yet.** The distribution package is `private: true`. This project remains research-only, uses public synthetic DRM test media, exposes original DOM text to inspection, and does not guarantee screenshot protection.
 
-Publish to the **npm registry** once. Consumers can use any supported package manager:
+## Future consumer install
 
-```bash
-npm install @caleb-media-studio-llc/react
-bun add @caleb-media-studio-llc/react
-pnpm add @caleb-media-studio-llc/react
-```
-
-These are **future commands**, not currently working installation instructions. `@secure-display` is an **npm scope**, which must belong to your own npm user or organization. Having a GitHub repository with this name does not grant npm namespace ownership. Verify the scope before a release, and rename all package imports/dependencies together if necessary.
-
-## npm organization and scope
-
-The user-provided npm organization is [caleb-media-studio-llc](https://www.npmjs.com/org/caleb-media-studio-llc). The package scope is **`@caleb-media-studio-llc`**. A URL does not itself verify the publisher's account permissions; check membership and publishing rights after logging in.
-
-
-These manifests use the npm organization's scope, not the separate `caleb-media-studio` GitHub organization name. Keep the npm organization slug, internal dependencies, and documentation aligned before publication.
+All installers use the same npm registry package. Only one Secure Display dependency is needed.
 
 ```bash
-npm login
-npm whoami
-npm org ls caleb-media-studio-llc
-npm view @caleb-media-studio-llc/react version
+npm install @caleb-media-studio-llc/secure-display
+# or
+bun add @caleb-media-studio-llc/secure-display
+# or
+pnpm add @caleb-media-studio-llc/secure-display
 ```
 
-The last command can legitimately return a not-found error before the first publication. Do not interpret a nonexistent package as ownership evidence. Verify permissions in your npm organization's settings. The intended primary package is `@caleb-media-studio-llc/react`, with `@caleb-media-studio-llc/core` and `@caleb-media-studio-llc/secure-div` as runtime dependencies. If the organization slug is different, rename these manifests, their internal dependency names, imports and documentation consistently **before** the first publication.
+React is a peer dependency for the React component. The package exports `SecureDiv`, `configureSecureDisplay`, optional status utilities, native `registerSecureDiv`, DRM probes and a `./secure-div.css` first-paint guard.
 
-The npm organization description is not the package description: the short summaries shown on npm come from each package's own `package.json`. Keep the repository private and package publishing disabled until the release gates are met.
-
-## npm scope check
-
-The canonical npm organization is [caleb-media-studio-llc](https://www.npmjs.com/org/caleb-media-studio-llc). All package manifests, internal dependency names, and new examples use the `@caleb-media-studio-llc` scope. The archived research log intentionally retains historical references. Run `bun run release:inspect` before preparing a release to reject outdated imports or accidental public package flags.
-
-## Packages to release first
-
-| Package | Why |
-| --- | --- |
-| `@caleb-media-studio-llc/core` | React package currently depends on it for DRM diagnostics |
-| `@caleb-media-studio-llc/secure-div` | Native element, JS, CSS guard and TypeScript declarations |
-| `@caleb-media-studio-llc/react` | Primary React API; depends on the above two |
-
-`document` and `elements` are earlier research packages and should not automatically be released with the main React component. A public React tarball would **not** include a turnkey production DRM license server or general-purpose live JSX encoder.
-
-## Safe preparation without publishing
+## Test locally without publishing
 
 ```bash
 bun install
@@ -54,39 +26,19 @@ bun run build
 bun run release:inspect
 bun run release:smoke:npm
 bun run release:smoke:bun
-npm pack --dry-run --workspace @caleb-media-studio-llc/core
-npm pack --dry-run --workspace @caleb-media-studio-llc/secure-div
-npm pack --dry-run --workspace @caleb-media-studio-llc/react
+npm pack --dry-run --workspace @caleb-media-studio-llc/secure-display
 ```
 
-The release inspection checks compiled entrypoints, dependency links, CSS declarations and package boundaries. The two smoke tests also pack all three private packages into temporary tarballs, install them into a fresh application with npm and Bun respectively, and verify runtime imports, types and CSS without depending on monorepo links or publishing. They may download the public React peer dependency. Review exactly which files npm would expose. Running `npm pack` or `bun pm pack --dry-run` does **not** publish to the registry.
+The single distribution build bundles the private internal runtime code into one ESM entrypoint and carries self-contained TypeScript declarations and CSS. The release check rejects old multi-package dependencies and inspects the actual packed artifact. npm and Bun install the same **one tarball** into temporary projects and check imports and declarations. Neither `npm pack` nor these tests publishes anything.
 
-## Later: actual publication
+## Publishing later, after approval
 
-Only after completing security, distribution and namespace checks:
+1. Confirm publishing rights for the `caleb-media-studio-llc` npm organization (`npm login`, `npm whoami`, `npm org ls caleb-media-studio-llc`).
+2. Pick a prerelease such as `0.1.0-alpha.1` for **only** `@caleb-media-studio-llc/secure-display`. No three-package version synchronization.
+3. Pass the release inspection, npm and Bun isolated install smoke tests, real-device test matrix, security and accessibility review. Read the tarball contents for sensitive files and confirm proper license and notices.
+4. After explicit approval, remove `private: true` from **only** the one distribution manifest and publish from `packages/secure-display/` with `npm publish --access public --tag experimental`. Leave the internal research workspace packages private.
+5. Verify the package and both installers in clean external projects. No publish automation or credentials are configured in this PR.
 
-1. Create/verify your npm account or organization, enable appropriate MFA, and ensure it owns the package scope.
-2. Select a prerelease version such as `0.1.0-alpha.1`. Update the three manifest versions and cross-package dependencies consistently. Include correct repository and license metadata.
-3. Confirm the tarballs contain only approved files and compiled TypeScript declarations. Never ship private keys, credentials, real records or unapproved fixtures.
-4. Remove `private: true` from **only** the approved packages. Keep the research workspaces private until reviewed.
-5. Authenticate with `npm login`, verify with `npm whoami`.
-6. Publish dependencies before React, from each package directory. Example, once approved: `npm publish --access public --tag experimental`, or `bun publish --access public --tag experimental`. **Both target npm**, not a separate Bun registry.
-7. Verify the published package and install it using npm **and** Bun in fresh projects, outside this monorepo.
+No standalone Shaka/DRM key server or private licensing credentials ship in the tarball. The one-time app configuration and the fixed build-time encrypted media are still required.
 
-New scoped public releases require `--access public`. A first publication can affect the `latest` tag even if a prerelease tag was requested, so review registry tag behavior rather than assuming a prerelease is invisible. A published package version cannot be silently replaced.
-
-For later CI/CD, npm's **trusted publishing** supports OIDC from GitHub Actions without long-lived publish tokens. It requires properly configured package and workflow trust plus compatible Node/npm versions. The GitHub repo remains private for now; npm notes limitations on provenance for private source repos. No release workflow should be enabled until approved.
-
-## Pre-publication gate
-
-- [ ] npm scope ownership and release package names confirmed
-- [x] Isolated npm and Bun install smoke tests are implemented (CI must pass for the exact release commit)
-- [ ] Release commit's isolated install checks pass for both package managers
-- [ ] Production DRM/license/key/authorization architecture reviewed
-- [ ] Synthetic-only restrictions and confidentiality limits documented
-- [ ] Actual target browsers and recording/screenshot/share methods tested
-- [ ] No sensitive material in git history or packed artifacts
-- [ ] Accessibility and platform behavior reviewed
-- [ ] Explicit approval to make package contents public
-
-Official docs: [npm scoped publishing](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/), [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/), [Bun publish](https://bun.com/docs/pm/cli/publish), [Bun add](https://bun.com/docs/pm/cli/add).
+See [npm scoped package publishing](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/), [Bun publishing](https://bun.com/docs/pm/cli/publish) and [security limitations](THREAT_MODEL.md).

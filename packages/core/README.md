@@ -1,3 +1,5 @@
+> **Internal research workspace, not an npm release.** For consuming applications, install and import `@caleb-media-studio-llc/secure-display` only.
+
 # @caleb-media-studio-llc/core
 
 **Research-only** foundation for browser Encrypted Media Extensions (EME) capability probes, diagnostic policy evaluation and synthetic DRM media playback paths.
