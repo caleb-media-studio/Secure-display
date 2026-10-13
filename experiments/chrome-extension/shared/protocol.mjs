@@ -32,7 +32,9 @@ export function validateEnterpriseConfig(input){
   allowedOrigin:allow.origin,
   tenantId:cfg.tenantId,clientId:cfg.clientId,
   allowDomReveal:cfg.allowDomReveal,
-  scope:typeof cfg.scope==="string"&&/^[A-Za-z0-9_:/ .-]{1,500}$/.test(cfg.scope)?cfg.scope:"openid profile",
+  scope:cfg.scope===undefined?"openid profile":
+  (typeof cfg.scope==="string"&&/^[A-Za-z0-9_:/ .-]{1,500}$/.test(cfg.scope)
+   ?cfg.scope:(()=>{throw Error("Invalid OIDC scope policy")})()),
  });
 }
 export function validateRect(x){

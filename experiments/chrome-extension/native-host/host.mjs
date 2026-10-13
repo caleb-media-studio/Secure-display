@@ -4,6 +4,7 @@
  * It never changes a Chrome-owned window or calls private macOS APIs.
  */
 import {validateRect,parseSecureUrl} from "../shared/protocol.mjs";
+import {fileURLToPath} from "node:url";
 const MAX_IN=64*1024;
 let pending=Buffer.alloc(0);
 function writeMessage(msg){
@@ -30,7 +31,7 @@ export function respond(data){
  catch(error){return {requestId:typeof data?.requestId==="string"?data.requestId:"",
   supported:false,backend:"none",reason:"Invalid native probe: "+error.message.slice(0,120)};}
 }
-if(process.argv[1]===new URL(import.meta.url).pathname){
+if(process.argv[1]===fileURLToPath(import.meta.url)){
  process.stdin.on("data",chunk=>{
   pending=Buffer.concat([pending,chunk]);
   if(pending.length>MAX_IN){process.stderr.write("Native probe size limit\n");process.exit(1);}
