@@ -47,3 +47,22 @@ The overlay mode explicitly demonstrates why protecting *one layer* usually does
 ### Security
 
 This demo uses public test-only content keys, which offer **no confidentiality**. It is not an authenticated application or production-grade DRM license service. Do not run it on untrusted networks or supply real reports/data. Do not commit any key files or real certificates. The browser CDM behavior must be tested in each supported browser and environment.
+
+## Startup repair (October 13)
+
+The earlier example did not start DRM automatically and hid the video while waiting for playback, making the default full-page region black. The updated example:
+
+- Initiates Axinom public-test FairPlay/Widevine playback on load. The **Start / Retry DRM** button remains available.
+- Validates that the local DASH/HLS media manifest is actually present. A Vite HTML fallback does not count as an encrypted manifest.
+- Shows the current loading stage and any recoverable error directly above the video. The detailed diagnostics are expanded by default.
+- Keeps the encrypted video element mounted while it initializes behind an opaque black guard, revealing its pixels only after the chosen DRM key system is verified and playback is observed.
+- Continues to fail closed; it never substitutes capturable DOM text into the full protected page.
+
+If the page reports that the encrypted media manifest is missing, regenerate the separate full-page test fixture:
+
+```sh
+bun run drm:page:package
+bun run example:page
+```
+
+Your already working `bun run drm:demo:package` prepares the **different document example**, not this full-page test. Use trusted HTTPS over LAN.
