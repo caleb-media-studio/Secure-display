@@ -13,6 +13,7 @@ import {chromium} from "playwright-core";
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const js=readFileSync(resolve(root,"packages/secure-div/src/secure-div.js"),"utf8");
 const geometry=readFileSync(resolve(root,"packages/secure-div/src/selection-geometry.js"),"utf8");
+const fingerprint=readFileSync(resolve(root,"packages/secure-div/src/dom-fingerprint.js"),"utf8");
 const url="http://secure-display-attribute-hydration.test";
 const html=`<!doctype html><html><head>
   <style>
@@ -36,6 +37,7 @@ try {
   if(path==="/")return route.fulfill({status:200,contentType:"text/html",body:html});
   if(path==="/secure-div.js")return route.fulfill({status:200,contentType:"application/javascript",body:js});
   if(path==="/selection-geometry.js")return route.fulfill({status:200,contentType:"application/javascript",body:geometry});
+  if(path==="/dom-fingerprint.js")return route.fulfill({status:200,contentType:"application/javascript",body:fingerprint});
   return route.fulfill({status:404,body:"Not found"});
  });
  await page.goto(url+"/");
