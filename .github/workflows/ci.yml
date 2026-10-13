@@ -43,6 +43,14 @@ jobs:
         run: node tools/smoke-examples.mjs
       - name: Install FFmpeg for synthetic fixture test
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Browser-render real HTML to H264 for zero-install component test
+        run: |
+          node tools/package-dom-element.mjs --snapshot-only
+          test -s fixtures/generated/auto-secure/element.png
+          test -s fixtures/generated/auto-secure/clear-element.mp4
+          set -o pipefail
+          ffmpeg -v error -i fixtures/generated/auto-secure/clear-element.mp4 -frames:v 1 -pix_fmt rgb24 -f rawvideo - |
+            python3 -c 'import sys; p=sys.stdin.buffer.read(); assert len(p)==960*540*3, len(p); assert min(p)<80 and max(p)>160, "HTML video is blank or rendering failed"'
       - name: Generate synthetic H.264 fixture without drawtext
         run: bun run fixture
       - name: Generate solid-black DRM overlay clear-video fixture

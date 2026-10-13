@@ -74,6 +74,10 @@ async function main(){
  command("ffmpeg",["-hide_banner","-loglevel","error","-y","-loop","1","-framerate","24",
   "-i",IMAGE,"-t","3","-an","-c:v","libx264","-pix_fmt","yuv420p",
   "-r","24","-movflags","+faststart",CLEAR]);
+ if(process.argv.includes("--snapshot-only")){
+  console.log("Successfully rendered real DOM to PNG and encoded H.264; DRM packaging skipped by test option.");
+  return;
+ }
  const r=await fetch(vectorUrl,{signal:AbortSignal.timeout(20000)});
  if(!r.ok)throw Error("Public Axinom test vector unavailable (HTTP "+r.status+").");
  const {kid,keyHex}=parseVector(await r.text());

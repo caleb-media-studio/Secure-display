@@ -58,3 +58,7 @@ Open the Vite URL (localhost, or a trusted HTTPS LAN URL using `bun run network:
 - `src/main.js`: instantiates `secure-div` from the original fixture and wires a native DOM button click listener.
 
 The purpose is to empirically test **zero-install, DOM-authored, browser-rendered protected media** with the fewest invented prerequisites. It does not solve the native window capture privilege problem and does not establish a universally secure arbitrary-component package.
+
+### Build-step verification
+
+The CI pipeline also runs `node tools/package-dom-element.mjs --snapshot-only`, which launches headless Chrome, captures the genuine fixture element, encodes it into H.264 using FFmpeg and decodes a frame to check for actual nonblank HTML imagery. This does **not** verify Axinom license acquisition or real capture exclusion in the user's OS; run the full `drm:element:package` command locally for those checks.
