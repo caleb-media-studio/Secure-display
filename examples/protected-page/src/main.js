@@ -1,5 +1,5 @@
 import shaka from "shaka-player";
-import {MODES,modePolicy,drmSource} from "./mode-policy.js";
+import {MODES,modePolicy,drmSource,OPACITY_PRESETS,opacityPreset} from "./mode-policy.js";
 
 // The phrase is intentionally PUBLIC synthetic test content for comparing
 // screenshots. The normal DOM mode must not be used with confidential data.
@@ -16,8 +16,15 @@ const status=document.querySelector("#status");
 const diagnostic=document.querySelector("#diagnostic");
 const interactions=document.querySelector("#interactions");
 const metrics=document.querySelector("#overlay-metrics");
+const opacitySlider=document.querySelector("#opacity-slider");
+const opacityValue=document.querySelector("#opacity-value");
+const opacityCSS=document.querySelector("#opacity-css");
 const query=new URLSearchParams(location.search);
 let mode=MODES.includes(query.get("mode"))?query.get("mode"):"overlay";
+const requestedPreset=query.has("opacity")?Number(query.get("opacity")):1;
+let opacityIndex=Number.isInteger(requestedPreset)&&requestedPreset>=0&&requestedPreset<OPACITY_PRESETS.length?requestedPreset:1;
+opacitySlider.max=String(OPACITY_PRESETS.length-1);
+opacitySlider.value=String(opacityIndex);
 const safari=/Safari/i.test(navigator.userAgent)&&!/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)/i.test(navigator.userAgent);
 drmSelect.value=safari?"fairplay":"widevine";
 let player,run=0,playing=false,clicks=0;
@@ -30,7 +37,12 @@ const log=text=>{
  diagnostic.textContent=(diagnostic.textContent==="Ready."?"":diagnostic.textContent+"\n")+line;
 };
 function updateMode(){
- const rule=modePolicy(mode,playing);
+ const preset=opacityPreset(opacityIndex);
+ const rule=modePolicy(mode,playing,preset.alpha);
+ opacitySlider.value=String(opacityIndex);
+ opacitySlider.disabled=mode!=="overlay";
+ opacityValue.textContent=preset.label;
+ opacityCSS.textContent="CSS opacity: "+preset.alpha.toFixed(9);
  root.dataset.mode=mode;
  dom.hidden=!rule.showDom;
  video.hidden=!rule.showVideo && !(player && mode!=="normal");
@@ -46,11 +58,12 @@ function updateMode(){
  }
  const url=new URL(location.href);
  url.searchParams.set("mode",mode);
+ url.searchParams.set("opacity",String(opacityIndex));
  history.replaceState(null,"",url);
  const description=mode==="protected"
   ?"Only DRM pixels form the page; no test sentence is visible in ordinary DOM."
   :mode==="overlay"
-    ?"Testing a real DRM video at exactly 0.0000001% opacity over ordinary interactive DOM. This experiment measures the capture result; it does not presume one."
+    ?"Testing real DRM video at "+preset.label+" opacity over ordinary, interactive HTML. Change the slider without restarting playback."
     :"All page text is ordinary DOM, with no DRM layer.";
  document.querySelector("#mode-description").textContent=description;
  if(mode==="protected"&&!playing)
@@ -58,7 +71,7 @@ function updateMode(){
  else if(mode==="protected")
    status.textContent="Licensed DRM playback active. Check physical display vs screenshot and recording.";
  else if(mode==="overlay")
-   status.textContent=playing?"DRM verified and playing at 0.0000001% opacity. Take a screenshot, recording or screen share to measure what remains visible.":(playbackError||phase);
+   status.textContent=playing?"DRM active at "+preset.label+" opacity. Capture a screenshot at this setting and compare with the DOM-only control.":(playbackError||phase);
  else status.textContent="Unprotected DOM control. Screenshots should contain the sentence.";
 }
 function setMode(value) {
@@ -67,6 +80,16 @@ function setMode(value) {
  updateMode();
 }
 modeButtons.forEach(button=>button.addEventListener("click",()=>setMode(button.dataset.mode)));
+opacitySlider.addEventListener("input",()=>{
+ opacityIndex=Number(opacitySlider.value);
+ // No DRM teardown or new license request: this only updates video.style.opacity.
+ if(mode!=="overlay")mode="overlay";
+ updateMode();
+ updateOverlayMetrics();
+});
+opacitySlider.addEventListener("change",()=>{
+ log("Opacity now "+opacityPreset(opacityIndex).label+"; CSS alpha "+opacityPreset(opacityIndex).alpha.toFixed(9)+". DRM playback unchanged.");
+});
 function activity() {
  clicks+=1;
  interactions.textContent="Interaction count: "+clicks+" (this counter is ordinary, capturable DOM)";
@@ -224,6 +247,7 @@ function updateOverlayMetrics(){
    +" | Playback: "+(video.paused?"paused":"running")
    +" | Video time: "+video.currentTime.toFixed(2)+"s"
    +" | Decoded frames: "+(Number.isFinite(frames)?frames:"unavailable")
+   +" | Target opacity: "+opacityPreset(opacityIndex).label
    +" | CSS opacity: "+style.opacity
    +" | Pointer events: "+style.pointerEvents
    +" | Overlay covers viewport: "+(fullViewport?"yes":"no");
