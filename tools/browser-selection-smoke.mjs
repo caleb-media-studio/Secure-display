@@ -12,7 +12,7 @@ import {chromium} from "playwright-core";
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const documentHtml=readFileSync(resolve(root,"examples/auto-secure-element/public/secure-content.html"),"utf8");
-const selectionCode=readFileSync(resolve(root,"examples/auto-secure-element/src/selection-geometry.js"),"utf8");
+const selectionCode=readFileSync(resolve(root,"packages/secure-div/src/selection-geometry.js"),"utf8");
 const host="http://secure-display-selection.test";
 let browser;
 try{

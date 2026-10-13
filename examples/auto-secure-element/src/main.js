@@ -1,4 +1,5 @@
-import {registerSecureDiv} from "./secure-div.js";
+import {registerSecureDiv} from "@secure-display/secure-div";
+import {startEncryptedVideo} from "./drm-player.js";
 
 // One authoritative HTML/CSS source is also used by the build-time renderer.
 // A source change should require a newly packaged asset.
@@ -13,7 +14,11 @@ const fail=message=>{
  log.textContent=message;
 };
 async function main(){
- registerSecureDiv();
+ registerSecureDiv(async(video,signal,assetId,sourceSha256)=>{
+  if(assetId!=="demo-card")throw Error("Unknown synthetic asset identifier.");
+  const {player,provider,meta}=await startEncryptedVideo(video,signal,sourceSha256);
+  return {destroy:()=>player.destroy(),drm:provider.type,width:meta.width,height:meta.height};
+ });
  const r=await fetch("/secure-content.html",{cache:"no-store"});
  if(!r.ok)throw Error("Synthetic HTML source unavailable.");
  const text=await r.text();

@@ -33,7 +33,7 @@ test("one HTML/CSS source powers both real DOM and encrypted visual copy",()=>{
 });
 test("protected DOM paint is hidden before upgrade, but source event handlers remain",()=>{
  const html=get("examples/auto-secure-element/index.html");
- const element=get("examples/auto-secure-element/src/secure-div.js");
+ const element=get("packages/secure-div/src/secure-div.js");
  assert.match(html,/secure-div\{[^}]*opacity:0!important/);
  assert.match(element,/opacity:0/);
  assert.match(element,/pointer-events:none/);
@@ -45,7 +45,7 @@ test("protected DOM paint is hidden before upgrade, but source event handlers re
 });
 test("playback fails closed without clearing into HTML",()=>{
  const source=get("examples/auto-secure-element/src/drm-player.js");
- const element=get("examples/auto-secure-element/src/secure-div.js");
+ const element=get("packages/secure-div/src/secure-div.js");
  assert.match(source,/com\.widevine\.alpha/);
  assert.match(source,/com\.apple\.fps/);
  assert.match(source,/p\.drmInfo\(\)\?\.keySystem/);

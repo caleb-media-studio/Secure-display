@@ -1,0 +1,20 @@
+{
+  "name": "@secure-display/secure-div",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Synthetic DRM-backed custom element; requires authenticated playback adapter",
+  "files": [
+    "src",
+    "types",
+    "secure-div.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./secure-div.css": "./secure-div.css"
+  }
+}

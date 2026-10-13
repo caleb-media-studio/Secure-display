@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {selectionGeometry,updateSelectionIndicator} from "../../examples/auto-secure-element/src/selection-geometry.js";
+import {selectionGeometry,updateSelectionIndicator} from "../../packages/secure-div/src/selection-geometry.js";
 
 function fixture(){
  const inside={};
@@ -49,7 +49,7 @@ test("visible selection marker contains rectangles only, never glyph text",()=>{
  assert.equal(root.nodes.length,0);
 });
 test("DOM selection is tracked outside the opaque original host",()=>{
- const el=readFileSync(new URL("../../examples/auto-secure-element/src/secure-div.js",import.meta.url),"utf8");
+ const el=readFileSync(new URL("../../packages/secure-div/src/secure-div.js",import.meta.url),"utf8");
  const html=readFileSync(new URL("../../examples/auto-secure-element/index.html",import.meta.url),"utf8");
  assert.match(el,/document\.addEventListener\("selectionchange"/);
  assert.match(el,/document\.removeEventListener\("selectionchange"/);
