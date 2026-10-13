@@ -16,6 +16,7 @@ const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const OUT=resolve(ROOT,"fixtures/generated");
 const PPM=resolve(OUT,"protected-page.ppm");
 const MP4=resolve(OUT,"protected-page-clear.mp4");
+const PROBE_MP4=resolve(OUT,"protected-probe-clear.mp4");
 // Handwritten fixed 5x7 font. Lowercase is represented as lowercase glyphs,
 // not uppercased in the rasterizer, so the supplied sentence keeps its case.
 const rows={
@@ -126,6 +127,26 @@ function centered(message,y,scale,color) {
 export function rasterizeBlack() {
  return Buffer.alloc(PAGE_WIDTH*PAGE_HEIGHT*3,0);
 }
+/**
+ * A non-black reference pattern is essential to verify whether an actual DRM
+ * pixel plane is omitted by the OS capture mechanism. Not confidential media.
+ * No document text is ever included in the encrypted overlay.
+ */
+export function rasterizeProbe() {
+ const frame=Buffer.alloc(PAGE_WIDTH*PAGE_HEIGHT*3);
+ for(let y=0;y<PAGE_HEIGHT;y++)for(let x=0;x<PAGE_WIDTH;x++){
+  const i=(y*PAGE_WIDTH+x)*3;
+  const left=x<PAGE_WIDTH/2;
+  frame[i]=left?245:22;
+  frame[i+1]=left?32:210;
+  frame[i+2]=left?185:245;
+  if(Math.abs(x-(PAGE_WIDTH-y*PAGE_WIDTH/PAGE_HEIGHT))<12 ||
+     Math.abs(x-y*PAGE_WIDTH/PAGE_HEIGHT)<12){
+    frame[i]=255;frame[i+1]=255;frame[i+2]=255;
+  }
+ }
+ return frame;
+}
 export function rasterize() {
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
   const shade=Math.floor(10+13*x/width+5*y/height);
@@ -152,7 +173,10 @@ async function main(){
  // Default fixture is a solid black licensed video. '--graphic' is an
  // explicit older diagnostic, NOT the overlay screenshot experiment.
  const graphic=process.argv.includes("--graphic");
- const image=graphic?rasterize():rasterizeBlack();
+ const probe=process.argv.includes("--probe");
+ if(graphic&&probe)throw Error("Choose --probe or --graphic, not both.");
+ const image=probe?rasterizeProbe():graphic?rasterize():rasterizeBlack();
+ const target=probe?PROBE_MP4:MP4;
  await mkdir(OUT,{recursive:true});
  try {
   await writeFile(PPM,Buffer.concat([
@@ -161,11 +185,11 @@ async function main(){
    "-hide_banner","-loglevel","error","-y",
    "-loop","1","-framerate","2","-i",PPM,
    "-t","3","-an","-c:v","libx264","-preset","veryfast",
-   "-crf","18","-pix_fmt","yuv420p","-movflags","+faststart",MP4,
+   "-crf","18","-pix_fmt","yuv420p","-movflags","+faststart",target,
   ],{encoding:"utf8",timeout:90000});
   if(child.error||child.status!==0)
     throw Error("FFmpeg synthetic page encoder failed: "+(child.stderr?.slice(0,300)||child.error?.message||"unknown"));
-  console.log("Generated local CLEAR "+(graphic?"graphic":"SOLID BLACK")+" video for DRM packaging:",MP4);
+  console.log("Generated CLEAR synthetic "+(probe?"COLOR PROBE":graphic?"graphic":"SOLID BLACK")+" video:",target);
  }finally{await rm(PPM,{force:true});}
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
