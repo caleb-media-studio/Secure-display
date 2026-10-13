@@ -17,6 +17,7 @@ const OUT=resolve(ROOT,"fixtures/generated");
 const PPM=resolve(OUT,"protected-page.ppm");
 const MP4=resolve(OUT,"protected-page-clear.mp4");
 const PROBE_MP4=resolve(OUT,"protected-probe-clear.mp4");
+const WHITE_MP4=resolve(OUT,"protected-white-clear.mp4");
 // Handwritten fixed 5x7 font. Lowercase is represented as lowercase glyphs,
 // not uppercased in the rasterizer, so the supplied sentence keeps its case.
 const rows={
@@ -127,6 +128,10 @@ function centered(message,y,scale,color) {
 export function rasterizeBlack() {
  return Buffer.alloc(PAGE_WIDTH*PAGE_HEIGHT*3,0);
 }
+/** White is neutral under multiply blend over ordinary HTML. */
+export function rasterizeWhite() {
+ return Buffer.alloc(PAGE_WIDTH*PAGE_HEIGHT*3,255);
+}
 /**
  * A non-black reference pattern is essential to verify whether an actual DRM
  * pixel plane is omitted by the OS capture mechanism. Not confidential media.
@@ -174,9 +179,11 @@ async function main(){
  // explicit older diagnostic, NOT the overlay screenshot experiment.
  const graphic=process.argv.includes("--graphic");
  const probe=process.argv.includes("--probe");
- if(graphic&&probe)throw Error("Choose --probe or --graphic, not both.");
- const image=probe?rasterizeProbe():graphic?rasterize():rasterizeBlack();
- const target=probe?PROBE_MP4:MP4;
+ const white=process.argv.includes("--white");
+ if([graphic,probe,white].filter(Boolean).length>1)
+   throw Error("Choose only one of --white, --probe, or --graphic.");
+ const image=white?rasterizeWhite():probe?rasterizeProbe():graphic?rasterize():rasterizeBlack();
+ const target=white?WHITE_MP4:probe?PROBE_MP4:MP4;
  await mkdir(OUT,{recursive:true});
  try {
   await writeFile(PPM,Buffer.concat([
@@ -189,7 +196,7 @@ async function main(){
   ],{encoding:"utf8",timeout:90000});
   if(child.error||child.status!==0)
     throw Error("FFmpeg synthetic page encoder failed: "+(child.stderr?.slice(0,300)||child.error?.message||"unknown"));
-  console.log("Generated CLEAR synthetic "+(probe?"COLOR PROBE":graphic?"graphic":"SOLID BLACK")+" video:",target);
+  console.log("Generated CLEAR synthetic "+(white?"NEUTRAL WHITE":probe?"COLOR PROBE":graphic?"graphic":"SOLID BLACK")+" video:",target);
  }finally{await rm(PPM,{force:true});}
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
