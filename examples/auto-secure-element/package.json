@@ -5,7 +5,8 @@
   "type": "module",
   "license": "Apache-2.0",
   "dependencies": {
-    "shaka-player": "5.2.13"
+    "shaka-player": "5.2.13",
+    "@secure-display/secure-div": "0.1.0"
   },
   "devDependencies": {
     "vite": "^7.1.0"
