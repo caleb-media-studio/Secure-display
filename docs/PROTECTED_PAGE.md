@@ -66,3 +66,13 @@ bun run example:page
 ```
 
 Your already working `bun run drm:demo:package` prepares the **different document example**, not this full-page test. Use trusted HTTPS over LAN.
+
+## Near-invisible full-viewport DRM overlay experiment
+
+**Hypothesis under test, not a claimed protection method.** The example now starts in `DOM + DRM overlay` mode and draws a real licensed, encrypted Axinom public-test video as a CSS `position: fixed` layer above the entire browser viewport. Its opacity is **0.0000001%**, i.e. decimal CSS `opacity: 0.000000001`. Do not confuse this value with `0.0000001` CSS opacity, which would be 100 times more opaque.
+
+The underlying sample text, button and page remain **ordinary interactive DOM**. The video uses `pointer-events: none`, so the normal DOM button remains clickable. It reuses the existing FairPlay/Widevine public-test package and makes no attempt to decrypt the video in JavaScript. There is no replacement for the DOM or custom clickable proxy in this mode.
+
+**Testing:** First confirm the page reports a verified DRM session and advances the video timestamp/decoded-frame counter (when available). The diagnostics report computed CSS opacity and pointer-event behavior. Then take an operating-system screenshot, record a screen, or screen share. Compare the captured ordinary DOM content against the physical display. Use `Unprotected DOM control` (no overlay) and `Full protected page` (opaque licensed media) as controls. The outcome for near-invisible overlay mode **has not yet been verified** on hardware. Browsers may handle extremely small alpha values or protected video compositor layers differently, so record exact browser and capture method.
+
+If the browser computes the opacity as `0` or stops sending decoded frames, report it rather than interpreting the result as DRM capture blocking. This experiment does not test whether it protects confidential data, and no result should be assumed without a capture comparison.
