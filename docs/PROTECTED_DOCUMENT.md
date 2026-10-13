@@ -1,6 +1,6 @@
 # Protected document renderer (experimental)
 
-The core library now includes `@secure-display/document`, a DRM-backed document custom element:
+The core library now includes `@caleb-media-studio-llc/document`, a DRM-backed document custom element:
 
 ```html
 <secure-document asset-id="synthetic-report" zoom="1"></secure-document>

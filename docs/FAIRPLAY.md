@@ -10,7 +10,7 @@ Server-side: synthetic strings -> encode frames -> **real FairPlay HLS encryptio
 
 Browser-side:
 ```ts
-import { registerSecureElements } from "@secure-display/elements";
+import { registerSecureElements } from "@caleb-media-studio-llc/elements";
 
 // In an application that has separately installed shaka-player:
 registerSecureElements({
