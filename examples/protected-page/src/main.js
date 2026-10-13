@@ -61,17 +61,17 @@ function updateMode(){
  url.searchParams.set("opacity",String(opacityIndex));
  history.replaceState(null,"",url);
  const description=mode==="protected"
-  ?"Only DRM pixels form the page; no test sentence is visible in ordinary DOM."
+  ?"Control: 100% opaque encrypted BLACK video, with no text, graphics or simulated buttons. Normal DOM is hidden here."
   :mode==="overlay"
-    ?"Testing real DRM video at "+preset.label+" opacity over ordinary, interactive HTML. Change the slider without restarting playback."
+    ?"Testing a solid BLACK DRM video at "+preset.label+" over ordinary, interactive HTML. All visible lettering comes from the DOM; the video has no graphics."
     :"All page text is ordinary DOM, with no DRM layer.";
  document.querySelector("#mode-description").textContent=description;
  if(mode==="protected"&&!playing)
    status.textContent=playbackError||phase;
  else if(mode==="protected")
-   status.textContent="Licensed DRM playback active. Check physical display vs screenshot and recording.";
+   status.textContent="Encrypted BLACK video playing at 100% opacity (control). The frame itself contains no text.";
  else if(mode==="overlay")
-   status.textContent=playing?"DRM active at "+preset.label+" opacity. Capture a screenshot at this setting and compare with the DOM-only control.":(playbackError||phase);
+   status.textContent=playing?"BLACK DRM overlay active at "+preset.label+". DOM remains untouched; compare the visible DOM text with an OS screenshot.":(playbackError||phase);
  else status.textContent="Unprotected DOM control. Screenshots should contain the sentence.";
 }
 function setMode(value) {
@@ -135,6 +135,19 @@ async function startPlayback(){
  try {
   if(!window.isSecureContext)throw Error("Use HTTPS with a trusted CA (or localhost). LAN HTTP cannot run DRM.");
   const config=drmSource(chosen);
+  // Fail explicitly if the old graphic-backed DRM fixture is still present.
+  // The overlay experiment must use an encrypted BLACK-only video.
+  const markerResponse=await fetch("/drm-page/fixture-info.json",{
+   cache:"no-store",credentials:"same-origin",
+  });
+  if(!markerResponse.ok)throw Error("Black DRM fixture missing. Re-run bun run drm:page:package.");
+  let marker;
+  try{marker=await markerResponse.json();}catch{
+    throw Error("Black DRM fixture metadata invalid. Re-run bun run drm:page:package.");
+  }
+  if(marker?.kind!=="solid-black-v1" || marker?.width!==1280 || marker?.height!==720)
+    throw Error("Outdated graphic DRM fixture detected. Re-run bun run drm:page:package.");
+  log("Verified local DRM source is a solid black 1280x720 video. DOM supplies all text and controls.");
   const manifest=await fetch(config.manifest,{cache:"no-store",credentials:"same-origin"});
   if(!manifest.ok)throw Error("DRM media is missing (HTTP "+manifest.status+"). Run bun run drm:page:package.");
   const body=await manifest.text();
@@ -243,7 +256,7 @@ function updateOverlayMetrics(){
  const frames=quality?.totalVideoFrames;
  const bounds=video.getBoundingClientRect();
  const fullViewport=bounds.width>=innerWidth && bounds.height>=innerHeight;
- metrics.textContent="DRM verified: "+(drmVerified?"yes":"no")
+ metrics.textContent="Media: SOLID BLACK DRM | DRM verified: "+(drmVerified?"yes":"no")
    +" | Playback: "+(video.paused?"paused":"running")
    +" | Video time: "+video.currentTime.toFixed(2)+"s"
    +" | Decoded frames: "+(Number.isFinite(frames)?frames:"unavailable")
