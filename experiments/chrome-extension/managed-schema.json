@@ -1,0 +1,12 @@
+{
+ "type": "object",
+ "properties": {
+  "issuer": {"type": "string", "description": "HTTPS OpenID Connect issuer URL"},
+  "clientId": {"type": "string", "description": "Public extension OAuth client ID"},
+  "apiBaseUrl": {"type": "string", "description": "HTTPS enterprise content API root"},
+  "allowedOrigin": {"type": "string", "description": "Single authorized HTTPS page origin"},
+  "tenantId": {"type": "string", "description": "Opaque organization tenant"},
+  "allowDomReveal": {"type": "boolean", "description": "Allow explicit user-controlled text-only DOM reveal"}
+ },
+ "additionalProperties": false
+}
