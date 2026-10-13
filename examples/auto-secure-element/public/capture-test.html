@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Synthetic normal browser capture test for Secure Display research">
+<title>Secure Display | Chrome capture test</title>
+<style>
+:root{color-scheme:dark;font:16px/1.55 system-ui,-apple-system,sans-serif;background:#0b1322;color:#eaf4ff}
+*{box-sizing:border-box}body{margin:0}main{max-width:1120px;margin:42px auto;padding:0 22px}
+h1{font-size:clamp(27px,4vw,45px);line-height:1.14;letter-spacing:-.04em;margin:8px 0}
+p{color:#b9cfdf}h2{font-size:22px;margin:26px 0 8px}
+.eyebrow{color:#7be1c2;text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:800}
+.notice{background:#292537;border:1px solid #806b40;border-left:4px solid #f5c46c;padding:13px 17px;border-radius:10px}
+.notice strong{color:#ffdd9c}
+.panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:24px 0}
+.panel{border:2px solid #58718b;border-radius:18px;background:linear-gradient(145deg,#1f344e,#14223a);padding:25px;min-height:320px;overflow:hidden}
+.panel[data-secure-display]{border-color:#5fddba;background:linear-gradient(145deg,#174c49,#13283b)}
+.tag{text-transform:uppercase;font-size:12px;letter-spacing:.1em;font-weight:800;color:#9ad3e5}
+.panel[data-secure-display] .tag{color:#94f9d3}
+.panel p{color:#d6e8f5}
+input{font:inherit;background:#102436;border:1px solid #809db2;color:#fff;border-radius:8px;padding:8px;width:100%;max-width:100%;margin:5px 0 14px}
+button{font:inherit;border:1px solid #529f9b;background:#205363;color:#f8ffff;padding:10px 13px;border-radius:9px;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:2px solid white;outline-offset:3px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+#preview{display:block;background:#020710;width:100%;max-width:680px;aspect-ratio:16/9;border:1px solid #53687c;border-radius:12px;object-fit:contain}
+#status{display:block;white-space:pre-wrap;background:#17253a;padding:11px;border-radius:9px;font-size:13px}
+code{color:#a5ffde}li{margin-bottom:8px;color:#c3d5e3}
+a{color:#95e8d0}
+@media(max-width:720px){.panels{grid-template-columns:1fr}}
+</style></head>
+<body><main>
+<div class="eyebrow">Secure Display · experimental capture lab</div>
+<h1>Can stock Chrome capture this HTML?</h1>
+<p>The left pane is marked for the optional Secure Display extension. The right is an unmarked control. Both use real HTML, real inputs, native text selection, and live updates.</p>
+<div class="notice"><strong>Expected result today: both panes remain capturable.</strong> The Chrome extension and native host only probe capabilities. They do NOT yet activate capture exclusion in a stock browser.</div>
+<div class="panels">
+<section class="panel" data-secure-display="capture-lab" aria-label="Candidate Secure Display region">
+ <div class="tag">Candidate protected region · protection off</div>
+ <h2>Real protected candidate</h2>
+ <p>Synthetic example text: <strong>Orbit, cedar, indigo.</strong></p>
+ <label>Try a normal text input<input placeholder="Type something here" autocomplete="off"></label>
+ <button type="button" id="a-button">Click test: <span id="a-count">0</span></button>
+ <p>Dynamic DOM timestamp: <strong id="a-clock">Initializing</strong></p>
+</section>
+<section class="panel" aria-label="Ordinary HTML control region">
+ <div class="tag">Control region · normal HTML</div>
+ <h2>Unprotected control</h2>
+ <p>Synthetic control text: <strong>Pine, amber, violet.</strong></p>
+ <label>Try a normal text input<input placeholder="Type something here" autocomplete="off"></label>
+ <button type="button" id="b-button">Click test: <span id="b-count">0</span></button>
+ <p>Dynamic DOM timestamp: <strong id="b-clock">Initializing</strong></p>
+</section>
+</div>
+<h2>1. Browser tab capture</h2>
+<p>Click Start and choose <strong>This Tab</strong> in Chrome's sharing picker. See the shared video preview below. It may show a recursive image because you are sharing the same tab that displays its preview.</p>
+<div class="actions">
+ <button id="start" type="button">Start tab capture</button>
+ <button id="save" type="button" disabled>Save captured frame as PNG</button>
+ <button id="stop" type="button" disabled>Stop sharing</button>
+</div>
+<output id="status" role="status">Capture not started. Both panes are ordinary HTML.</output>
+<video id="preview" autoplay muted playsinline controls aria-label="Browser captured stream"></video>
+<h2>2. macOS independent screenshot and recording</h2>
+<ol>
+ <li>Take a baseline screenshot with <strong>Shift + Command + 4</strong>, selecting both panels.</li>
+ <li>Open the optional Chrome extension popup and select <strong>Probe selected Secure Display element</strong>. The current native helper reports <code>supported: false</code> (or missing host if not installed).</li>
+ <li>Repeat the screenshot. Record the same region with <strong>Shift + Command + 5</strong>. Compare the left candidate and right control across capture methods.</li>
+ <li>Verify both panels remain visible and clickable on the actual screen. Do not count an API return code alone as screenshot protection.</li>
+</ol>
+<p>Saving a frame above uses cooperative <code>getDisplayMedia()</code> browser sharing, not the independent macOS screenshot path. Neither proves capture blocking. All data on this page is synthetic.</p>
+<p><a href="https://github.com/caleb-media-studio/Secure-display">Secure Display GitHub repo</a></p>
+<script>
+(()=>{
+"use strict";
+const get=id=>document.getElementById(id);
+for(const prefix of ["a","b"]){
+ let count=0;
+ get(prefix+"-button").addEventListener("click",()=>get(prefix+"-count").textContent=String(++count));
+}
+function updateClock(){
+ const value=new Date().toLocaleTimeString();
+ get("a-clock").textContent=value;get("b-clock").textContent=value;
+}
+updateClock();setInterval(updateClock,1000);
+let stream=null;
+const status=text=>get("status").textContent=text;
+function stop(){
+ if(stream){for(const track of stream.getTracks())track.stop();}
+ stream=null;get("preview").srcObject=null;
+ get("start").disabled=false;get("save").disabled=true;get("stop").disabled=true;
+ status("Capture stopped. Native screenshot protection is still not enabled.");
+}
+get("start").addEventListener("click",async()=>{
+ if(!navigator.mediaDevices?.getDisplayMedia){
+  status("getDisplayMedia unavailable. Use Chrome on localhost or trusted HTTPS.");return;
+ }
+ try{
+  const s=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});
+  stream=s;
+  const track=s.getVideoTracks()[0];
+  if(!track){stop();return;}
+  track.addEventListener("ended",stop,{once:true});
+  get("preview").srcObject=s;
+  await get("preview").play();
+  get("start").disabled=true;get("save").disabled=false;get("stop").disabled=false;
+  status("Browser capture is active. Selected surface: "+(track.getSettings().displaySurface||"unknown"));
+ }catch(e){
+  stop();status("Capture not started: "+(e?.name||"Error"));
+ }
+});
+get("stop").addEventListener("click",stop);
+get("save").addEventListener("click",()=>{
+ const video=get("preview");
+ if(!stream||video.readyState<2||!video.videoWidth){status("No video frame available");return;}
+ const canvas=document.createElement("canvas");
+ canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+ canvas.getContext("2d").drawImage(video,0,0);
+ canvas.toBlob(blob=>{
+  if(!blob){status("Failed to save frame");return;}
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;link.download="secure-display-captured-tab.png";
+  link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);
+  status("Frame saved. It is a browser tab capture, NOT a macOS system screenshot.");
+ },"image/png");
+});
+addEventListener("pagehide",()=>{if(stream)for(const track of stream.getTracks())track.stop();});
+})();
+</script></main></body></html>

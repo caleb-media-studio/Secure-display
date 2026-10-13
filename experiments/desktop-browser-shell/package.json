@@ -1,0 +1,13 @@
+{
+  "name": "secure-display-native-browser-shell-lab",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Research-only Electron/Chromium browser window for capture exclusion and Widevine testing",
+  "type": "commonjs",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.mjs"
+  },
+  "license": "Apache-2.0"
+}

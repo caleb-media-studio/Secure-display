@@ -216,6 +216,10 @@ The first research prerelease is published; see [publishing preparation](docs/PU
 | `docs/` | Tutorials, evidence, feasibility research, compatibility and security |
 | `experiments/` | Isolated research, including native macOS capture-region experiments |
 
+## Optional Chrome extension research (secondary path)
+
+The primary Secure Display npm package **does not require a Chrome extension**. A separate [Manifest V3 research companion](experiments/chrome-extension/README.md) explores enterprise OIDC SSO, per-document encrypted-envelope/key release, and a **read-only** macOS native messaging capability probe. Encryption does **not** hide decrypted page HTML from other scripts, DevTools or screenshots. No real enterprise backend or browser capture exclusion is claimed. See the [stock browser research](docs/STOCK_BROWSER_INTEGRATION_RFC.md).
+
 ## Scope, licensing and responsible use
 
 This is a research implementation, not a deployed production security boundary. Production-safe delivery would require a defensible private content and key architecture, browser/platform validation, capture testing, accessibility work and independent review. Do not equate DRM support with guaranteed capture exclusion.

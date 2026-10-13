@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Secure Display Research Companion",
+  "version": "0.1.0",
+  "description": "Optional enterprise SSO, encrypted document viewer and native capture capability probe. Research-only.",
+  "minimum_chrome_version": "116",
+  "permissions": ["activeTab", "scripting", "identity", "storage", "nativeMessaging"],
+  "optional_host_permissions": ["https://*/*"],
+  "action": {
+    "default_title": "Secure Display Research Companion",
+    "default_popup": "popup.html"
+  },
+  "background": {"service_worker": "background.mjs", "type": "module"},
+  "storage": {"managed_schema": "managed-schema.json"}
+}
