@@ -57,7 +57,7 @@ try {
   console.log(pkg.name+": package layout valid ("+fileNames.length+" files, private)");
  }
  const react=JSON.parse(readFileSync(resolve(root,"packages/react/package.json"),"utf8"));
- for(const dependency of ["@secure-display/core","@secure-display/secure-div"]){
+ for(const dependency of ["@caleb-media-studio-llc/core","@caleb-media-studio-llc/secure-div"]){
   assert.ok(react.dependencies?.[dependency],dependency+" must be declared");
  }
  console.log("PASS: three research packages have coherent exports and pack contents; publishing remains disabled.");
