@@ -8,7 +8,7 @@
 ## The React API
 
 ```tsx
-import {SecureDiv} from "@secure-display/react";
+import {SecureDiv} from "@caleb-media-studio-llc/react";
 
 export function Page(){
   return <SecureDiv className="secure-card">

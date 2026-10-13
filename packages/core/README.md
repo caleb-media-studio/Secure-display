@@ -1,8 +1,8 @@
-# @secure-display/core
+# @caleb-media-studio-llc/core
 
 **Research-only** foundation for browser Encrypted Media Extensions (EME) capability probes, diagnostic policy evaluation and synthetic DRM media playback paths.
 
-This package is a dependency of the experimental `@secure-display/react` integration. Its functions do **not** prove screenshot exclusion. A browser accepting an EME configuration or obtaining a license is not evidence that screenshots, screen recordings, screen sharing or photography are blocked.
+This package is a dependency of the experimental `@caleb-media-studio-llc/react` integration. Its functions do **not** prove screenshot exclusion. A browser accepting an EME configuration or obtaining a license is not evidence that screenshots, screen recordings, screen sharing or photography are blocked.
 
 ## Scope
 

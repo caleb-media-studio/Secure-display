@@ -20,7 +20,7 @@ authorized backend obtains text
 
 The encoding step is normally server-side; the device performs **decoding**. No JavaScript or WebGPU shader receives plaintext report text.
 
-`@secure-display/elements` exposes `secure-text`, `secure-p`, `secure-h1`, routing CENC assets to the EME player and FairPlay HLS assets to an injected Shaka-compatible player. Its resolver accepts only opaque IDs; **never supply plaintext as a child or attribute**.
+`@caleb-media-studio-llc/elements` exposes `secure-text`, `secure-p`, `secure-h1`, routing CENC assets to the EME player and FairPlay HLS assets to an injected Shaka-compatible player. Its resolver accepts only opaque IDs; **never supply plaintext as a child or attribute**.
 
 **Current prototype only allows synthetic DRM tests.** It is not a production confidentiality mechanism. An accepted EME request, a usable license, or HDCP capability is not proof that a screenshot, screen sharing software, virtual display, or another camera cannot capture content.
 

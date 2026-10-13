@@ -1,9 +1,9 @@
-# @secure-display/react
+# @caleb-media-studio-llc/react
 
 **Research-only React UI for prepackaged, licensed DRM media.** Native React children stay inspectable; visible pixels are supplied from a separate encrypted video. Not arbitrary live JSX capture protection.
 
 ```tsx
-import {SecureDiv} from "@secure-display/react";
+import {SecureDiv} from "@caleb-media-studio-llc/react";
 
 <SecureDiv className="secure-card">
  <h2>Prepackaged synthetic test content</h2>

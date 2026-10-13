@@ -7,7 +7,7 @@
 The real fixture is [App.tsx](../examples/auto-secure-element/react/App.tsx). The author writes JSX rather than building a video or handling DRM in each component.
 
 ```tsx
-import {SecureDiv} from "@secure-display/react";
+import {SecureDiv} from "@caleb-media-studio-llc/react";
 
 function Screen(){
  return <SecureDiv className="secure-card">
@@ -24,7 +24,7 @@ This is the **authoring shape**, not automatically generated encrypted media for
 The sample [setup.js](../examples/auto-secure-element/react/setup.js) calls:
 
 ```ts
-import {configureSecureDisplay} from "@secure-display/react";
+import {configureSecureDisplay} from "@caleb-media-studio-llc/react";
 
 configureSecureDisplay({
   resolveAsset,     // look up trusted metadata for this prebuilt DRM asset
@@ -51,7 +51,7 @@ Repackage after changes to the JSX or styling. The fingerprint detects many HTML
 ## Optional status hook
 
 ```tsx
-import {SecureDiv,useSecureDisplayStatus} from "@secure-display/react";
+import {SecureDiv,useSecureDisplayStatus} from "@caleb-media-studio-llc/react";
 
 function Demo(){
  const {status,onSecureStateChange}=useSecureDisplayStatus();

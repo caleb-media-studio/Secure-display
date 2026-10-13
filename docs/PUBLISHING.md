@@ -7,25 +7,28 @@
 Publish to the **npm registry** once. Consumers can use any supported package manager:
 
 ```bash
-npm install @secure-display/react
-bun add @secure-display/react
-pnpm add @secure-display/react
+npm install @caleb-media-studio-llc/react
+bun add @caleb-media-studio-llc/react
+pnpm add @caleb-media-studio-llc/react
 ```
 
 These are **future commands**, not currently working installation instructions. `@secure-display` is an **npm scope**, which must belong to your own npm user or organization. Having a GitHub repository with this name does not grant npm namespace ownership. Verify the scope before a release, and rename all package imports/dependencies together if necessary.
 
-## After creating your npm organization
+## npm organization and scope
 
-The manifests currently target the `@secure-display` scope. Creating an npm organization is a good start, but do **not** assume the GitHub organization `caleb-media-studio` or the repository name establishes npm scope ownership. Confirm the **exact** npm organization slug and the scope in all three manifests match.
+The user-provided npm organization is [caleb-media-studio-llc](https://www.npmjs.com/org/caleb-media-studio-llc). The package scope is **`@caleb-media-studio-llc`**. A URL does not itself verify the publisher's account permissions; check membership and publishing rights after logging in.
+
+
+These manifests use the npm organization's scope, not the separate `caleb-media-studio` GitHub organization name. Keep the npm organization slug, internal dependencies, and documentation aligned before publication.
 
 ```bash
 npm login
 npm whoami
-npm org ls secure-display
-npm view @secure-display/react version
+npm org ls caleb-media-studio-llc
+npm view @caleb-media-studio-llc/react version
 ```
 
-The last command can legitimately return a not-found error before the first publication. Do not interpret a nonexistent package as ownership evidence. Verify permissions in your npm organization's settings. The intended primary package is `@secure-display/react`, with `@secure-display/core` and `@secure-display/secure-div` as runtime dependencies. If the organization slug is different, rename these manifests, their internal dependency names, imports and documentation consistently **before** the first publication.
+The last command can legitimately return a not-found error before the first publication. Do not interpret a nonexistent package as ownership evidence. Verify permissions in your npm organization's settings. The intended primary package is `@caleb-media-studio-llc/react`, with `@caleb-media-studio-llc/core` and `@caleb-media-studio-llc/secure-div` as runtime dependencies. If the organization slug is different, rename these manifests, their internal dependency names, imports and documentation consistently **before** the first publication.
 
 The npm organization description is not the package description: the short summaries shown on npm come from each package's own `package.json`. Keep the repository private and package publishing disabled until the release gates are met.
 
@@ -33,9 +36,9 @@ The npm organization description is not the package description: the short summa
 
 | Package | Why |
 | --- | --- |
-| `@secure-display/core` | React package currently depends on it for DRM diagnostics |
-| `@secure-display/secure-div` | Native element, JS, CSS guard and TypeScript declarations |
-| `@secure-display/react` | Primary React API; depends on the above two |
+| `@caleb-media-studio-llc/core` | React package currently depends on it for DRM diagnostics |
+| `@caleb-media-studio-llc/secure-div` | Native element, JS, CSS guard and TypeScript declarations |
+| `@caleb-media-studio-llc/react` | Primary React API; depends on the above two |
 
 `document` and `elements` are earlier research packages and should not automatically be released with the main React component. A public React tarball would **not** include a turnkey production DRM license server or general-purpose live JSX encoder.
 
@@ -47,9 +50,9 @@ bun run build
 bun run release:inspect
 bun run release:smoke:npm
 bun run release:smoke:bun
-npm pack --dry-run --workspace @secure-display/core
-npm pack --dry-run --workspace @secure-display/secure-div
-npm pack --dry-run --workspace @secure-display/react
+npm pack --dry-run --workspace @caleb-media-studio-llc/core
+npm pack --dry-run --workspace @caleb-media-studio-llc/secure-div
+npm pack --dry-run --workspace @caleb-media-studio-llc/react
 ```
 
 The release inspection checks compiled entrypoints, dependency links, CSS declarations and package boundaries. The two smoke tests also pack all three private packages into temporary tarballs, install them into a fresh application with npm and Bun respectively, and verify runtime imports, types and CSS without depending on monorepo links or publishing. They may download the public React peer dependency. Review exactly which files npm would expose. Running `npm pack` or `bun pm pack --dry-run` does **not** publish to the registry.

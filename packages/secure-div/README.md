@@ -1,4 +1,4 @@
-# @secure-display/secure-div
+# @caleb-media-studio-llc/secure-div
 
 The research-only native Web Component powering the React integration. `registerSecureDiv` needs a licensed DRM playback adapter and a static matching encrypted asset. It keeps the actual DOM transparent, preserving clicks and selection, while a video portal shows packaged DRM pixels.
 
