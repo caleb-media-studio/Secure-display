@@ -50,17 +50,22 @@ test("enterprise envelope AES-GCM decrypts with nonextractable RSA-OAEP private 
  const keyResponse={documentId:id,nonce,keyId,algorithm:"RSA-OAEP-256",
   wrappedKeyBase64url:bytesToBase64url(new Uint8Array(wrapped))};
  assert.deepEqual(validateWrappedKey(keyResponse,id,nonce,keyId),keyResponse);
- assert.equal(await decryptEnvelope(envelope,keyResponse,recipient.privateKey,id,origin),text);
+ assert.equal(await decryptEnvelope(envelope,keyResponse,recipient.privateKey,id,origin,nonce),text);
+ await assert.rejects(
+  ()=>decryptEnvelope(envelope,keyResponse,recipient.privateKey,id,origin,"wrong-challenge"),
+  /document challenge/,
+  "Decryption must never accept a wrapped key returned for another challenge"
+ );
  assert.throws(()=>validateWrappedKey(keyResponse,id,"wrong-challenge",keyId));
  assert.throws(()=>validateWrappedKey(keyResponse,id,nonce,"wrong-key"));
  assert.throws(()=>validateEnvelope(envelope,"another_doc",origin));
  await assert.rejects(()=>decryptEnvelope({...envelope,ivBase64url:bytesToBase64url(iv.map((v,i)=>i===0?v^1:v))},
- keyResponse,recipient.privateKey,id,origin));
+ keyResponse,recipient.privateKey,id,origin,nonce));
 });
 test("PKCE challenge is deterministic and generated verifier is unpredictable",async()=>{
  const a=randomBase64url(),b=randomBase64url();
  assert.notEqual(a,b);assert.equal(a.length,43);
- assert.equal(await pkceChallenge("test"),"n4bQgYhMfWWaL-qgxVrQFaO_T3vsy_EYH4Th5cIEq4");
+ assert.equal(await pkceChallenge("test"),"n4bQgYhMfWWaL-qgxVrQFaO_TxsrC4Is0V1sFbDwCgg");
 });
 test("native host is probe only: no window mutations or bogus successful protection state",()=>{
  const envelope={kind:"CAPABILITY_PROBE",requestId:randomBase64url(24),

@@ -24,9 +24,9 @@ export async function generateRecipient(){
   publicExponent:new Uint8Array([1,0,1]),hash:"SHA-256"},false,["wrapKey","unwrapKey"]);
  return {privateKey:pair.privateKey,publicKeyJwk:await webcrypto.subtle.exportKey("jwk",pair.publicKey)};
 }
-export async function decryptEnvelope(envelope,wrapped,privateKey,id,origin){
+export async function decryptEnvelope(envelope,wrapped,privateKey,id,origin,nonce){
  const e=validateEnvelope(envelope,id,origin);
- const w=validateWrappedKey(wrapped);
+ const w=validateWrappedKey(wrapped,id,nonce,e.keyId);
  const iv=base64urlToBytes(e.ivBase64url);
  if(iv.length!==12)throw Error("AES-GCM IV must be 96 bits");
  const ciphertext=base64urlToBytes(e.ciphertextBase64url);

@@ -113,7 +113,7 @@ async function readDocument(docId){
  }),id,challenge,envelope.keyId);
  // Never persist the key. It exists only inside this browser extension's
  // worker; plaintext is returned ONLY to its own extension popup.
- const plaintext=await decryptEnvelope(envelope,wrapped,recipient.privateKey,id,config.allowedOrigin);
+ const plaintext=await decryptEnvelope(envelope,wrapped,recipient.privateKey,id,config.allowedOrigin,challenge);
  if(plaintext.length>250_000)throw Error("Decrypted document too large");
  return {plaintext,id,tabId:tab.id,origin:config.allowedOrigin,allowDomReveal:config.allowDomReveal};
 }
