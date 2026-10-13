@@ -1,5 +1,8 @@
 # Secure Display Architecture
 
+> **Earlier architecture note:** This document primarily describes the original asset-ID-only `secure-text`/`secure-document` research. The newer `SecureDiv` React experiment intentionally preserves original (synthetic) HTML in an opacity-zero DOM; it is **not** confidential from DevTools. Start with [the current React architecture](AUTO_SECURE_ELEMENT.md) and [threat model](THREAT_MODEL.md).
+
+
 **Objective:** non-installable HTML tags that display server-encoded **DRM-protected media representing text**, ideally through a hardware-secure CDM path. No ordinary canvas-rendered plaintext.
 
 ## Trust model

@@ -1,5 +1,8 @@
 # Secure Display: observed DRM capture validation
 
+> **Scope note:** The results below are historical user-observed hardware tests of earlier synthetic fixtures, not independent certification of the latest React component. Re-run the device captures against the new JSX build before making claims. See [research overview](RESEARCH.md).
+
+
 ## Status and evidence
 
 **October 12, 2026 — User-observed macOS tests; not independently reproduced.**
