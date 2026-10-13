@@ -34,13 +34,13 @@ test("only explicit FairPlay and Widevine paths available",()=>{
  assert.throws(()=>drmSource("clearkey"));
 });
 
-test("browser example defaults to viewport-wide, pointer-transparent DRM experiment",()=>{
+test("browser example defaults to neutral white DRM compositor experiment",()=>{
  const dir=resolve(dirname(fileURLToPath(import.meta.url)),"..");
  const source=readFileSync(resolve(dir,"src/main.js"),"utf8");
  const html=readFileSync(resolve(dir,"index.html"),"utf8");
- assert.match(source,/\?query\.get\("mode"\):"overlay"/);
+ assert.match(source,/\?query\.get\("mode"\):"neutral"/);
  assert.match(source,/rule\.videoOpacity\.toFixed\(9\)/);
- assert.match(html,/#experiment\[data-mode="overlay"\] #protected-video/);
+ assert.match(html,/#experiment\[data-mode="neutral"\] #protected-video/);
  assert.match(html,/width:100vw;height:100vh/);
  assert.match(html,/pointer-events:none/);
  assert.match(html,/id="dom-page">/);
@@ -90,7 +90,24 @@ test("default black-video overlay needs fresh local fixture marker",()=>{
  const html=readFileSync(resolve(dir,"index.html"),"utf8");
  assert.match(source,/fixture-info\.json/);
  assert.match(source,/solid-black-v1/);
- assert.match(source,/Outdated graphic DRM fixture/);
+ assert.match(source,/Outdated "\+requestedFixture\+" DRM fixture/);
  assert.match(html,/REAL HTML CONTENT/);
  assert.match(html,/Opaque black DRM \(control\)/);
+});
+
+test("white multiply mode uses native DOM and full-opacity video",()=>{
+ const mode=modePolicy("neutral",true);
+ assert.deepEqual(mode,{
+  showDom:true,showVideo:true,videoOpacity:1,enableProtectedHotspot:false,
+ });
+ assert.equal(modePolicy("neutral",false).showVideo,false);
+ const dir=resolve(dirname(fileURLToPath(import.meta.url)),"..");
+ const source=readFileSync(resolve(dir,"src/main.js"),"utf8");
+ const html=readFileSync(resolve(dir,"index.html"),"utf8");
+ assert.match(source,/modeFixture=value=>value==="neutral"\?"white":"black"/);
+ assert.match(source,/style\.mixBlendMode=mode==="neutral"\?"multiply":"normal"/);
+ assert.match(source,/solid-white-v1/);
+ assert.match(source,/drm-white/);
+ assert.match(html,/mix-blend-mode:multiply/);
+ assert.match(html,/White DRM × multiply \(test\)/);
 });
