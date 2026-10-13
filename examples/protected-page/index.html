@@ -57,6 +57,17 @@ button:focus-visible,select:focus-visible{outline:2px solid #7ce5c8}
 #opacity-value{font:700 15px ui-monospace,monospace;color:#87f0cc;min-width:105px;text-align:right}
 #opacity-css{font:12px ui-monospace,monospace;color:#c0d8e5}
 #opacity-hint{font-size:.84rem;margin:3px 0 12px}
+#capture-calibration{margin:22px 0;padding:17px;border:1px solid #426179;border-radius:14px;background:#17263a}
+#capture-calibration h2{margin:0 0 9px}
+#capture-calibration p{font-size:.88rem}
+#reference-start{background:#76dfc0;color:#132738;font-weight:750}
+#reference-status{font:12px/1.5 ui-monospace,monospace;color:#b6eddc;padding:9px 12px;background:#112235;border-radius:8px;margin:12px 0}
+#reference-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.reference-tile{min-width:0;border:1px solid #465d79;border-radius:10px;overflow:hidden;background:#090e18}
+.reference-tile video{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#030609;
+ opacity:1!important;filter:none!important;mix-blend-mode:normal!important;pointer-events:none}
+.reference-tile figcaption{font-size:.81rem;line-height:1.4;padding:9px 11px;color:#d0e2f0}
+@media(max-width:640px){#reference-grid{grid-template-columns:1fr}}
 #interactions{font-variant-numeric:tabular-nums}
 #diagnostic{white-space:pre-wrap;overflow-wrap:anywhere;background:#0a1220;padding:14px;color:#b8d3e4;font:12px/1.6 ui-monospace,monospace;min-height:60px;max-height:260px;overflow:auto}
 details{margin:20px 0}
@@ -99,6 +110,16 @@ footer{color:#92a7bc;font-size:.8rem;margin:1.4rem 0}
 <div id="protected-guard" aria-hidden="true"></div>
 <button id="protected-hotspot" hidden disabled aria-label="Activate protected-page demo button" title="Activate test"></button>
 </div></div>
+<section id="capture-calibration" aria-labelledby="reference-heading">
+<h2 id="reference-heading">Is DRM actually excluded from the screenshot?</h2>
+<p>Compare two versions of the <strong>exact same synthetic magenta/cyan pattern</strong>. Left: independently licensed Widevine/FairPlay encrypted video. Right: ordinary clear MP4. Both should look colorful on your physical display. If only the left becomes black or blank in a screenshot, we have direct evidence of protected video capture exclusion for that path.</p>
+<button id="reference-start" type="button">Run encrypted vs clear reference</button>
+<p id="reference-status" role="status">Reference videos not started. Set the black overlay to 0% or choose Unprotected DOM control before comparing.</p>
+<div id="reference-grid">
+<figure class="reference-tile"><video id="drm-reference-video" muted loop playsinline preload="none" aria-label="Encrypted DRM color reference"></video><figcaption><strong>Encrypted DRM reference</strong> — should be colorful on your display; capture result to be tested</figcaption></figure>
+<figure class="reference-tile"><video id="clear-reference-video" muted loop playsinline preload="none" aria-label="Unencrypted color reference"></video><figcaption><strong>Unencrypted control</strong> — same visible frames, expected to remain visible in ordinary screenshots</figcaption></figure>
+</div>
+</section>
 <p id="interactions" role="status">Interaction count: 0 (this counter is ordinary DOM)</p>
 <p id="overlay-metrics" role="status">Checking DRM media and overlay compositor settings...</p>
 <h2>Capture experiment</h2>
