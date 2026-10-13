@@ -62,3 +62,5 @@ The purpose is to empirically test **zero-install, DOM-authored, browser-rendere
 ### Build-step verification
 
 The CI pipeline also runs `node tools/package-dom-element.mjs --snapshot-only`, which launches headless Chrome, captures the genuine fixture element, encodes it into H.264 using FFmpeg and decodes a frame to check for actual nonblank HTML imagery. This does **not** verify Axinom license acquisition or real capture exclusion in the user's OS; run the full `drm:element:package` command locally for those checks.
+
+The card mount has a black fallback backing, so if the browser omits the licensed video plane from capture the area behind the transparent DOM is black rather than revealing unrelated webpage content. This is merely a backing color, not the DRM mechanism. A black screenshot without a colorful visible card on the physical monitor is **not** evidence of successful capture protection.
