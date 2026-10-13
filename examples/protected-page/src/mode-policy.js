@@ -1,15 +1,17 @@
 /**
- * Comparison modes. An alpha-blended DRM video does NOT automatically
- * grant copy protection to underlying HTML elements.
+ * Comparison modes for empirical screen capture tests.
+ * Near-invisible overlay behavior is not assumed; verify by capture.
  */
 export const MODES=Object.freeze(["protected","overlay","normal"]);
+// 0.0000001% expressed as a CSS opacity fraction, not a percentage.
+export const NEAR_INVISIBLE_OPACITY=0.000000001;
 export function modePolicy(mode,drmPlaying){
  if(!MODES.includes(mode)) throw Error("Unknown experiment mode.");
  if(mode==="normal")return Object.freeze({
   showDom:true,showVideo:false,videoOpacity:0,enableProtectedHotspot:false,
  });
  if(mode==="overlay")return Object.freeze({
-  showDom:true,showVideo:Boolean(drmPlaying),videoOpacity:0.015,
+  showDom:true,showVideo:Boolean(drmPlaying),videoOpacity:NEAR_INVISIBLE_OPACITY,
   enableProtectedHotspot:false,
  });
  return Object.freeze({
