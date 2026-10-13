@@ -41,7 +41,7 @@ export function modePolicy(mode,drmPlaying,overlayOpacity=NEAR_INVISIBLE_OPACITY
  });
  return Object.freeze({
   showDom:false,showVideo:Boolean(drmPlaying),videoOpacity:1,
-  enableProtectedHotspot:Boolean(drmPlaying),
+  enableProtectedHotspot:false,
  });
 }
 export function drmSource(kind){
