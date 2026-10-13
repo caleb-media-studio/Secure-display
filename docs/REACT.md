@@ -1,81 +1,104 @@
-# React usage
+# React demo and integration
 
-**This is a fixed synthetic DRM experiment, not a tool for confidential records.** The JSX remains in the browser DOM, and the static encrypted video has to match it.
+Secure Display's only proposed npm package is **\`@caleb-media-studio-llc/secure-display\`**. The examples in this repository use the single-package bundle. \`packages/react\`, \`packages/secure-div\` and \`packages/core\` are private internal workspaces.
 
-## Minimal component
+> [!WARNING]
+> **Research-only synthetic DRM experiment.** The original JSX is still in the browser DOM, public test keys are not confidential, and screenshot exclusion is not certified. Do not use real user or customer information.
 
-The real fixture is [App.tsx](../examples/auto-secure-element/react/App.tsx). The author writes JSX rather than building a video or handling DRM in each component.
+## Run the demo you can actually see
 
-```tsx
-import {SecureDiv} from "@caleb-media-studio-llc/secure-display";
+Start from the repository root, on branch \`feat/initial-research-framework\`.
 
-function Screen(){
- return <SecureDiv className="secure-card">
-  <h2>Static, packaged synthetic content</h2>
-  <button onClick={() => console.log("native click")}>Continue</button>
- </SecureDiv>;
+\`\`\`bash
+git fetch origin
+git switch feat/initial-research-framework
+git pull --ff-only
+bun install
+bun run typecheck
+SECURE_DISPLAY_PACKAGER="$PWD/.secure-display-local/bin/packager" bun run drm:element:package
+bun run example:react
+\`\`\`
+
+If Shaka Packager is elsewhere, replace the executable path in \`SECURE_DISPLAY_PACKAGER\`. When already available on \`PATH\`, the variable can be omitted. Packaging requires FFmpeg, developer Google Chrome, Shaka Packager, and access to public Axinom test resources.
+
+Open the printed Vite **Local** URL with \`/react/\`, usually **http://localhost:5173/react/**. If HTTPS was configured for LAN testing, use the trusted \`https://\` URL instead.
+
+The React UI has a protected static synthetic card, a real HTML button, a click counter, and a diagnostic DRM status below the card. \`playing\` means the adapter returned a licensed player. \`blocked\` means it did not become displayable; read the reason shown. Neither state proves screen-recording exclusion.
+
+The packaged fixture is fixed to **960 × 540**. For edits to protected JSX/CSS, **re-run \`drm:element:package\`** before testing the modified markup.
+
+## Minimal React authoring shape
+
+The actual example is [\`App.tsx\`](../examples/auto-secure-element/react/App.tsx). A component author can keep the normal JSX authoring experience:
+
+\`\`\`tsx
+import {SecureDiv, useSecureDisplayStatus} from "@caleb-media-studio-llc/secure-display";
+
+function Screen() {
+  const {status, onSecureStateChange} = useSecureDisplayStatus();
+  return <>
+    <SecureDiv className="secure-card" onSecureStateChange={onSecureStateChange}>
+      <h2>Static prepackaged synthetic content</h2>
+      <button onClick={() => console.log("click")}>Continue</button>
+    </SecureDiv>
+    <output role="status">{status.state} {status.reason ?? ""}</output>
+  </>;
 }
-```
+\`\`\`
 
-This is the **authoring shape**, not automatically generated encrypted media for this exact snippet. To see the working synthetic test, use the fixture in `App.tsx`.
+**This snippet is API illustration, not a newly generated encrypted asset for this exact JSX.** It cannot become protected just by importing and wrapping a component.
 
-## Configure once
+## Configure the application once
 
-The sample [setup.js](../examples/auto-secure-element/react/setup.js) calls:
+The working synthetic app uses [\`react/setup.js\`](../examples/auto-secure-element/react/setup.js):
 
-```ts
+\`\`\`ts
 import {configureSecureDisplay} from "@caleb-media-studio-llc/secure-display";
 
 configureSecureDisplay({
-  resolveAsset,     // look up trusted metadata for this prebuilt DRM asset
-  playbackAdapter,  // attach authorized encrypted HLS/DASH media
+  resolveAsset,     // verifies the prebuilt asset metadata and DOM fingerprint
+  playbackAdapter,  // returns a licensed video handle for that prebuilt asset
 });
-```
+\`\`\`
 
-That one-time setup is application wiring. The current example uses the public Axinom **test** entitlement and is **not production licensing**. Regular component authors do not need to repeat these parameters.
+The resolver and playback adapter are supplied by the integration. The current lab setup uses public Axinom entitlement data; it must not be copied into a production confidentiality design. The consumer package does not include a private DRM license server.
 
-**First-paint protection:** load the native [secure-div.css](../packages/secure-div/secure-div.css) opacity guard in the initial document head before SSR/hydration. The example page includes such a guard already. Loading CSS only after React starts may not prevent an early plaintext paint.
+Load \`@caleb-media-studio-llc/secure-display/secure-div.css\` **before the first HTML paint** (for example, from an early document stylesheet). The demonstration's \`react/index.html\` includes an inline guard for this purpose.
 
-## Package and run
+## Test checklist
 
-```bash
-bun install
-SECURE_DISPLAY_PACKAGER="/absolute/path/to/packager" bun run drm:element:package
-bun run example:auto-element
-```
+1. Verify the physical display shows the prepackaged static content.
+2. Verify the protected card button increments the outside React counter.
+3. Check the outside status shows \`playing\` and the expected DRM identifier. This proves playback state only.
+4. Drag-select protected text and use native Copy. The current research build deliberately keeps its DOM extractable.
+5. Compare OS screenshots, screen recordings and sharing output to the physical display. Record each browser, OS, device, and capture method.
+6. Change protected JSX without regenerating the video. It should block/stale rather than displaying old pixels. Restore/repackage afterward.
+7. Resize the card away from 960 × 540. Layout mismatch should block.
+8. Test Chrome and Safari independently; do not assume results transfer between Widevine and FairPlay.
 
-Go to the printed Vite URL at `/react/`. The build uses developer Chrome and FFmpeg to render **actual React JSX**, encode H.264 at the fixed 960×540 size, then package DRM video. It saves metadata about source HTML/CSS, the DOM fingerprint, asset identity and dimensions. At runtime, the resolver and element validate the matching static asset before showing video.
+See [validation matrix](VALIDATION_MATRIX.md) and [status definitions](STATUS.md). Do not use private documents for the test.
 
-Repackage after changes to the JSX or styling. The fingerprint detects many HTML/text mismatches but **not every visual change**, so manual CSS changes, fonts, reflow, dynamic state, pseudo-elements and responsiveness remain significant limitations. There is no real-time DOM-to-DRM encoder.
+## Common failures
 
-## Optional status hook
-
-```tsx
-import {SecureDiv,useSecureDisplayStatus} from "@caleb-media-studio-llc/secure-display";
-
-function Demo(){
- const {status,onSecureStateChange}=useSecureDisplayStatus();
- return <>
-  <SecureDiv onSecureStateChange={onSecureStateChange}>
-   <p>Prepackaged synthetic fixture required</p>
-  </SecureDiv>
-  <output role="status">{status.state}</output>
- </>;
-}
-```
-
-This snippet demonstrates the optional diagnostics API, not a valid video asset for that text. The component works with no hook or callback. See [status and errors](STATUS.md).
-
-## Common problems
-
-| Observation | What to check |
+| Symptom | Action |
 | --- | --- |
-| Black/blank card | Missing DRM media or blocked state is a correct fail-closed behavior |
-| `JSX differs from the encrypted asset` | Repackage from current `App.tsx`; check its root class and children |
-| Source SHA differs | The CSS/source fixture and encrypted media are out of sync |
-| Dimensions changed | This prototype only supports fixed-size prepackaged pixels |
-| Screenshot has blue selection rectangles | Highlight is ordinary capturable DOM |
-| React works but another browser blocks | DRM playback/capture behavior varies by browser, OS and CDM |
-| VS Code complains about CSS import | Run `bun install`, use the declared CSS export and restart the TS server if needed |
+| \`Encrypted media not packaged\` | Run \`drm:element:package\`, confirm \`public/secure-asset/asset-info.json\` exists |
+| Blank card | Read \`blocked\` state and console/network diagnostics, verify DRM licensing |
+| \`React HTML differs\` or SHA mismatch | Repackage the current JSX and CSS |
+| Dimensions differ | The synthetic fixture requires 960 × 540 |
+| Selected text highlights visible in captures | The selection geometry overlay is normal DOM, not DRM media |
+| JavaScript clicks work but no video | React interactions and licensed pixels are separate systems |
+| Browser DRM works on localhost but fails on LAN | Use trusted HTTPS; see [network testing](NETWORK_TESTING.md) |
+| Packager or Chrome executable missing | Install them or set \`SECURE_DISPLAY_PACKAGER\` / \`SECURE_DISPLAY_CHROME_PATH\` |
 
-Even with a successfully playing card, screen capture must be tested separately on physical hardware. The original React text is still visible to DevTools/scripts.
+## Local packaging and distribution checks
+
+\`\`\`bash
+bun run test
+bun run build
+bun run release:inspect
+bun run release:smoke:npm
+bun run release:smoke:bun
+\`\`\`
+
+Only \`@caleb-media-studio-llc/secure-display\` is proposed for publication. It remains private. See [publishing](PUBLISHING.md), [technical research](AUTO_SECURE_ELEMENT.md), [threat model](THREAT_MODEL.md), and [repository README](../README.md).

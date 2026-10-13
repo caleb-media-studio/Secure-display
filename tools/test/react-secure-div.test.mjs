@@ -47,7 +47,9 @@ test("React example uses only SecureDiv JSX with centralized setup",()=>{
  const setup=source("examples/auto-secure-element/react/setup.js");
  const packager=source("tools/package-dom-element.mjs");
  const pkg=JSON.parse(source("packages/secure-div/package.json"));
- assert.ok(demo.includes('<SecureDiv className="secure-card">'));
+ assert.ok(demo.includes('<SecureDiv className="secure-card" onSecureStateChange={onSecureStateChange}>'));
+ assert.ok(demo.includes('id="react-drm-status"'));
+ assert.ok(demo.includes("useSecureDisplayStatus"));
  assert.ok(!demo.includes("assetId="));
  assert.ok(!demo.includes("sourceSha256="));
  assert.ok(!demo.includes("playbackAdapter="));
