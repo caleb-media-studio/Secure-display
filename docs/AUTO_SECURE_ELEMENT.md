@@ -78,3 +78,46 @@ The updated runtime now listens to the browser's actual `selectionchange` event 
 No repackaging is necessary because the source fixture HTML and encrypted asset have not changed. Pull the latest branch and rerun `bun run example:auto-element`. Drag over the heading/paragraph; the real browser text selection should gain blue rectangular highlighting while the protected text remains rendered by DRM. The demo reports the number of selected characters without echoing the text. Try double-click to select a word, Shift+Arrow for keyboard selection, and Cmd/Ctrl+C into a local scratchpad to confirm real browser selection. Then capture a screenshot; **the actual letters should still be missing**, but the blue selection rectangles may be present. Test Chrome and Safari separately.
 
 Unit tests validate clipping, empty/cross-boundary selections and text-free indicators; an automated headless-Chrome mouse-drag regression test validates that `opacity:0` does not disable native DOM selection. Neither test substitutes for your actual physical-display/screenshot comparison.
+
+## Experimental React component integration
+
+The `@secure-display/secure-div` workspace now owns the real custom element
+runtime. The React package exports `SecureDiv` which renders that same element,
+preserving original React children, focus, click handlers and native selection:
+
+```tsx
+import {SecureDiv} from "@secure-display/react";
+import "@secure-display/secure-div/secure-div.css";
+
+// These are real inputs produced by packaging the exact source fixture.
+// A private production license adapter is NOT yet provided by this repository.
+<SecureDiv
+  assetId="demo-card"
+  sourceSha256={sha256OfPackagedSource}
+  playbackAdapter={licensedVideoAdapter}
+  onSecureStateChange={state => console.log(state.state)}
+>
+  <h2>Prepackaged synthetic test content</h2>
+  <button onClick={() => console.log("Real React click")}>Continue</button>
+</SecureDiv>
+```
+
+The browser-native HTML equivalent is `<secure-div data-asset-id="..." data-source-sha256="...">...</secure-div>`,
+after calling `registerSecureDiv(licensedVideoAdapter)` in application JavaScript.
+
+**Do not treat this as zero-configuration protection for arbitrary JSX.**
+The developer must already have a matching encrypted DRM media asset, secure
+license service, strict geometry and an adapter that verifies the exact
+asset/hash pair. Current build tooling supports only the fixed synthetic demo
+card. The element blocks on missing/mismatched assets and when dimensions
+change. React source children are transparent but remain readable through the
+DOM and DevTools. The test example uses public known keys; no confidentiality
+is provided by those keys. The visible blue selection indicator is ordinary
+capturable DOM.
+
+For SSR, ship `@secure-display/secure-div/secure-div.css` before the first
+HTML paint. JavaScript-only injection after hydration is not enough to
+guarantee against a first-paint leak if an app overrides inline opacity.
+The long-term one-line API requires a compiler/bundler transform or encrypted
+rendering service to generate and invalidate protected media for JSX/CSS/state.
+A website cannot simply flag arbitrary native pixels as DRM-protected.

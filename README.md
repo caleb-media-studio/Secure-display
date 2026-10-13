@@ -144,3 +144,5 @@ bun run example:page
 Switch among **Full protected page**, **DOM + DRM overlay**, and **Unprotected DOM control**. Test in Safari/FairPlay and Chrome/Widevine. The overlay uses `opacity: 0.015` rather than alpha-channel DRM; it is an experiment, not a known protection mechanism. No live screenshot behavior is claimed until tested on an actual device.
 
 See [docs/PROTECTED_PAGE.md](docs/PROTECTED_PAGE.md).
+
+React integration (prepackaged synthetic assets only): `@secure-display/react` now exports `SecureDiv`. See [the secure element experiment](docs/AUTO_SECURE_ELEMENT.md) for required DRM adapters and limitations.
