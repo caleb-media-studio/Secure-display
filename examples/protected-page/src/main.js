@@ -169,3 +169,6 @@ start.addEventListener("click",()=>void startPlayback());
 drmSelect.addEventListener("change",()=>void release());
 updateMode();
 log("Begin in full protected mode. Load DRM, then compare all three modes.");
+
+// Begin the public test EME workflow on load; the button remains a retry.
+void startPlayback();
