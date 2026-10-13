@@ -1,183 +1,109 @@
 # Secure Display
 
-Experimental, library-first, Apache-2.0-licensed research into **hardware DRM-backed rendering of server-encoded text** in ordinary browsers.
+**An experimental React component for presenting static HTML-authored content as DRM-licensed video pixels while keeping native DOM interactions.**
 
 > [!WARNING]
-> **Experimental result (October 12, 2026):** A macOS user reported that the synthetic DRM-protected document was visible on the display but omitted from screenshots, screen recordings, and screen sharing in Safari/FairPlay and Chrome/Widevine. This is an observed test result, **not universal or independently verified protection**. This alpha must not display confidential data. Other capture engines remain untested; strict confidential display remains blocked.
+> **Research, not screenshot-proof software.** Do not use real credentials, customer records, student information or other confidential material. The demo uses public DRM test keys, the underlying DOM is inspectable, and cross-platform screenshot exclusion is not certified.
 
-## Architecture
+## The React API
 
-```text
-   trusted service: report text -> glyph layout -> video encode -> DRM packaging
-                         |                            |
-                         |                encrypted CENC/HLS media
-                         |                            |
-  <secure-text asset-id="opaque-key">  ->  browser CDM  ->  protected decoder/output
-       <secure-p> / <secure-h1>              (hardware when supported)
+```tsx
+import {SecureDiv} from "@secure-display/react";
+
+export function Page(){
+  return <SecureDiv className="secure-card">
+    <h2>Normal React JSX</h2>
+    <button onClick={() => alert("Real HTML button")}>Continue</button>
+  </SecureDiv>;
+}
 ```
 
-Unlike GPU-canvas experiments, this approach targets **actual browser DRM**, where decryption and protected output can be delegated to the CDM/OS/hardware. Encoding normally happens on the trusted server; the browser performs licensed decoding. No text is passed in HTML children, React props, or DOM attributes.
+No per-element asset IDs, hashes, DRM setup or React effects are required. A developer configures the licensed asset resolver **once** at application bootstrap. This API currently requires the JSX to match **prepackaged static DRM media**. Wrapping arbitrary live JSX does **not** make it capture-protected.
 
-A CDM or robustness probe is not evidence that a screenshot is blocked. Supported DRM differs across Chrome, Safari, and Edge. A **synthetic-only FairPlay HLS adapter** is available for experiments, but cannot work without externally provisioned encrypted HLS, a FairPlay certificate and an authorized license-proxy service. It has not been tested end-to-end with licensed media.
+## Run the synthetic React demo
 
-## Repository
-
-- `packages/core`: EME capabilities, strict disclosure policy, synthetic CENC and experimental FairPlay HLS adapter.
-- `packages/elements`: **`<secure-text>`, `<secure-p>`, `<secure-h1>`** custom elements routed through that DRM media pipeline.
-- `packages/react`: React security-status component (full element wrappers planned).
-- `examples/diagnostics`: optional browser capability lab.
-- `examples/web-components`: plain HTML example, intentionally blocked until a licensed synthetic DRM source exists.
-- `docs`: architecture, threat model, compatibility and validation plans.
-
-The repository root is a **library workspace**, not a deployed web application.
-
-## Usage (synthetic DRM research only)
-
-```html
-<secure-h1 asset-id="fake-heading"></secure-h1>
-<secure-p asset-id="fake-report-paragraph"></secure-p>
-<secure-text asset-id="fake-total"></secure-text>
-```
-
-Register the tags once using `registerSecureElements({resolveAsset, requestLicense})`. The asset resolver must return **only a synthetic encrypted-media descriptor**; license requests are processed by an authorized **server-side DRM license proxy**. See `examples/web-components`.
-
-Plaintext children like `<secure-text>real secret</secure-text>` are **forbidden**: HTML parsing would already expose that secret. The library is fail-closed and refuses to display inline content.
-
-### Browser example result
-
-Run `bun run example:elements`. The three elements intentionally report **DRM test provider is not configured** until an actual licensed synthetic test source is supplied. Click **Check browser DRM candidates** to probe the browser's PlayReady, hardware Widevine and FairPlay EME configurations. A candidate result indicates only that the configuration was accepted; **it does not prove screenshot exclusion**. Chrome's graphics acceleration toggle is separate and does not authorize the DRM license path.
-
-## Develop
+Prerequisites: **Bun**, developer **Google Chrome**, **FFmpeg**, **Shaka Packager**, and network access to publicly documented Axinom test vectors.
 
 ```bash
-npm install
-npm run typecheck
-npm test
-npm run dev              # diagnostics example
-npm run example:elements # custom-element example
+bun install
+bun run typecheck
+SECURE_DISPLAY_PACKAGER="/absolute/path/to/packager" bun run drm:element:package
+bun run example:auto-element
 ```
 
-Alternatively use Bun (all root scripts invoke tools directly, avoiding Bun workspace-script recursion):
+Open the Vite URL with `/react/` appended, commonly `http://localhost:5173/react/`. For local builds without DRM packaging, use `bun run test` and `bun run build`.
+
+See [React guide](docs/REACT.md) for the example and one-time setup, [DRM build experiment](docs/AUTO_SECURE_ELEMENT.md) for details, and [network testing](docs/NETWORK_TESTING.md) for secure LAN testing. Only synthetic content is allowed.
+
+## How it works
+
+```text
+BUILD TIME                                    RUNTIME
+Actual JSX/CSS -> Headless Chrome snapshot   Real React DOM (opacity 0)
+                     |                              |  Native clicks, focus, selection
+                     v                              |  DOM fingerprint check
+                H.264 encoder                       v
+                     |                         Encrypted HLS/DASH
+                     v                              |
+                DRM packaging ----------------------+
+                                                    v
+                                           Browser CDM licensed video
+                                                    |
+                                                    v
+                                       Pointer-transparent video portal
+```
+
+The app reuses original DOM for interaction, but the visible pixels come from encrypted video. Source/hash/dimension mismatches, DRM errors and DOM mutations block or hide that video, never reveal normal DOM paint. This does **not** prevent text inspection through DevTools, all capture software, screen photography, or selection geometry from appearing in screenshots.
+
+## Current evidence
+
+| Capability | Status |
+| --- | --- |
+| Minimal React component with actual HTML clicks | Implemented and browser-tested, synthetic fixture |
+| Automatic developer snapshot from React JSX and H.264 encode | Implemented and CI tested |
+| FairPlay/Widevine media via public test-license vectors | Experimental; **not private encryption** |
+| User-observed macOS protected-media capture omission | Reported for earlier fixtures, not independently certified |
+| All browsers/devices and new React route capture exclusion | **Not verified** |
+| Dynamic arbitrary React JSX, live CSS/React state changes | **Not implemented** |
+| Production DRM license authority and confidential data security | **Not implemented** |
+
+See [evidence and research](docs/RESEARCH.md), [validation matrix](docs/VALIDATION_MATRIX.md) and [threat model](docs/THREAT_MODEL.md). A successful `playing` event never certifies screenshot protection.
+
+## Repository navigation
+
+| Location | Responsibility |
+| --- | --- |
+| `packages/react/` | Primary React API, optional status hook |
+| `packages/secure-div/` | Native element, fingerprint validation, selection overlay |
+| `examples/auto-secure-element/react/App.tsx` | Smallest real JSX implementation |
+| `examples/auto-secure-element/react/setup.js` | App-wide synthetic asset and DRM integration |
+| `tools/package-dom-element.mjs` | Build-time JSX render and DRM packaging |
+| `packages/core/`, `packages/elements/`, `packages/document/` | Prior EME, HTML-tag and document research |
+| `examples/diagnostics/`, `examples/fairplay-capture/`, `examples/protected-document/`, `examples/protected-page/` | Research labs and controls |
+| `experiments/macos-capture-region/` | Native capture exclusion research, not a web implementation |
+| `docs/` | Evidence, compatibility, threat model, tutorials |
+
+## Documentation
+
+- [React quickstart and troubleshooting](docs/REACT.md)
+- [Status and failure behavior](docs/STATUS.md)
+- [Research findings and remaining work](docs/RESEARCH.md)
+- [npm/Bun publication plan](docs/PUBLISHING.md)
+- [Detailed automated element research](docs/AUTO_SECURE_ELEMENT.md)
+- [Independent testing matrix](docs/VALIDATION_MATRIX.md)
+
+## Development
 
 ```bash
 bun install
 bun run typecheck
 bun run test
-bun run example:elements
+bun run build
+bun run release:inspect
 ```
 
-Use `Ctrl+C` to stop an earlier runaway process before updating. Pull the latest feature branch, then rerun the commands. Starting either example now builds the dependent TypeScript packages first, so a fresh pull does not leave stale `dist` exports.
+Node/npm also works: `npm install`, `npm run typecheck`, `npm test`, `npm run build`.
 
-## Roadmap
+**Nothing has been published to npm or Bun.** All packages deliberately remain `private: true`. [Publication requirements](docs/PUBLISHING.md) must be satisfied before releasing a research build.
 
-Actual DRM-protected synthetic media packaging + authorized license integration; FairPlay end-to-end playback; hardware/OS capture testing; accessibility, size/layout, security review. Publishing to npm is disabled until validated.
-
-See `docs/ARCHITECTURE.md`, `docs/THREAT_MODEL.md`, and `SECURITY.md`.
-
-Apache-2.0. See `LICENSE`.
-
-
-## Run a real DRM browser experiment
-
-`bun run example:fairplay` launches the public test-media experiment under `examples/fairplay-capture`. Select FairPlay in Safari or Widevine in Chrome. It uses PBS/Axinom publicly documented encrypted sample media; a public test entitlement is fetched on demand rather than embedded in this repository. The earlier Dolby test manifest returned HTTP 403 and is no longer the default. The example intentionally uses *vendor test footage*, not Secure Display's proprietary text renderer or confidential documents.
-
-See `docs/FAIRPLAY.md`. A user-reported macOS test on October 12, 2026 observed DRM media omitted from screenshots, screen recordings and screen sharing in both Safari/FairPlay and Chrome/Widevine while visible on the physical display. See `docs/VALIDATION_MATRIX.md`. No universal screenshot or screen-share guarantee is established.
-
-## DRM protected document and selection (experimental)
-
-A reusable `@secure-display/document` library now provides:
-
-```html
-<secure-document asset-id="synthetic-report-fairplay" zoom="1"></secure-document>
-```
-
-The element renders each visible page as **licensed DRM video**, with coordinate-only selection and highlight overlays, keyboard selection, zoom and lazy page loading. It does not put readable text in HTML or JavaScript. Copying selected plaintext is deliberately disabled.
-
-To generate and run **our own synthetic test document**, not a third-party video:
-
-```bash
-bun install
-bun run drm:demo:package  # requires FFmpeg + official Shaka Packager binary
-bun run example:document
-```
-
-The packager script fetches Axinom's **public, test-only** key at runtime, encrypts the synthetic clip with CBCS and zero clear lead, and produces ignored FairPlay HLS/Widevine DASH files and matching glyph positions. Public keys provide no confidentiality and are for capture experiments only. Actual licensed playback from your localhost environment has **not yet been verified**.
-
-Read [docs/PROTECTED_DOCUMENT.md](docs/PROTECTED_DOCUMENT.md) for setup, architecture and limitations. The open-source project must not be advertised as screenshot-proof; OS/browser capture testing is still required.
-
-## Test the Vite examples over your local network
-
-All Vite examples now bind to `0.0.0.0`, so another device on the **same trusted LAN** can open the Network URL printed by Vite.
-
-```bash
-bun run example:document
-```
-
-A regular HTTP LAN address such as `http://192.168.1.50:5173` can show the webpage but **cannot reliably start protected DRM playback**, because non-localhost HTTP is not a secure browser context.
-
-For HTTPS on macOS (the local development certificate is ignored by Git):
-
-```bash
-brew install mkcert
-mkcert -install
-bun run network:cert
-bun run example:document
-```
-
-Vite automatically uses the generated, ignored `.secure-display-local/tls/cert.pem` and `key.pem` and prints HTTPS Local/Network URLs. Open the `https://<your Mac LAN IP>:5173` URL **on another device after that device trusts the mkcert development CA**. Trusting a development CA on a phone/tablet requires separate device configuration, and may be inappropriate for shared/unmanaged devices. Never bypass certificate errors with confidential reports.
-
-Stop the Vite server and rerun `bun run network:cert` if your network IP changes. Ports may increment if already in use; use the URL Vite actually prints. Allow the incoming connection in your Mac firewall and avoid public Wi-Fi, VPN exposure or router port forwarding. **Only synthetic test media is supported.**
-
-See [docs/NETWORK_TESTING.md](docs/NETWORK_TESTING.md).
-
-## Full-page capture experiment
-
-The independent `examples/protected-page` lab tests whether wrapping ordinary DOM in a near-transparent DRM video layer achieves capture exclusion, compared with genuinely DRM-rendering **every visible page pixel**. It renders this exact public test sentence:
-
-> This page is protected by Security Display GitHub repo, and this is a test.
-
-```bash
-bun run drm:page:package  # requires FFmpeg and Shaka Packager
-bun run example:page
-```
-
-Switch among **Full protected page**, **DOM + DRM overlay**, and **Unprotected DOM control**. Test in Safari/FairPlay and Chrome/Widevine. The overlay uses `opacity: 0.015` rather than alpha-channel DRM; it is an experiment, not a known protection mechanism. No live screenshot behavior is claimed until tested on an actual device.
-
-See [docs/PROTECTED_PAGE.md](docs/PROTECTED_PAGE.md).
-
-## React component research API
-
-The React caller now writes only JSX. Asset IDs, source checksums and the
-licensed media adapter are configured **once** at application startup, not on
-every component:
-
-```tsx
-import { SecureDiv } from "@secure-display/react";
-
-<SecureDiv className="secure-card">
-  <h2>Prepackaged synthetic content</h2>
-  <button onClick={handleClick}>Real React button</button>
-</SecureDiv>
-```
-
-`examples/auto-secure-element/react/setup.js` shows the shared backend
-configuration. The test packager snapshots the **actual React DOM**, encrypts
-the screenshot as video and writes a DOM-content fingerprint. If the JSX and
-packaged media differ, if DRM fails or if no adapter is configured, the element
-remains visually blocked. It does not fall back to screenshot-visible HTML.
-
-To try the **fixed synthetic sample** locally:
-
-```sh
-bun install
-SECURE_DISPLAY_PACKAGER="$PWD/.secure-display-local/bin/packager" bun run drm:element:package
-bun run example:auto-element
-```
-
-Open the Vite URL at `/react/`. Repackage after JSX/CSS changes. Packaging
-requires developer Chrome, FFmpeg and Shaka Packager. The sample uses publicly
-known Axinom test keys; this is NOT confidential content encryption,
-general-purpose runtime JSX protection or a verified cross-platform screenshot
-blocking API. The original DOM is still inspectable and copyable through
-browser developer tools. See [the secure element experiment](docs/AUTO_SECURE_ELEMENT.md).
-
+Apache-2.0. See [LICENSE](LICENSE), [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
