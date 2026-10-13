@@ -14,6 +14,20 @@ Research-only secondary route, not part of the primary npm install. The ordinary
 
 **Not provided:** a company backend, production SSO configuration, encryption/KMS server, live Widevine capture protection, third-party capture exclusion, or guarantees about DOM confidentiality after reveal.
 
+## Test regular Chrome screenshot and tab capture
+
+From the repository root on the research branch:
+
+    bun run example:capture
+
+Open the Vite URL with /capture-test.html at the end. Example: https://localhost:5173/capture-test.html when trusted local HTTPS is configured, or http://localhost:5173/capture-test.html on localhost otherwise.
+
+The test page has two side-by-side, fully interactive HTML regions. The left has the data-secure-display marker recognized by the extension. The right is an ordinary control. Start tab capture with the button and choose This Tab. A live preview shows what Chrome's cooperative getDisplayMedia capture sees. Save one PNG frame if helpful.
+
+For **independent macOS capture**, use Shift + Command + 4 to screenshot both panels, then Shift + Command + 5 for a recording. Repeat after clicking the extension's Probe selected Secure Display element control. The native helper currently responds with supported=false; it does not modify a Chrome window.
+
+**Expected today:** both panels remain visible in captures. This tests the procedure and the extension/native handshake, not working screenshot exclusion. No DRM video packaging or enterprise login is required.
+
 ## Local Chrome setup without SSO
 
 1. Check out the research branch and visit Chrome's extensions page: chrome://extensions/

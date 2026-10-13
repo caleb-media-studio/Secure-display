@@ -39,7 +39,8 @@
     "release:smoke:npm": "node tools/smoke-packed-packages.mjs npm",
     "release:smoke:bun": "node tools/smoke-packed-packages.mjs bun",
     "example:react": "bun run example:auto-element",
-    "test:extension": "node --test experiments/chrome-extension/test/*.test.mjs"
+    "test:extension": "node --test experiments/chrome-extension/test/*.test.mjs",
+    "example:capture": "vite examples/auto-secure-element --host 127.0.0.1"
   },
   "engines": {
     "node": ">=20"
