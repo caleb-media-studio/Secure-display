@@ -14,6 +14,21 @@ pnpm add @secure-display/react
 
 These are **future commands**, not currently working installation instructions. `@secure-display` is an **npm scope**, which must belong to your own npm user or organization. Having a GitHub repository with this name does not grant npm namespace ownership. Verify the scope before a release, and rename all package imports/dependencies together if necessary.
 
+## After creating your npm organization
+
+The manifests currently target the `@secure-display` scope. Creating an npm organization is a good start, but do **not** assume the GitHub organization `caleb-media-studio` or the repository name establishes npm scope ownership. Confirm the **exact** npm organization slug and the scope in all three manifests match.
+
+```bash
+npm login
+npm whoami
+npm org ls secure-display
+npm view @secure-display/react version
+```
+
+The last command can legitimately return a not-found error before the first publication. Do not interpret a nonexistent package as ownership evidence. Verify permissions in your npm organization's settings. The intended primary package is `@secure-display/react`, with `@secure-display/core` and `@secure-display/secure-div` as runtime dependencies. If the organization slug is different, rename these manifests, their internal dependency names, imports and documentation consistently **before** the first publication.
+
+The npm organization description is not the package description: the short summaries shown on npm come from each package's own `package.json`. Keep the repository private and package publishing disabled until the release gates are met.
+
 ## Packages to release first
 
 | Package | Why |
@@ -30,12 +45,14 @@ These are **future commands**, not currently working installation instructions. 
 bun install
 bun run build
 bun run release:inspect
+bun run release:smoke:npm
+bun run release:smoke:bun
 npm pack --dry-run --workspace @secure-display/core
 npm pack --dry-run --workspace @secure-display/secure-div
 npm pack --dry-run --workspace @secure-display/react
 ```
 
-The release inspection checks compiled entrypoints, dependency links, CSS declarations and package boundaries. Review exactly which files npm would expose. Running `npm pack` or `bun pm pack --dry-run` does **not** publish to the registry.
+The release inspection checks compiled entrypoints, dependency links, CSS declarations and package boundaries. The two smoke tests also pack all three private packages into temporary tarballs, install them into a fresh application with npm and Bun respectively, and verify runtime imports, types and CSS without depending on monorepo links or publishing. They may download the public React peer dependency. Review exactly which files npm would expose. Running `npm pack` or `bun pm pack --dry-run` does **not** publish to the registry.
 
 ## Later: actual publication
 
@@ -56,7 +73,8 @@ For later CI/CD, npm's **trusted publishing** supports OIDC from GitHub Actions 
 ## Pre-publication gate
 
 - [ ] npm scope ownership and release package names confirmed
-- [ ] Independent install test confirms dependency resolution and file exports
+- [x] Isolated npm and Bun install smoke tests are implemented (CI must pass for the exact release commit)
+- [ ] Release commit's isolated install checks pass for both package managers
 - [ ] Production DRM/license/key/authorization architecture reviewed
 - [ ] Synthetic-only restrictions and confidentiality limits documented
 - [ ] Actual target browsers and recording/screenshot/share methods tested

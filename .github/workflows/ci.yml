@@ -41,6 +41,10 @@ jobs:
       - run: bun run build
       - name: Verify publishable artifact layouts without publishing
         run: bun run release:inspect
+      - name: Install packaged artifacts in a fresh application using npm
+        run: bun run release:smoke:npm
+      - name: Install packaged artifacts in a fresh application using Bun
+        run: bun run release:smoke:bun
       - name: Rebuild and boot HTML element example from empty dist
         run: node tools/smoke-examples.mjs
       - name: Install FFmpeg for synthetic fixture test

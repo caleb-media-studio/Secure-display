@@ -100,6 +100,8 @@ bun run typecheck
 bun run test
 bun run build
 bun run release:inspect
+bun run release:smoke:npm
+bun run release:smoke:bun
 ```
 
 Node/npm also works: `npm install`, `npm run typecheck`, `npm test`, `npm run build`.
