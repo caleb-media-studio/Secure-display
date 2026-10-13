@@ -35,7 +35,7 @@
     "test:browser-selection": "node tools/browser-selection-smoke.mjs",
     "test:browser-asset-hydration": "node tools/browser-asset-hydration-smoke.mjs",
     "test:browser-react-fingerprint": "node tools/browser-react-dom-fingerprint-smoke.mjs",
-    "release:inspect": "node tools/check-release-layout.mjs",
+    "release:inspect": "node tools/check-release-layout.mjs && node tools/check-npm-scope.mjs",
     "release:smoke:npm": "node tools/smoke-packed-packages.mjs npm",
     "release:smoke:bun": "node tools/smoke-packed-packages.mjs bun"
   },

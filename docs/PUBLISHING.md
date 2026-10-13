@@ -32,6 +32,10 @@ The last command can legitimately return a not-found error before the first publ
 
 The npm organization description is not the package description: the short summaries shown on npm come from each package's own `package.json`. Keep the repository private and package publishing disabled until the release gates are met.
 
+## npm scope check
+
+The canonical npm organization is [caleb-media-studio-llc](https://www.npmjs.com/org/caleb-media-studio-llc). All package manifests, internal dependency names, and new examples use the `@caleb-media-studio-llc` scope. The archived research log intentionally retains historical references. Run `bun run release:inspect` before preparing a release to reject outdated imports or accidental public package flags.
+
 ## Packages to release first
 
 | Package | Why |
