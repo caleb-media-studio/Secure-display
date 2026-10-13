@@ -2,7 +2,7 @@
 
 **Experimental browser DRM rendering for React and native HTML. One npm package, no visitor extension.**
 
-Secure Display is an Apache-2.0-licensed research project from Caleb Media Studio LLC. The repository is currently private while the prototype is being developed. It explores showing the pixels of a **prebuilt, DRM-encrypted rendering of HTML** while retaining the original browser DOM for clicks, focus, layout, and text selection. The React integration centers on a single component named `SecureDiv`.
+Secure Display is an Apache-2.0-licensed research project from Caleb Media Studio LLC. The GitHub repository is now public, but the implementation is still experimental and the primary research PR remains in draft. It explores showing the pixels of a **prebuilt, DRM-encrypted rendering of HTML** while retaining the original browser DOM for clicks, focus, layout, and text selection. The React integration centers on a single component named `SecureDiv`.
 
 > [!CAUTION]
 > **Not production-ready or generally screenshot-proof.** The project has shown promising protected-media capture behavior in specific user-reported macOS tests, but it has **not** proven universal screenshot, recording, or screen-sharing protection. The test assets use publicly known keys; the original text remains readable in the DOM and developer tools. Do not use Secure Display for confidential, financial, customer, student, medical, or other sensitive information.
@@ -12,7 +12,7 @@ Secure Display is an Apache-2.0-licensed research project from Caleb Media Studi
 | Question | Answer |
 | --- | --- |
 | What do developers install? | **One package:** `@caleb-media-studio-llc/secure-display` |
-| Is it on npm yet? | **No.** The repository and release remain private/draft. |
+| Is it on npm yet? | **Yes.** Experimental `0.1.0-alpha.1` is public. A metadata-cleanup update is being prepared. |
 | What is the React component? | `<SecureDiv>` |
 | Do end users install an extension? | No, the experiment runs on a normal browser with a compatible DRM system. |
 | Can it wrap any JSX and protect it immediately? | **No.** JSX currently needs a matching encrypted **build-time** asset. |
@@ -45,7 +45,7 @@ git pull --ff-only
 bun install
 ```
 
-If starting from scratch, clone the private repository with your authorized GitHub account, then switch to `feat/initial-research-framework`.
+If starting from scratch, clone the [GitHub repository](https://github.com/caleb-media-studio/Secure-display), then switch to `feat/initial-research-framework`.
 
 ### 3. Build the current React bundle
 
@@ -80,12 +80,12 @@ Open **[http://localhost:5173/react/](http://localhost:5173/react/)**, or use th
 
 ## Public-facing React API
 
-**Proposed future installation, after publication:**
+**Experimental npm installation (already published under the `experimental` tag):**
 
 ```bash
-bun add @caleb-media-studio-llc/secure-display
+bun add @caleb-media-studio-llc/secure-display@experimental
 # or
-npm install @caleb-media-studio-llc/secure-display
+npm install @caleb-media-studio-llc/secure-display@experimental
 ```
 
 This is one package, not three. React is a peer dependency because normal React applications already provide it.
@@ -198,7 +198,7 @@ bun run release:smoke:bun
 
 The release checks validate **one** candidate registry artifact, `@caleb-media-studio-llc/secure-display`, including packed JavaScript, TypeScript declarations, CSS, and isolated npm/Bun consumer installs. The private internal workspaces are not separate registry releases. GitHub CI checks cannot establish real hardware screen-capture behavior. Check the latest workflow results rather than assuming the single-package release passed.
 
-Read [publishing preparation](docs/PUBLISHING.md) before considering any release. **No publication is authorized or enabled**; the single distribution package remains `private: true`.
+The first research prerelease is published; see [publishing preparation](docs/PUBLISHING.md) for the next metadata-only release. The checked-in distribution manifest keeps `private: true` as a guard against accidental new versions being published.
 
 ## Repository map
 
