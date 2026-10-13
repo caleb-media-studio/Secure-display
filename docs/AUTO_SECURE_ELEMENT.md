@@ -149,3 +149,34 @@ Editor support includes a local React example `tsconfig.json`, `@types/react`,
 and a synthetic demo Shaka adapter declaration. `bun run typecheck` now checks the
 React JSX example alongside packages, and CI builds validate the same configuration.
 The hash binding is still required for the current prepackaged synthetic asset.
+
+## Minimal React JSX in the synthetic demo (October 13)
+
+The example's protected portion is now just:
+
+```tsx
+<SecureDiv className="secure-card">
+  <h2>Real HTML. Protected pixels.</h2>
+  <p>Prepackaged synthetic content.</p>
+</SecureDiv>
+```
+
+A single app bootstrap file (`react/setup.js`) configures the licensed
+adapter and retrieves the generated asset metadata; component users do not
+supply `assetId`, `sourceSha256` or `playbackAdapter` props. The demo
+keeps `useState` only for its ordinary click counter. This is a deliberately
+restricted **static synthetic asset** integration, not automatic encryption
+of any arbitrary JSX that happens to be placed inside the tag.
+
+The packaging tool now writes a SHA256 fingerprint of the actual source DOM
+children plus the source root class name to `asset-info.json`. The React
+wrapper and the native playback code compare that fingerprint to the JSX before
+revealing encrypted frames, then fail closed on mismatches. This validates
+markup and text structure, **not** every computed CSS pixel, font or runtime
+state. Dynamic JSX, changing classes, CSS and layout remain unsupported.
+The browser regression test compares the actual mounted React DOM to the
+source snapshot, without needing real license playback.
+
+Because asset-info.json format changed, you must rerun
+`bun run drm:element:package` after pulling. Previously packaged media
+without `domSha256` must be rejected by the automatic resolver.

@@ -47,6 +47,8 @@ jobs:
         run: bun run test:browser-selection
       - name: Verify late asset hash hydration and fail-closed native element in Chrome
         run: bun run test:browser-asset-hydration
+      - name: Confirm React JSX fingerprints match generated snapshot source
+        run: bun run test:browser-react-fingerprint
       - name: Browser-render real HTML to H264 for zero-install component test
         run: |
           node tools/package-dom-element.mjs --snapshot-only

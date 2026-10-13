@@ -12,7 +12,8 @@ test("server runtime can import native package but cannot register it",()=>{
 test("React bridge uses custom element, retains native event handlers, starts transparent",()=>{
  const code=source("packages/react/src/SecureDiv.tsx");
  assert.match(code,/createElement\("secure-div"/);
- assert.match(code,/registerSecureDiv\(playbackAdapter\)/);
+ assert.match(code,/registerSecureDiv\(adapter\)/);
+ assert.match(code,/getSecureDisplayConfiguration/);
  assert.match(code,/style: \{\.\.\.style, opacity: 0\}/);
  assert.match(code,/onSecureSelectionChange/);
  assert.match(code,/onSecureStateChange/);
@@ -39,4 +40,19 @@ test("example mounts unconditionally, and its code is typechecked",()=>{
  assert.ok(root.scripts.typecheck.includes("examples/auto-secure-element/tsconfig.json"));
  assert.ok(runtime.includes("attributeChangedCallback"));
  assert.ok(runtime.includes("void this.#restart()"));
+});
+
+test("React example uses only SecureDiv JSX with centralized setup",()=>{
+ const demo=source("examples/auto-secure-element/react/main.tsx");
+ const setup=source("examples/auto-secure-element/react/setup.js");
+ const packager=source("tools/package-dom-element.mjs");
+ const pkg=JSON.parse(source("packages/secure-div/package.json"));
+ assert.ok(demo.includes('<SecureDiv className="secure-card">'));
+ assert.ok(!demo.includes("assetId="));
+ assert.ok(!demo.includes("sourceSha256="));
+ assert.ok(!demo.includes("playbackAdapter="));
+ assert.ok(!demo.includes("useEffect("));
+ assert.ok(setup.includes("configureSecureDisplay({resolveAsset,playbackAdapter})"));
+ assert.ok(packager.includes("domSha256,rootClassName"));
+ assert.equal(pkg.exports["./secure-div.css"].types,"./types/secure-div.css.d.ts");
 });
