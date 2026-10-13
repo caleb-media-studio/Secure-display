@@ -180,3 +180,20 @@ source snapshot, without needing real license playback.
 Because asset-info.json format changed, you must rerun
 `bun run drm:element:package` after pulling. Previously packaged media
 without `domSha256` must be rejected by the automatic resolver.
+
+### Packaging the actual React JSX instead of duplicating HTML
+
+The `drm:element:package` step now launches a temporary Vite development
+server, renders **the actual `react/main.tsx` JSX**, and screenshots its
+`<secure-div>` in a disposable headless developer Chrome session. The
+build session deliberately disables DRM endpoints and overrides the otherwise
+transparent original element only while generating the encrypted media.
+The shipped React page cannot enable that override through a runtime flag.
+
+The fixed example continues to load CSS from the synthetic fixture's
+`#secure-fixture-style` block, but text/HTML structure is authored in the
+React component and is no longer duplicated in an HTML snapshot source.
+Asset metadata includes a DOM SHA-256 fingerprint; use this exact generated
+media for the current JSX. Editing JSX requires repackaging to avoid a
+mismatched static snapshot. No live reactivity, automatic key management or
+general sensitive-data security guarantee has been added.

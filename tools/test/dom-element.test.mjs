@@ -9,12 +9,12 @@ const get=file=>readFileSync(resolve(root,file),"utf8");
 
 test("auto-packager always snapshots a real DOM element with fixed test dimensions",()=>{
  const p=snapshotParameters();
- assert.deepEqual(p,{selector:"#snapshot-source",width:960,height:540});
+ assert.deepEqual(p,{selector:"secure-div",width:960,height:540});
  assert.equal(checkDimensions({width:960,height:540}),true);
  assert.throws(()=>checkDimensions({width:1000,height:540}));
  assert.throws(()=>checkDimensions({width:960,height:545}));
  const source=get("tools/package-dom-element.mjs");
- assert.match(source,/\.locator\("#snapshot-source"\)/);
+ assert.match(source,/\.locator\("secure-div"\)/);
  assert.match(source,/\.screenshot\(\{path:IMAGE/);
  assert.match(source,/--clear_lead|packagerArgs\(/);
  assert.match(source,/parseVector/);
