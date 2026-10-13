@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {MODES,modePolicy,drmSource} from "../src/mode-policy.js";
+import {MODES,modePolicy,drmSource,NEAR_INVISIBLE_OPACITY} from "../src/mode-policy.js";
+import {readFileSync} from "node:fs";
+import {fileURLToPath} from "node:url";
+import {resolve,dirname} from "node:path";
 test("full protected mode never reveals normal text; blocks before actual playback",()=>{
  assert.deepEqual(modePolicy("protected",false),{
   showDom:false,showVideo:false,videoOpacity:1,enableProtectedHotspot:false});
@@ -10,7 +13,9 @@ test("full protected mode never reveals normal text; blocks before actual playba
 test("overlay experiment deliberately leaves DOM capturable",()=>{
  const overlay=modePolicy("overlay",true);
  assert.equal(overlay.showDom,true);
- assert.equal(overlay.videoOpacity,0.015);
+ assert.equal(NEAR_INVISIBLE_OPACITY,0.000000001);
+ assert.equal(overlay.videoOpacity,NEAR_INVISIBLE_OPACITY);
+ assert.equal(overlay.videoOpacity.toFixed(9),"0.000000001");
  assert.equal(overlay.enableProtectedHotspot,false);
  assert.equal(modePolicy("overlay",false).showVideo,false);
 });
@@ -27,4 +32,17 @@ test("only explicit FairPlay and Widevine paths available",()=>{
  assert.match(drmSource("fairplay").manifest,/\.m3u8$/);
  assert.match(drmSource("widevine").manifest,/\.mpd$/);
  assert.throws(()=>drmSource("clearkey"));
+});
+
+test("browser example defaults to viewport-wide, pointer-transparent DRM experiment",()=>{
+ const dir=resolve(dirname(fileURLToPath(import.meta.url)),"..");
+ const source=readFileSync(resolve(dir,"src/main.js"),"utf8");
+ const html=readFileSync(resolve(dir,"index.html"),"utf8");
+ assert.match(source,/\?query\.get\("mode"\):"overlay"/);
+ assert.match(source,/rule\.videoOpacity\.toFixed\(9\)/);
+ assert.match(html,/#experiment\[data-mode="overlay"\] #protected-video/);
+ assert.match(html,/width:100vw;height:100vh/);
+ assert.match(html,/pointer-events:none/);
+ assert.match(html,/id="dom-page">/);
+ assert.match(html,/0\.0000001%/);
 });
