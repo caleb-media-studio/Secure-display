@@ -19,6 +19,8 @@ let mode=MODES.includes(query.get("mode"))?query.get("mode"):"protected";
 const safari=/Safari/i.test(navigator.userAgent)&&!/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)/i.test(navigator.userAgent);
 drmSelect.value=safari?"fairplay":"widevine";
 let player,run=0,playing=false,clicks=0;
+let phase='Loading encrypted page DRM test...';
+let playbackError='';
 let publicToken;
 const log=text=>{
  const line="["+new Date().toLocaleTimeString()+"] "+text;
@@ -47,11 +49,11 @@ function updateMode(){
     :"All page text is ordinary DOM, with no DRM layer.";
  document.querySelector("#mode-description").textContent=description;
  if(mode==="protected"&&!playing)
-   status.textContent="Protected mode is BLOCKED until real licensed DRM video is playing.";
+   status.textContent=playbackError||phase;
  else if(mode==="protected")
    status.textContent="Licensed DRM playback active. Check physical display vs screenshot and recording.";
  else if(mode==="overlay")
-   status.textContent=playing?"Overlay active. Check whether ordinary HTML is still capturable.":"DOM visible, but DRM overlay has NOT started.";
+   status.textContent=playing?"Overlay active. Check whether ordinary HTML is still capturable.":(playbackError||phase);
  else status.textContent="Unprotected DOM control. Screenshots should contain the sentence.";
 }
 function setMode(value) {
@@ -94,14 +96,27 @@ async function release(){
 }
 async function startPlayback(){
  await release();
+ playbackError="";
+ phase="Checking HTTPS and local encrypted media...";
  const id=++run;
  start.disabled=true;
  diagnostic.textContent="";
+ updateMode();
  const chosen=drmSelect.value;
  let instance;
  try {
   if(!window.isSecureContext)throw Error("Use HTTPS with a trusted CA (or localhost). LAN HTTP cannot run DRM.");
   const config=drmSource(chosen);
+  const manifest=await fetch(config.manifest,{cache:"no-store",credentials:"same-origin"});
+  if(!manifest.ok)throw Error("DRM media is missing (HTTP "+manifest.status+"). Run bun run drm:page:package.");
+  const body=await manifest.text();
+  const recognized=chosen==="fairplay"
+    ? body.trimStart().startsWith("#EXTM3U") && body.includes("#EXT-X-STREAM-INF")
+    : /<MPD[\s>]/.test(body) && body.includes("ContentProtection");
+  if(!recognized)throw Error("No encrypted DRM page manifest found. Run bun run drm:page:package and restart Vite.");
+  log("Encrypted "+chosen+" media manifest found.");
+  phase="Requesting public Axinom test license entitlement...";
+  updateMode();
   const token=await getPublicToken();
   if(id!==run)return;
   shaka.polyfill.installAll();
@@ -111,6 +126,7 @@ async function startPlayback(){
   instance.addEventListener("error",e=>{
    if(id!==run)return;
    reportError(e.detail,"Playback");
+   playbackError="DRM playback failed: Shaka error "+(e.detail?.code??"unknown")+". Expand diagnostics.";
    playing=false;
    updateMode();
   });
@@ -133,15 +149,23 @@ async function startPlayback(){
   video.loop=true;
   video.playsInline=true;
   video.controls=false;
+  phase="Loading "+chosen+" encrypted video and requesting DRM license...";
+  updateMode();
   log("Loading encrypted "+chosen+" media. Clear media fallback is forbidden.");
   await instance.load(config.manifest);
   if(id!==run)return;
   if(instance.drmInfo()?.keySystem!==config.keySystem)
     throw Error("Selected EME DRM system could not be verified.");
+  phase="DRM session verified. Waiting for protected video playback...";
+  updateMode();
   log("Verified EME key system: "+config.keySystem+". Awaiting actual video playback.");
   // Never await a user-gesture-gated play promise indefinitely.
   void video.play().catch(()=>{
-    if(id===run)log("Autoplay blocked; press Start / Retry DRM again with an active user gesture.");
+    if(id===run) {
+      playbackError="Playback was blocked by the browser. Press Start / Retry DRM.";
+      log("Autoplay blocked; press Start / Retry DRM again with an active user gesture.");
+      updateMode();
+    }
   });
   if(id!==run)return;
   // The playing event independently enables protected pixels.
@@ -149,6 +173,9 @@ async function startPlayback(){
   if(id!==run)return;
   if(e&&Number.isInteger(e.code))reportError(e,"Initialization");
   else log("Unable to start DRM test: "+(e instanceof Error?e.message:"unknown error"));
+  playbackError=e instanceof Error
+    ? "DRM could not start: "+(Number.isInteger(e.code)?"Shaka "+e.code:e.message)
+    : "DRM could not start. See diagnostics.";
   playing=false;
   updateMode();
  }finally{if(id===run)start.disabled=false;}
