@@ -35,3 +35,5 @@ bun.lock
 
 /examples/protected-page/public/drm-probe/
 /examples/protected-page/public/probe-clear.mp4
+
+/examples/protected-page/public/drm-white/
