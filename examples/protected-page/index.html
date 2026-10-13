@@ -64,15 +64,15 @@ footer{color:#92a7bc;font-size:.8rem;margin:1.4rem 0}
 </style></head>
 <body><main>
 <header><div class="eyebrow">SECURE DISPLAY · CAPTURE RESEARCH</div>
-<h1>Full-page protected pixels</h1>
-<p>Empirical test: leave the webpage as real, interactive DOM and place an encrypted DRM video over the entire viewport at <strong>0.0000001% opacity</strong>. Compare what you see with what a screenshot captures.</p></header>
-<div class="note"><strong>Unverified hypothesis.</strong> The DOM remains visible and clickable; the DRM video is mounted above it with <code>pointer-events: none</code> and CSS opacity <code>0.000000001</code>. Test screenshots and recordings before drawing conclusions. Only synthetic text; never private data.</div>
+<h1>Black DRM overlay vs ordinary HTML</h1>
+<p>Empirical test: the DRM video contains <strong>black pixels only</strong>. All text, buttons, and layout remain actual DOM. Change the encrypted black video's opacity to see what screenshots capture.</p></header>
+<div class="note"><strong>Experimental, not proven protection.</strong> The encrypted video is a plain black frame above the viewport at adjustable opacity with <code>pointer-events: none</code>. The test sentence and button belong only to HTML. If video graphics or duplicate lettering appear, rebuild the encrypted black fixture. Never use private data.</div>
 <div class="controls">
 <label>DRM <select id="drm"><option value="fairplay">Safari / FairPlay</option><option value="widevine">Chrome / Widevine</option></select></label>
 <button id="start">Start / Retry DRM</button>
 <div class="group" role="group" aria-label="Compare rendering modes">
-<button data-mode="protected" aria-pressed="false">Full protected page (control)</button>
-<button class="active" data-mode="overlay" aria-pressed="true">0.0000001% DRM overlay</button>
+<button data-mode="protected" aria-pressed="false">Opaque black DRM (control)</button>
+<button class="active" data-mode="overlay" aria-pressed="true">Black DRM overlay</button>
 <button data-mode="normal" aria-pressed="false">Unprotected DOM control</button>
 </div>
 </div>
@@ -84,12 +84,12 @@ footer{color:#92a7bc;font-size:.8rem;margin:1.4rem 0}
 </section>
 <p id="opacity-hint">Move the slider while DRM stays playing. Try 0%, 0.0000001%, 0.01%, 0.4%, 1%, 10%, and 100%. This changes only the DRM overlay, not the underlying HTML.</p>
 <div id="status" role="status">Starting DRM overlay experiment...</div>
-<p id="mode-description">Testing near-invisible DRM video over real DOM. Capture result not yet known.</p>
+<p id="mode-description">Testing black encrypted DRM frames over ordinary HTML. No image or text is present in the DRM video.</p>
 <div class="frame"><div id="experiment" data-mode="overlay">
 <div id="dom-page">
   <div class="dom-header"><span>▌</span> SECURE DISPLAY</div>
   <div class="dom-panel">
-    <div class="dom-label">DRM PROTECTED</div>
+    <div class="dom-label">REAL HTML CONTENT</div>
     <p class="dom-text">This page is protected by Security Display GitHub repo, and this is a test.</p>
     <button class="dom-action">CLICK HERE</button>
   </div>
