@@ -1,0 +1,40 @@
+{
+  "name": "@caleb-media-studio-llc/react",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Experimental React bridge to licensed, protected DOM custom element",
+  "type": "module",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@caleb-media-studio-llc/core": "0.1.0",
+    "@caleb-media-studio-llc/secure-div": "0.1.0"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "react": "^19.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caleb-media-studio/Secure-display.git"
+  },
+  "homepage": "https://github.com/caleb-media-studio/Secure-display#readme",
+  "bugs": {
+    "url": "https://github.com/caleb-media-studio/Secure-display/security/advisories"
+  }
+}

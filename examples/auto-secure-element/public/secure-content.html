@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8">
+<style id="secure-fixture-style">
+*{box-sizing:border-box}
+body{margin:0}
+.secure-card{
+  box-sizing:border-box;position:relative;display:block;width:960px;height:540px;
+  overflow:hidden;background:linear-gradient(138deg,#172d56 0%,#10172f 55%,#143e47 100%);
+  border:2px solid #5b91c4;border-radius:18px;
+  padding:52px 60px;color:#f2faff;font:500 20px/1.45 -apple-system,BlinkMacSystemFont,Arial,sans-serif;
+  box-shadow:inset 0 0 0 1px #1f4660;
+}
+.secure-card .eyebrow{font-size:14px;text-transform:uppercase;letter-spacing:.17em;color:#7ff0d2;font-weight:800}
+.secure-card h2{font-size:41px;line-height:1.12;letter-spacing:-.035em;margin:24px 0 20px;font-weight:800}
+.secure-card p{margin:0 0 25px;max-width:770px;font-size:22px;color:#d6e9fb}
+.secure-card button{background:#7decc6;color:#14352c;border:0;padding:15px 28px;border-radius:11px;font-size:19px;font-weight:800;cursor:pointer}
+.secure-card button:focus-visible{outline:4px solid #fff;outline-offset:3px}
+.secure-card .footer{position:absolute;bottom:30px;left:60px;font-size:14px;color:#92b5d4}
+.secure-card .orb{position:absolute;right:-160px;top:-145px;width:440px;height:440px;
+  border-radius:50%;background:radial-gradient(circle,#2b98c050,#3170ca03 75%);pointer-events:none}
+</style>
+</head>
+<body>
+<div id="snapshot-source" class="secure-card">
+  <div class="orb" aria-hidden="true"></div>
+  <div class="eyebrow">Secure Display · DOM-driven prototype</div>
+  <h2>Real HTML. Protected pixels.</h2>
+  <p>This page is protected by Security Display GitHub repo, and this is a test.</p>
+  <button id="real-button" type="button">Click this real HTML button</button>
+  <div class="footer">Normal DOM interactions remain enabled · Synthetic test data only</div>
+</div>
+</body></html>

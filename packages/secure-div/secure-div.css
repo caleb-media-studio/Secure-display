@@ -1,0 +1,2 @@
+/* Must be loaded before initial document paint. Never render plaintext fallback. */
+secure-div { display:block; opacity:0 !important; }

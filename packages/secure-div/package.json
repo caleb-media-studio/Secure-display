@@ -1,0 +1,32 @@
+{
+  "name": "@caleb-media-studio-llc/secure-div",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Synthetic DRM-backed custom element; requires authenticated playback adapter",
+  "files": [
+    "src",
+    "types",
+    "secure-div.css",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./secure-div.css": {
+      "types": "./types/secure-div.css.d.ts",
+      "default": "./secure-div.css"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caleb-media-studio/Secure-display.git"
+  },
+  "homepage": "https://github.com/caleb-media-studio/Secure-display#readme",
+  "bugs": {
+    "url": "https://github.com/caleb-media-studio/Secure-display/security/advisories"
+  }
+}

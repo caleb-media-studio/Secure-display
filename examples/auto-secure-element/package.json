@@ -1,0 +1,18 @@
+{
+  "name": "@caleb-media-studio-llc/example-auto-secure-element",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "shaka-player": "5.2.13",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "@caleb-media-studio-llc/secure-display": "0.1.0-alpha.2"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/react": "^19.2.0"
+  }
+}

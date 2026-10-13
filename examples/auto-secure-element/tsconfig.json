@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "types": [
+      "react",
+      "react-dom"
+    ],
+    "allowJs": false
+  },
+  "include": [
+    "react/**/*.tsx",
+    "src/**/*.d.ts"
+  ]
+}

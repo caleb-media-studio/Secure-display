@@ -1,0 +1,108 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: '**/package.json'
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+      - run: node tools/check-secrets.mjs
+      - name: Reject suspicious tracked files
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -Ei '(^|/)(\.env([^/]*$)|secrets/|private/)|\.(pem|p12|pfx|key|jks|keystore)$'; then
+            echo 'Potential secret material was committed'; exit 1
+          fi
+
+  bun:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run typecheck
+      - run: bun run test
+      - run: bun run build
+      - name: Verify publishable artifact layouts without publishing
+        run: bun run release:inspect
+      - name: Install packaged artifacts in a fresh application using npm
+        run: bun run release:smoke:npm
+      - name: Install packaged artifacts in a fresh application using Bun
+        run: bun run release:smoke:bun
+      - name: Rebuild and boot HTML element example from empty dist
+        run: node tools/smoke-examples.mjs
+      - name: Install FFmpeg for synthetic fixture test
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Verify native selection and text-free highlights on invisible DOM in Chrome
+        run: bun run test:browser-selection
+      - name: Verify late asset hash hydration and fail-closed native element in Chrome
+        run: bun run test:browser-asset-hydration
+      - name: Confirm React JSX fingerprints match generated snapshot source
+        run: bun run test:browser-react-fingerprint
+      - name: Browser-render real HTML to H264 for zero-install component test
+        run: |
+          node tools/package-dom-element.mjs --snapshot-only
+          test -s fixtures/generated/auto-secure/element.png
+          test -s fixtures/generated/auto-secure/clear-element.mp4
+          set -o pipefail
+          ffmpeg -v error -i fixtures/generated/auto-secure/clear-element.mp4 -frames:v 1 -pix_fmt rgb24 -f rawvideo - |
+            python3 -c 'import sys; p=sys.stdin.buffer.read(); assert len(p)==960*540*3, len(p); assert min(p)<80 and max(p)>160, "HTML video is blank or rendering failed"'
+      - name: Generate synthetic H.264 fixture without drawtext
+        run: bun run fixture
+      - name: Generate solid-black DRM overlay clear-video fixture
+        run: |
+          node tools/generate-protected-page-video.mjs
+          test -s fixtures/generated/protected-page-clear.mp4
+      - name: Generate and verify vivid H264 reference media
+        run: |
+          node tools/generate-protected-page-video.mjs --probe
+          test -s fixtures/generated/protected-probe-clear.mp4
+          set -o pipefail
+          ffmpeg -v error -i fixtures/generated/protected-probe-clear.mp4 -frames:v 1 -pix_fmt rgb24 -f rawvideo - |
+            python3 -c 'import sys; frame=sys.stdin.buffer.read(); assert len(frame)==1280*720*3, len(frame); assert max(frame)>230 and min(frame)<80, "Probe is visually indistinguishable from black"'
+      - name: Generate and verify H264 white neutral reference
+        run: |
+          node tools/generate-protected-page-video.mjs --white
+          test -s fixtures/generated/protected-white-clear.mp4
+          set -o pipefail
+          ffmpeg -v error -i fixtures/generated/protected-white-clear.mp4 -frames:v 1 -pix_fmt rgb24 -f rawvideo - |
+            python3 -c 'import sys; frame=sys.stdin.buffer.read(); assert len(frame)==1280*720*3, len(frame); assert min(frame)>=250, "Neutral white pixels must remain white when encoded"'
+      - name: Verify decoded H264 frame is fully black
+        run: |
+          set -o pipefail
+          ffmpeg -v error -i fixtures/generated/protected-page-clear.mp4 -frames:v 1 -pix_fmt rgb24 -f rawvideo - |
+            python3 -c 'import sys; frame=sys.stdin.buffer.read(); assert len(frame)==1280*720*3, len(frame); assert not any(frame), "Encoded DRM source contains visible nonblack pixels"'
+
+  native-capture-region-compile:
+    # The macOS runner is more costly for private repositories. Compile this
+    # research harness only on an explicitly tagged push, not every PR.
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[macos-compile]')
+    runs-on: macos-15
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile private-CGS macOS research harness (no GUI claim)
+        shell: bash
+        run: |
+          set -euo pipefail
+          clang -x objective-c -std=gnu11 -fobjc-arc -mmacosx-version-min=13.0 \
+            -framework Cocoa -framework WebKit -framework CoreGraphics \
+            -framework ApplicationServices -ldl \
+            experiments/macos-capture-region/CaptureRegionLab.m -o /tmp/secure-display-region-lab
+          test -x /tmp/secure-display-region-lab

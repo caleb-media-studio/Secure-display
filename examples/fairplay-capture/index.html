@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Secure Display | DRM capture experiment</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark;background:#0d1421;color:#edf4fb}
+main{max-width:850px;margin:4vh auto;padding:20px}
+p,li{line-height:1.55;color:#bdcce0}
+label{display:inline-flex;flex-direction:column;gap:6px;margin:8px 12px 8px 0}
+select,input{max-width:100%;padding:10px;background:#17283b;color:white;border:1px solid #446078;border-radius:8px}
+.notice{background:#242b38;border-left:3px solid #e9ad54;padding:14px;border-radius:8px}
+.frame{border:1px solid #405574;border-radius:14px;background:#000;margin:20px 0;overflow:hidden;min-height:180px}
+video{display:block;width:100%;max-height:460px}
+video[hidden]{display:none!important}
+button{background:#83e5be;border:0;border-radius:8px;color:#101823;padding:11px 17px;font-weight:700;cursor:pointer;margin:5px}
+button:disabled{opacity:.4;cursor:wait}
+#status{padding:12px;border-radius:8px;background:#1b293a}
+#events{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.55 ui-monospace,monospace;color:#acc9df;background:#0a111c;padding:14px;border-radius:8px;min-height:80px}
+a{color:#93c7fb}
+</style>
+</head>
+<body><main>
+<p>SECURE DISPLAY · REAL DRM RESEARCH</p>
+<h1>Encrypted video capture experiment</h1>
+<p class="notice">Attempts genuinely DRM-encrypted public demonstration media through Safari FairPlay or Chrome Widevine. The former Dolby manifest returned HTTP 403 and has been removed. This page never loads private reports or embeds DRM credentials. A vendor may still deny cross-origin requests. Successful playback is NOT proof of universal capture prevention.</p>
+<div>
+<label>DRM system
+<select id="drm-system">
+<option value="fairplay">FairPlay — Safari</option>
+<option value="widevine">Widevine — Chrome</option>
+</select></label>
+<label>Public encrypted test source
+<select id="stream-source">
+<option value="pbs">PBS synthetic test pattern</option>
+<option value="axinom">Axinom official demo stream</option>
+</select></label>
+</div>
+<p>Uses the <a href="https://github.com/Axinom/public-test-vectors" target="_blank" rel="noopener noreferrer">Axinom public test vectors</a>. The public test entitlement is fetched only when you start playback. If your browser blocks that fetch, open the <a href="https://github.com/Axinom/public-test-vectors/blob/master/ContentKeys/Axinom-Encoding-Cmaf-H264-protected-SingleKey.txt" target="_blank" rel="noopener noreferrer">published test token</a> and paste the value following <code>X-AxDRM-Message header:</code> here. It is never saved or committed.</p>
+<label>Optional PUBLIC test entitlement override
+<input id="test-token" type="password" autocomplete="off" spellcheck="false" size="54" placeholder="Leave blank for automatic public vector retrieval" />
+</label>
+<div class="frame"><video id="video" hidden controls playsinline crossorigin="anonymous"></video></div>
+<p id="status" role="status">Ready. Start with Safari + FairPlay.</p>
+<button id="start">Try real DRM playback</button><button id="stop" disabled>Stop</button>
+<h2>What to measure</h2>
+<ol>
+<li>Check diagnostic events for selected EME key system and moving video playback.</li>
+<li>Confirm you personally see moving frames on the monitor.</li>
+<li>Use Command + Shift + 4 to capture the media, then Command + Shift + 5 to record.</li>
+<li>Compare the captured file against what you saw on the physical display. Note OS and browser version.</li>
+</ol>
+<p>Cross-origin denial, a license error, or a blank player BEFORE playback does not show DRM screenshot protection.</p>
+<h2>Sanitized diagnostic events</h2>
+<pre id="events">Ready.</pre>
+<script type="module" src="/src/main.js"></script>
+</main></body></html>

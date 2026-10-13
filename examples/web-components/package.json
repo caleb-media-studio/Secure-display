@@ -1,0 +1,19 @@
+{
+  "name": "@caleb-media-studio-llc/example-elements",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "dev": "vite --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@caleb-media-studio-llc/elements": "0.1.0",
+    "@caleb-media-studio-llc/core": "0.1.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@caleb-media-studio-llc/example-fairplay-capture",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "shaka-player": "5.2.13"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}

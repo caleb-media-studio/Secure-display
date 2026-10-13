@@ -1,0 +1,43 @@
+{
+  "name": "@caleb-media-studio-llc/secure-display",
+  "version": "0.1.0-alpha.2",
+  "private": true,
+  "description": "Experimental browser DRM display components for React and native HTML",
+  "type": "module",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": [
+    "./dist/secure-div.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./secure-div.css": {
+      "types": "./dist/secure-div.css.d.ts",
+      "default": "./dist/secure-div.css"
+    }
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caleb-media-studio/Secure-display.git",
+    "directory": "packages/secure-display"
+  },
+  "homepage": "https://github.com/caleb-media-studio/Secure-display/tree/feat/initial-research-framework",
+  "bugs": {
+    "url": "https://github.com/caleb-media-studio/Secure-display/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node ../../tools/build-distribution.mjs"
+  }
+}
