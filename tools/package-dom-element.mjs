@@ -71,7 +71,11 @@ async function snapshotDOM(){
   // The synthetic reference stylesheet is still maintained separately;
   // the actual DOM CONTENT is now authored only in React JSX.
   const source=readFileSync(HTML,"utf8");
-  const css=source.match(/<style id="secure-fixture-style">([\\s\\S]*?)<\\/style>/)?.[1];
+  const marker='<style id="secure-fixture-style">';
+  const markerOffset=source.indexOf(marker);
+  const markerEnd=source.indexOf("</style>",markerOffset);
+  const css=markerOffset>=0&&markerEnd>markerOffset
+   ?source.slice(markerOffset+marker.length,markerEnd):null;
   if(!css)throw Error("Synthetic reference CSS not found.");
   await page.addStyleTag({content:css});
   await page.evaluate(()=>document.fonts.ready);
