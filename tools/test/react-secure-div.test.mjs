@@ -30,7 +30,7 @@ test("static asset dimensions, missing adapter and no plaintext fallback are enf
 });
 
 test("example mounts unconditionally, and its code is typechecked",()=>{
- const app=source("examples/auto-secure-element/react/main.tsx");
+ const app=source("examples/auto-secure-element/react/App.tsx");
  const pkg=JSON.parse(source("examples/auto-secure-element/package.json"));
  const root=JSON.parse(source("package.json"));
  const runtime=source("packages/secure-div/src/secure-div.js");
@@ -43,7 +43,7 @@ test("example mounts unconditionally, and its code is typechecked",()=>{
 });
 
 test("React example uses only SecureDiv JSX with centralized setup",()=>{
- const demo=source("examples/auto-secure-element/react/main.tsx");
+ const demo=source("examples/auto-secure-element/react/App.tsx");
  const setup=source("examples/auto-secure-element/react/setup.js");
  const packager=source("tools/package-dom-element.mjs");
  const pkg=JSON.parse(source("packages/secure-div/package.json"));
@@ -55,4 +55,18 @@ test("React example uses only SecureDiv JSX with centralized setup",()=>{
  assert.ok(setup.includes("configureSecureDisplay({resolveAsset,playbackAdapter})"));
  assert.ok(packager.includes("domSha256,rootClassName"));
  assert.equal(pkg.exports["./secure-div.css"].types,"./types/secure-div.css.d.ts");
+});
+
+test("minimal entrypoint never handles DRM asset data, status hook is optional",()=>{
+ const entry=source("examples/auto-secure-element/react/main.tsx");
+ const app=source("examples/auto-secure-element/react/App.tsx");
+ const hook=source("packages/react/src/useSecureDisplayStatus.ts");
+ assert.ok(entry.includes('import "./setup.js"'));
+ assert.ok(entry.includes('<App />'));
+ assert.ok(!app.includes("configureSecureDisplay("));
+ assert.ok(!app.includes("assetId="));
+ assert.ok(!app.includes("playbackAdapter="));
+ assert.ok(!app.includes("useEffect("));
+ assert.ok(hook.includes("useSecureDisplayStatus"));
+ assert.ok(hook.includes("onSecureStateChange"));
 });
