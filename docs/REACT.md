@@ -21,7 +21,7 @@ bun run example:react
 
 If Shaka Packager is elsewhere, replace the executable path in `SECURE_DISPLAY_PACKAGER`. When already available on `PATH`, the variable can be omitted. Packaging requires FFmpeg, developer Google Chrome, Shaka Packager, and access to public Axinom test resources.
 
-Open the printed Vite **Local** URL with `/react/`, usually **http://localhost:5173/react/**. If HTTPS was configured for LAN testing, use the trusted `https://` URL instead.
+Open the printed Vite **Local** URL with a **trailing slash**, `/react/`, usually **http://localhost:5173/react/**. The demo now redirects `/react` to `/react/` so Vite will not accidentally serve the vanilla HTML root page. If HTTPS was configured for LAN testing, use the trusted `https://` URL instead.
 
 The React UI has a protected static synthetic card, a real HTML button, a click counter, and a diagnostic DRM status below the card. `playing` means the adapter returned a licensed player. `blocked` means it did not become displayable; read the reason shown. Neither state proves screen-recording exclusion.
 

@@ -71,7 +71,7 @@ If `packager` is already on your `PATH`, you may simply run `bun run drm:element
 bun run example:react
 ```
 
-Open **[http://localhost:5173/react/](http://localhost:5173/react/)**, or use the exact Local URL and port printed by Vite. If local TLS is already configured, Vite may print an `https://` URL instead. Don't open just the root route if your goal is to test React: the root of this example contains a separate vanilla HTML test.
+Open **[http://localhost:5173/react/](http://localhost:5173/react/)**, or use the exact Local URL and port printed by Vite. If local TLS is already configured, Vite may print an `https://` URL instead. Don't open just the root route if your goal is to test React: the root of this example contains a separate vanilla HTML test. The `/react` shortcut redirects to `/react/` to avoid serving the wrong page.
 
 **Expected behavior:** the 960 × 540 synthetic card displays licensed video pixels on the physical screen, its real HTML button increments the **React click counter**, and a visible DRM status reports `playing` (with the selected DRM). If the asset, browser, size, or license does not match, the demo should report `blocked` rather than painting the original text.
 
