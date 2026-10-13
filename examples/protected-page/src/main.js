@@ -25,7 +25,7 @@ const drmReference=document.querySelector("#drm-reference-video");
 const clearReference=document.querySelector("#clear-reference-video");
 
 const query=new URLSearchParams(location.search);
-let mode=MODES.includes(query.get("mode"))?query.get("mode"):"overlay";
+let mode=MODES.includes(query.get("mode"))?query.get("mode"):"neutral";
 const requestedPreset=query.has("opacity")?Number(query.get("opacity")):1;
 let opacityIndex=Number.isInteger(requestedPreset)&&requestedPreset>=0&&requestedPreset<OPACITY_PRESETS.length?requestedPreset:1;
 opacitySlider.max=String(OPACITY_PRESETS.length-1);
@@ -33,6 +33,8 @@ opacitySlider.value=String(opacityIndex);
 const safari=/Safari/i.test(navigator.userAgent)&&!/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)/i.test(navigator.userAgent);
 drmSelect.value=safari?"fairplay":"widevine";
 let player,run=0,playing=false,clicks=0;
+let loadedFixture=null;
+const modeFixture=value=>value==="neutral"?"white":"black";
 let drmVerified=false,mediaIsPlaying=false;
 let phase='Loading encrypted page DRM test...';
 let playbackError='';
@@ -46,6 +48,10 @@ function updateMode(){
  const rule=modePolicy(mode,playing,preset.alpha);
  opacitySlider.value=String(opacityIndex);
  opacitySlider.disabled=mode!=="overlay";
+ const oldControl=document.querySelector("#opacity-lab");
+ const oldHint=document.querySelector("#opacity-hint");
+ oldControl.hidden=mode!=="overlay";
+ oldHint.hidden=mode!=="overlay";
  opacityValue.textContent=preset.label;
  opacityCSS.textContent="CSS opacity: "+preset.alpha.toFixed(9);
  root.dataset.mode=mode;
@@ -53,6 +59,7 @@ function updateMode(){
  video.hidden=!rule.showVideo && !(player && mode!=="normal");
  // CSS must receive decimal syntax, never scientific notation such as 1e-9.
  video.style.opacity=rule.videoOpacity.toFixed(9);
+ video.style.mixBlendMode=mode==="neutral"?"multiply":"normal";
  guard.hidden=mode!=="protected" || rule.showVideo;
  hotspot.hidden=!rule.enableProtectedHotspot;
  hotspot.disabled=!rule.enableProtectedHotspot;
@@ -65,13 +72,19 @@ function updateMode(){
  url.searchParams.set("mode",mode);
  url.searchParams.set("opacity",String(opacityIndex));
  history.replaceState(null,"",url);
- const description=mode==="protected"
-  ?"Control: 100% opaque encrypted BLACK video, with no text, graphics or simulated buttons. Normal DOM is hidden here."
+ const description=mode==="neutral"
+  ?"TARGET TEST: encrypted WHITE video at opacity 100%, using multiply blending. The browser should display ordinary HTML unchanged. Check whether the screenshot substitutes black."
+  :mode==="protected"
+  ?"Control: encrypted BLACK video at 100% with the normal DOM hidden."
   :mode==="overlay"
-    ?"Testing a solid BLACK DRM video at "+preset.label+" over ordinary, interactive HTML. All visible lettering comes from the DOM; the video has no graphics."
-    :"All page text is ordinary DOM, with no DRM layer.";
+  ?"Old control: encrypted BLACK video at "+preset.label+" CSS opacity over ordinary HTML."
+  :"Unprotected control: HTML alone.";
  document.querySelector("#mode-description").textContent=description;
- if(mode==="protected"&&!playing)
+ if(mode==="neutral")
+   status.textContent=playing
+     ?"WHITE DRM × multiply playing. Check BOTH: unchanged physical webpage and BLACK screenshot. Outcome is not assumed."
+     :(playbackError||phase);
+ else if(mode==="protected"&&!playing)
    status.textContent=playbackError||phase;
  else if(mode==="protected")
    status.textContent="Encrypted black video is playing. This status does not verify screenshot exclusion; compare with the color reference below.";
@@ -81,7 +94,16 @@ function updateMode(){
 }
 function setMode(value) {
  if(!MODES.includes(value))return;
+ const previous=mode;
  mode=value;
+ if(value!== "normal" && modeFixture(value)!==loadedFixture && value!==previous) {
+  // The white and black fixtures are distinct encrypted media. Switching
+  // requires a new Shaka load, but never changes or rasterizes the real DOM.
+  playing=false;
+  video.hidden=true;
+  void startPlayback();
+  return;
+ }
  updateMode();
 }
 modeButtons.forEach(button=>button.addEventListener("click",()=>setMode(button.dataset.mode)));
@@ -140,20 +162,23 @@ async function startPlayback(){
  try {
   if(!window.isSecureContext)throw Error("Use HTTPS with a trusted CA (or localhost). LAN HTTP cannot run DRM.");
   const config=drmSource(chosen);
-  // Fail explicitly if the old graphic-backed DRM fixture is still present.
-  // The overlay experiment must use an encrypted BLACK-only video.
-  const markerResponse=await fetch("/drm-page/fixture-info.json",{
+  const requestedFixture=modeFixture(mode);
+  loadedFixture=requestedFixture;
+  const sourceBase=requestedFixture==="white"?"/drm-white":"/drm-page";
+  const expectedKind=requestedFixture==="white"?"solid-white-v1":"solid-black-v1";
+  const markerResponse=await fetch(sourceBase+"/fixture-info.json",{
    cache:"no-store",credentials:"same-origin",
   });
-  if(!markerResponse.ok)throw Error("Black DRM fixture missing. Re-run bun run drm:page:package.");
+  if(!markerResponse.ok)throw Error("DRM "+requestedFixture+" fixture missing. Re-run bun run drm:page:package.");
   let marker;
   try{marker=await markerResponse.json();}catch{
-    throw Error("Black DRM fixture metadata invalid. Re-run bun run drm:page:package.");
+    throw Error("DRM fixture metadata invalid. Re-run bun run drm:page:package.");
   }
-  if(marker?.kind!=="solid-black-v1" || marker?.width!==1280 || marker?.height!==720)
-    throw Error("Outdated graphic DRM fixture detected. Re-run bun run drm:page:package.");
-  log("Verified local DRM source is a solid black 1280x720 video. DOM supplies all text and controls.");
-  const manifest=await fetch(config.manifest,{cache:"no-store",credentials:"same-origin"});
+  if(marker?.kind!==expectedKind || marker?.width!==1280 || marker?.height!==720)
+    throw Error("Outdated "+requestedFixture+" DRM fixture detected. Re-run bun run drm:page:package.");
+  log("Found encrypted "+requestedFixture+" DRM media. Original DOM remains native HTML.");
+  const mediaManifest=sourceBase+(chosen==="fairplay"?"/master.m3u8":"/master.mpd");
+  const manifest=await fetch(mediaManifest,{cache:"no-store",credentials:"same-origin"});
   if(!manifest.ok)throw Error("DRM media is missing (HTTP "+manifest.status+"). Run bun run drm:page:package.");
   const body=await manifest.text();
   const recognized=chosen==="fairplay"
@@ -198,7 +223,7 @@ async function startPlayback(){
   phase="Loading "+chosen+" encrypted video and requesting DRM license...";
   updateMode();
   log("Loading encrypted "+chosen+" media. Clear media fallback is forbidden.");
-  await instance.load(config.manifest);
+  await instance.load(mediaManifest);
   if(id!==run)return;
   if(instance.drmInfo()?.keySystem!==config.keySystem)
     throw Error("Selected EME DRM system could not be verified.");
@@ -250,7 +275,7 @@ video.addEventListener("error",()=>{
 start.addEventListener("click",()=>void startPlayback());
 drmSelect.addEventListener("change",()=>void release());
 updateMode();
-log("Near-invisible full-viewport DRM overlay experiment: attempting public Axinom test playback.");
+log("Testing encrypted WHITE video × multiply over normal DOM, with capture-black outcome unverified.");
 
 // Keep a separate diagnostic of whether media playback continues at tiny opacity.
 // These counters don't tell us what the browser screenshot compositor captures.
@@ -261,7 +286,8 @@ function updateOverlayMetrics(){
  const frames=quality?.totalVideoFrames;
  const bounds=video.getBoundingClientRect();
  const fullViewport=bounds.width>=innerWidth && bounds.height>=innerHeight;
- metrics.textContent="Media: ENCRYPTED BLACK VIDEO | EME key system selected: "+(drmVerified?"yes":"no")
+ metrics.textContent="DRM source: "+(loadedFixture||"none")+
+   " | Blend: "+style.mixBlendMode+" | EME key system selected: "+(drmVerified?"yes":"no")
    +" | Playback: "+(video.paused?"paused":"running")
    +" | Video time: "+video.currentTime.toFixed(2)+"s"
    +" | Decoded frames: "+(Number.isFinite(frames)?frames:"unavailable")
