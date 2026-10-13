@@ -145,4 +145,39 @@ Switch among **Full protected page**, **DOM + DRM overlay**, and **Unprotected D
 
 See [docs/PROTECTED_PAGE.md](docs/PROTECTED_PAGE.md).
 
-React integration (prepackaged synthetic assets only): `@secure-display/react` now exports `SecureDiv`. See [the secure element experiment](docs/AUTO_SECURE_ELEMENT.md) for required DRM adapters and limitations.
+## React component research API
+
+The React caller now writes only JSX. Asset IDs, source checksums and the
+licensed media adapter are configured **once** at application startup, not on
+every component:
+
+```tsx
+import { SecureDiv } from "@secure-display/react";
+
+<SecureDiv className="secure-card">
+  <h2>Prepackaged synthetic content</h2>
+  <button onClick={handleClick}>Real React button</button>
+</SecureDiv>
+```
+
+`examples/auto-secure-element/react/setup.js` shows the shared backend
+configuration. The test packager snapshots the **actual React DOM**, encrypts
+the screenshot as video and writes a DOM-content fingerprint. If the JSX and
+packaged media differ, if DRM fails or if no adapter is configured, the element
+remains visually blocked. It does not fall back to screenshot-visible HTML.
+
+To try the **fixed synthetic sample** locally:
+
+```sh
+bun install
+SECURE_DISPLAY_PACKAGER="$PWD/.secure-display-local/bin/packager" bun run drm:element:package
+bun run example:auto-element
+```
+
+Open the Vite URL at `/react/`. Repackage after JSX/CSS changes. Packaging
+requires developer Chrome, FFmpeg and Shaka Packager. The sample uses publicly
+known Axinom test keys; this is NOT confidential content encryption,
+general-purpose runtime JSX protection or a verified cross-platform screenshot
+blocking API. The original DOM is still inspectable and copyable through
+browser developer tools. See [the secure element experiment](docs/AUTO_SECURE_ELEMENT.md).
+
