@@ -38,9 +38,14 @@ try{
    const range=document.createRange();
    range.setStart(text,start);range.setEnd(text,end);
    const b=range.getBoundingClientRect();
-   return {x:b.left+b.width/2,y:b.top+b.height/2};
+   return {left:b.left,right:b.right,y:b.top+b.height/2};
   };
-  return {from:rect(1,2),to:rect(24,25)};
+  // Begin outside the first glyph and drag past the last desired glyph.
+  // This tests the standard user action of selecting a word/phrase from
+  // its edge rather than a headless-Chrome caret-movement edge case.
+  const first=rect(0,1),last=rect(24,25);
+  return {from:{x:first.left-3,y:first.y},
+          to:{x:last.right+4,y:last.y}};
  });
  await page.mouse.move(points.from.x,points.from.y);
  await page.mouse.down();
