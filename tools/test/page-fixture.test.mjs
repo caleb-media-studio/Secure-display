@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {TEST_SENTENCE,PAGE_WIDTH,PAGE_HEIGHT,BUTTON_BOX,wrapWords,assertSupportedGlyphs,rasterize,rasterizeBlack} from "../generate-protected-page-video.mjs";
+import {TEST_SENTENCE,PAGE_WIDTH,PAGE_HEIGHT,BUTTON_BOX,wrapWords,assertSupportedGlyphs,rasterize,rasterizeBlack,rasterizeProbe} from "../generate-protected-page-video.mjs";
 import {packagedPageFiles} from "../package-test-page.mjs";
 import {readFileSync} from "node:fs";
 test("user requested sentence is preserved exactly, including capitalization",()=>{
@@ -38,3 +38,19 @@ function requireNothing(){
  const file=new URL("../package-test-page.mjs",import.meta.url);
  return readFileSync(file,"utf8");
 }
+
+test("color probe is nonblack, distinct from the black overlay, and deterministic",()=>{
+ const probe=rasterizeProbe();
+ const black=rasterizeBlack();
+ assert.equal(probe.length,PAGE_WIDTH*PAGE_HEIGHT*3);
+ assert.ok(probe.some(channel=>channel>230),"Probe must be bright enough for screenshot comparison.");
+ assert.notDeepEqual(probe.subarray(0,30),black.subarray(0,30));
+ assert.deepEqual(rasterizeProbe(),probe);
+});
+test("package script provides the same clear control and encrypted probe",()=>{
+ const source=readFileSync(new URL("../package-test-page.mjs",import.meta.url),"utf8");
+ assert.ok(source.includes('protected-probe-clear.mp4'));
+ assert.ok(source.includes('drm-probe'));
+ assert.ok(source.includes('color-probe-v1'));
+ assert.ok(source.includes('probe-clear.mp4'));
+});
