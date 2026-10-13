@@ -110,7 +110,8 @@ async function main(){
  console.log("Rendering the ACTUAL React JSX DOM with its reference CSS in developer-only Chrome...");
  const {domSha256,rootClassName}=await snapshotDOM();
  command("ffmpeg",["-hide_banner","-loglevel","error","-y","-loop","1","-framerate","24",
-  "-i",IMAGE,"-t","3","-an","-c:v","libx264","-pix_fmt","yuv420p",
+  "-i",IMAGE,"-t","3","-an","-vf","crop=960:540:0:0",
+  "-c:v","libx264","-pix_fmt","yuv420p",
   "-r","24","-movflags","+faststart",CLEAR]);
  if(process.argv.includes("--snapshot-only")){
   console.log("Successfully rendered real DOM to PNG and encoded H.264; DRM packaging skipped by test option.");
