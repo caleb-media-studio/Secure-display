@@ -2,7 +2,7 @@
  * Comparison modes for empirical screen capture tests.
  * Near-invisible overlay behavior is not assumed; verify by capture.
  */
-export const MODES=Object.freeze(["protected","overlay","normal"]);
+export const MODES=Object.freeze(["neutral","protected","overlay","normal"]);
 // 0.0000001% expressed as a CSS opacity fraction, not a percentage.
 export const NEAR_INVISIBLE_OPACITY=0.000000001;
 /** Explicit percentages ensure exact, reproducible tests at tiny alpha. */
@@ -34,6 +34,10 @@ export function modePolicy(mode,drmPlaying,overlayOpacity=NEAR_INVISIBLE_OPACITY
    throw Error("Invalid overlay opacity.");
  if(mode==="normal")return Object.freeze({
   showDom:true,showVideo:false,videoOpacity:0,enableProtectedHotspot:false,
+ });
+ if(mode==="neutral")return Object.freeze({
+  showDom:true,showVideo:Boolean(drmPlaying),videoOpacity:1,
+  enableProtectedHotspot:false,
  });
  if(mode==="overlay")return Object.freeze({
   showDom:true,showVideo:Boolean(drmPlaying),videoOpacity:overlayOpacity,
