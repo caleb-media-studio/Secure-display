@@ -1,36 +1,44 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
 import {resolve,dirname} from "node:path";
 import {fileURLToPath} from "node:url";
-import {createServer} from "vite";
+import viteConfig from "../../examples/auto-secure-element/vite.config.mjs";
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"../..");
-const example=resolve(root,"examples/auto-secure-element");
-
-test("React shortcut redirects to the React HTML entry even with local TLS configured",async()=>{
- const server=await createServer({
-  root:example,
-  configFile:resolve(example,"vite.config.mjs"),
-  server:{host:"127.0.0.1",port:0,strictPort:false,https:false},
-  logLevel:"silent",
+function middleware(){
+ let callback;
+ const plugin=viteConfig.plugins.find(p=>p.name==="secure-display-react-route-slash");
+ assert.ok(plugin,"The dedicated React route plugin must exist");
+ plugin.configureServer({middlewares:{use(fn){callback=fn;}}});
+ assert.equal(typeof callback,"function");
+ return callback;
+}
+function route(handler,method,url){
+ let status=null,headers=null,ended=false,next=false;
+ handler({method,url},{
+  writeHead(code,fields){status=code;headers=fields;},
+  end(){ended=true;}
+ },()=>{next=true;});
+ return {status,headers,ended,next};
+}
+test("React route redirect works for GET and HEAD without starting a Vite HTTP server",()=>{
+ const handle=middleware();
+ assert.deepEqual(route(handle,"GET","/react"),{
+  status:308,headers:{Location:"/react/"},ended:true,next:false
  });
- try {
-  await server.listen();
-  const address=server.httpServer?.address();
-  assert.ok(address && typeof address!=="string");
-  const origin="http://127.0.0.1:"+address.port;
-  const redirect=await fetch(origin+"/react",{redirect:"manual",headers:{connection:"close"}});
-  assert.equal(redirect.status,308);
-  assert.equal(redirect.headers.get("location"),"/react/");
-  await redirect.arrayBuffer();
-  const page=await fetch(origin+"/react/",{headers:{connection:"close"}});
-  assert.equal(page.status,200);
-  assert.match(page.headers.get("content-type")??"",/text\/html/);
-  const html=await page.text();
-  assert.match(html,/React component experiment/);
-  assert.match(html,/react\/main\.tsx/);
- }finally{
-  server.httpServer?.closeAllConnections?.();
-  await server.close();
+ assert.deepEqual(route(handle,"HEAD","/react?x=1"),{
+  status:308,headers:{Location:"/react/?x=1"},ended:true,next:false
+ });
+ for(const [method,url] of [["GET","/react/"],["POST","/react"],["GET","/capture-test.html"]]){
+  assert.deepEqual(route(handle,method,url),{
+   status:null,headers:null,ended:false,next:true
+  });
  }
+});
+test("the React route still points to its real HTML entry",()=>{
+ const page=readFileSync(resolve(root,"examples/auto-secure-element/react/index.html"),"utf8");
+ assert.match(page,/React component experiment/);
+ assert.match(page,/react\/main\.tsx/);
+ assert.match(page,/secure-div\s*\{\s*opacity:0!important/);
 });
