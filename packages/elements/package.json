@@ -1,5 +1,5 @@
 {
-  "name": "@secure-display/elements",
+  "name": "@caleb-media-studio-llc/elements",
   "version": "0.1.0",
   "private": true,
   "description": "Experimental DRM-backed custom elements for encrypted synthetic text media",
@@ -18,6 +18,6 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@secure-display/core": "0.1.0"
+    "@caleb-media-studio-llc/core": "0.1.0"
   }
 }

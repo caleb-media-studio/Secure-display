@@ -34,9 +34,10 @@ try{
  const consumer=join(directory,"consumer");
  mkdirSync(consumer);
  const dependencies={react:"19.2.0"};
+ const overrides={};
  for(const name of packages){
   const pkg=JSON.parse(readFileSync(join(root,"packages",name,"package.json"),"utf8"));
-  assert.equal(pkg.name,"@secure-display/"+name);
+  assert.equal(pkg.name,"@caleb-media-studio-llc/"+name);
   // npm pack works for private packages but npm publish stays blocked.
   const packed=JSON.parse(run("npm",[
    "pack","--json","--workspace",pkg.name,"--pack-destination",directory
@@ -48,19 +49,22 @@ try{
    assert.doesNotMatch(file.path,/(^|\/)(?:\.env(?:\.|$)|secrets?(?:\/|$)|private(?:\/|$))|\.(?:pem|p12|pfx|key)$/i);
   }
   dependencies[pkg.name]=pathToFileURL(tarball).href;
+  // Bun resolves transitive versions against npm unless explicitly overridden.
+  // Pin the unpacked internal dependencies to these local tarballs for prerelease tests.
+  overrides[pkg.name]=dependencies[pkg.name];
  }
  writeFileSync(join(consumer,"package.json"),JSON.stringify({
   name:"secure-display-isolated-install-smoke",
-  version:"0.0.0",private:true,type:"module",dependencies
+  version:"0.0.0",private:true,type:"module",dependencies,overrides
  },null,2)+"\n");
  if(manager==="npm")run("npm",["install","--ignore-scripts","--no-audit","--no-fund"],consumer);
  else run("bun",["install","--ignore-scripts"],consumer);
  const entry=join(consumer,"smoke.mjs");
  writeFileSync(entry,[
   'import assert from "node:assert/strict";',
-  'import {registerSecureDiv} from "@secure-display/secure-div";',
-  'import {SecureDiv,configureSecureDisplay,useSecureDisplayStatus} from "@secure-display/react";',
-  'import * as core from "@secure-display/core";',
+  'import {registerSecureDiv} from "@caleb-media-studio-llc/secure-div";',
+  'import {SecureDiv,configureSecureDisplay,useSecureDisplayStatus} from "@caleb-media-studio-llc/react";',
+  'import * as core from "@caleb-media-studio-llc/core";',
   'assert.equal(typeof registerSecureDiv,"function");',
   'assert.equal(typeof SecureDiv,"function");',
   'assert.equal(typeof configureSecureDisplay,"function");',
@@ -71,11 +75,11 @@ try{
  ].join("\n"));
  run("node",[entry],consumer);
  for(const file of [
-  "@secure-display/core/dist/index.d.ts",
-  "@secure-display/react/dist/index.d.ts",
-  "@secure-display/secure-div/types/index.d.ts",
-  "@secure-display/secure-div/secure-div.css",
-  "@secure-display/secure-div/types/secure-div.css.d.ts"
+  "@caleb-media-studio-llc/core/dist/index.d.ts",
+  "@caleb-media-studio-llc/react/dist/index.d.ts",
+  "@caleb-media-studio-llc/secure-div/types/index.d.ts",
+  "@caleb-media-studio-llc/secure-div/secure-div.css",
+  "@caleb-media-studio-llc/secure-div/types/secure-div.css.d.ts"
  ]){
   assert.ok(existsSync(join(consumer,"node_modules",file)),"Missing installed artifact: "+file);
  }

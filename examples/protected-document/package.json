@@ -1,5 +1,5 @@
 {
-  "name": "@secure-display/example-document",
+  "name": "@caleb-media-studio-llc/example-document",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "dev": "vite --host 0.0.0.0"
   },
   "dependencies": {
-    "@secure-display/document": "0.1.0",
+    "@caleb-media-studio-llc/document": "0.1.0",
     "shaka-player": "5.2.13"
   },
   "devDependencies": {
