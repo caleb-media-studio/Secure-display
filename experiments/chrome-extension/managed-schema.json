@@ -29,6 +29,5 @@
       "type": "string",
       "description": "Optional OIDC scopes granted to public extension client; include API resource scope"
     }
-  },
-  "additionalProperties": false
+  }
 }

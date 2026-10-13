@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {webcrypto} from "node:crypto";
 import {spawnSync} from "node:child_process";
+import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 import {validateEnterpriseConfig,validateEnvelope,validateWrappedKey,validateRect,parseSecureUrl,validatedDocId} from "../shared/protocol.mjs";
@@ -85,4 +86,15 @@ test("native messaging process uses length-prefixed JSON framing",()=>{
  const out=child.stdout;assert.equal(out.readUInt32LE(0),out.length-4);
  const response=JSON.parse(out.subarray(4).toString());
  assert.equal(response.requestId,id);assert.equal(response.supported,false);
+});
+
+test("Chrome managed policy schema is supported and extension stays opt-in",()=>{
+ const schema=JSON.parse(readFileSync(new URL("../managed-schema.json",import.meta.url),"utf8"));
+ const manifest=JSON.parse(readFileSync(new URL("../manifest.json",import.meta.url),"utf8"));
+ assert.equal(schema.type,"object");
+ assert.equal(Object.hasOwn(schema,"additionalProperties"),false,"Chrome forbids top-level additionalProperties in managed policy schemas");
+ assert.equal(manifest.manifest_version,3);
+ assert.ok(!manifest.content_scripts,"Extension must never auto-inject into websites");
+ assert.ok(!manifest.host_permissions,"No default enterprise host grants");
+ assert.ok(manifest.optional_host_permissions.includes("https://*/*"));
 });
