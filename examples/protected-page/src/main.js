@@ -5,6 +5,7 @@ import {MODES,modePolicy,drmSource} from "./mode-policy.js";
 // screenshots. The normal DOM mode must not be used with confidential data.
 const TOKEN_URL="https://raw.githubusercontent.com/Axinom/public-test-vectors/master/ContentKeys/Axinom-Encoding-Cmaf-H264-protected-SingleKey.txt";
 const video=document.querySelector("#protected-video");
+const guard=document.querySelector("#protected-guard");
 const root=document.querySelector("#experiment");
 const dom=document.querySelector("#dom-page");
 const hotspot=document.querySelector("#protected-hotspot");
@@ -19,6 +20,7 @@ let mode=MODES.includes(query.get("mode"))?query.get("mode"):"protected";
 const safari=/Safari/i.test(navigator.userAgent)&&!/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)/i.test(navigator.userAgent);
 drmSelect.value=safari?"fairplay":"widevine";
 let player,run=0,playing=false,clicks=0;
+let drmVerified=false,mediaIsPlaying=false;
 let phase='Loading encrypted page DRM test...';
 let playbackError='';
 let publicToken;
@@ -30,8 +32,9 @@ function updateMode(){
  const rule=modePolicy(mode,playing);
  root.dataset.mode=mode;
  dom.hidden=!rule.showDom;
- video.hidden=!rule.showVideo;
+ video.hidden=!rule.showVideo && !(player && mode!=="normal");
  video.style.opacity=String(rule.videoOpacity);
+ guard.hidden=mode!=="protected" || rule.showVideo;
  hotspot.hidden=!rule.enableProtectedHotspot;
  hotspot.disabled=!rule.enableProtectedHotspot;
  for(const b of modeButtons){
@@ -85,7 +88,7 @@ function reportError(error,label){
 }
 async function release(){
  ++run;
- playing=false;
+ playing=false;drmVerified=false;mediaIsPlaying=false;
  const prior=player;player=null;
  video.hidden=true;
  video.pause();
@@ -127,7 +130,7 @@ async function startPlayback(){
    if(id!==run)return;
    reportError(e.detail,"Playback");
    playbackError="DRM playback failed: Shaka error "+(e.detail?.code??"unknown")+". Expand diagnostics.";
-   playing=false;
+   playing=false;drmVerified=false;mediaIsPlaying=false;
    updateMode();
   });
   await instance.attach(video);
@@ -158,6 +161,9 @@ async function startPlayback(){
     throw Error("Selected EME DRM system could not be verified.");
   phase="DRM session verified. Waiting for protected video playback...";
   updateMode();
+  drmVerified=true;
+  if(mediaIsPlaying) playing=true;
+  updateMode();
   log("Verified EME key system: "+config.keySystem+". Awaiting actual video playback.");
   // Never await a user-gesture-gated play promise indefinitely.
   void video.play().catch(()=>{
@@ -176,20 +182,26 @@ async function startPlayback(){
   playbackError=e instanceof Error
     ? "DRM could not start: "+(Number.isInteger(e.code)?"Shaka "+e.code:e.message)
     : "DRM could not start. See diagnostics.";
-  playing=false;
+  playing=false;drmVerified=false;mediaIsPlaying=false;
   updateMode();
  }finally{if(id===run)start.disabled=false;}
 }
 video.addEventListener("playing",()=>{
  if(!player)return;
+ mediaIsPlaying=true;
+ if(!drmVerified){
+   log("Media playing event received; waiting for DRM key system verification.");
+   return;
+ }
  playing=true;
- log("Video element is playing. Capture exclusion must be checked on device.");
+ log("Verified DRM video is playing; compare physical screen with captured output.");
  updateMode();
 });
 video.addEventListener("error",()=>{
  if(!player)return;
- playing=false;
- log("Native media error code "+(video.error?.code??"unknown"));
+ playing=false;drmVerified=false;mediaIsPlaying=false;
+ playbackError="Media playback failed: decoder error "+(video.error?.code??"unknown")+".";
+ log(playbackError);
  updateMode();
 });
 start.addEventListener("click",()=>void startPlayback());
