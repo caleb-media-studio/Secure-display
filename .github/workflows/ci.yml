@@ -45,7 +45,12 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Generate synthetic H.264 fixture without drawtext
         run: bun run fixture
-      - name: Generate full-page DRM experiment clear-video fixture
+      - name: Generate solid-black DRM overlay clear-video fixture
         run: |
           node tools/generate-protected-page-video.mjs
           test -s fixtures/generated/protected-page-clear.mp4
+      - name: Verify decoded H264 frame is fully black
+        run: |
+          set -o pipefail
+          ffmpeg -v error -i fixtures/generated/protected-page-clear.mp4 -frames:v 1 -pix_fmt rgb24 -f rawvideo - |
+            python3 -c 'import sys; frame=sys.stdin.buffer.read(); assert len(frame)==1280*720*3, len(frame); assert not any(frame), "Encoded DRM source contains visible nonblack pixels"'
