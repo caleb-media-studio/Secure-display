@@ -10,9 +10,9 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "tsc -p packages/core/tsconfig.json && tsc -p packages/elements/tsconfig.json && tsc -p packages/document/tsconfig.json && tsc -p packages/react/tsconfig.json && vite build examples/diagnostics && vite build examples/web-components && vite build examples/fairplay-capture && vite build examples/protected-document && vite build examples/protected-page",
+    "build": "tsc -p packages/core/tsconfig.json && tsc -p packages/elements/tsconfig.json && tsc -p packages/document/tsconfig.json && tsc -p packages/react/tsconfig.json && vite build examples/diagnostics && vite build examples/web-components && vite build examples/fairplay-capture && vite build examples/protected-document && vite build examples/protected-page && vite build examples/auto-secure-element",
     "typecheck": "tsc -p packages/core/tsconfig.json && tsc -p packages/elements/tsconfig.json && tsc -p packages/document/tsconfig.json && tsc -p packages/react/tsconfig.json && tsc --noEmit -p examples/diagnostics/tsconfig.json && tsc --noEmit -p examples/web-components/tsconfig.json",
-    "test": "tsc -p packages/core/tsconfig.json && tsc -p packages/elements/tsconfig.json && node --test packages/core/test/*.test.mjs packages/elements/test/*.test.mjs packages/document/test/*.test.mjs && node --test tools/test/fps-sdk-local.test.mjs && node --test examples/fairplay-capture/test/*.test.mjs && node --test tools/test/package-test-document.test.mjs && node --test tools/test/network-vite.test.mjs && node --test tools/test/page-fixture.test.mjs examples/protected-page/test/*.test.mjs && node --test experiments/macos-capture-region/test/*.test.mjs",
+    "test": "tsc -p packages/core/tsconfig.json && tsc -p packages/elements/tsconfig.json && node --test packages/core/test/*.test.mjs packages/elements/test/*.test.mjs packages/document/test/*.test.mjs && node --test tools/test/fps-sdk-local.test.mjs && node --test examples/fairplay-capture/test/*.test.mjs && node --test tools/test/package-test-document.test.mjs && node --test tools/test/network-vite.test.mjs && node --test tools/test/page-fixture.test.mjs examples/protected-page/test/*.test.mjs && node --test experiments/macos-capture-region/test/*.test.mjs && node --test tools/test/dom-element.test.mjs",
     "dev": "tsc -p packages/core/tsconfig.json && tsc -p packages/react/tsconfig.json && vite examples/diagnostics --host 0.0.0.0",
     "example:diagnostics": "tsc -p packages/core/tsconfig.json && tsc -p packages/react/tsconfig.json && vite examples/diagnostics --host 0.0.0.0",
     "example:elements": "tsc -p packages/core/tsconfig.json && tsc -p packages/elements/tsconfig.json && vite examples/web-components --host 0.0.0.0",
@@ -29,13 +29,16 @@
     "network:cert": "node tools/setup-network-tls.mjs",
     "drm:page:package": "node tools/package-test-page.mjs",
     "example:page": "vite examples/protected-page --host 0.0.0.0",
-    "experiment:macos:capture-region": "bash experiments/macos-capture-region/run.sh"
+    "experiment:macos:capture-region": "bash experiments/macos-capture-region/run.sh",
+    "drm:element:package": "node tools/package-dom-element.mjs",
+    "example:auto-element": "vite examples/auto-secure-element --host 0.0.0.0"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
-    "vite": "^7.1.0"
+    "vite": "^7.1.0",
+    "playwright-core": "^1.56.0"
   }
 }

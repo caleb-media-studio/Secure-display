@@ -1,0 +1,13 @@
+{
+  "name": "@secure-display/example-auto-secure-element",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "shaka-player": "5.2.13"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}

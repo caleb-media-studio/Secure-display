@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Secure Display real DOM element to actual Widevine/FairPlay capture-resistant media research test.">
+<title>Secure Display · Automatic HTML to protected media</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0c1323;color:#edf5ff;font:16px/1.6 -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+main{width:min(1120px,96%);margin:45px auto}
+h1{font-size:clamp(25px,3.5vw,43px);margin:0 0 8px}p{color:#b4c9dd}
+.note{background:#203048;padding:16px;border-left:3px solid #5ae1b0;border-radius:8px}
+.demo{margin:28px 0;position:relative;min-height:540px}
+secure-div{display:block;width:960px;max-width:100%;margin:0;opacity:0!important}
+/* Guard is active even BEFORE customElements.define(): no first-paint leak. */
+secure-div:not(:defined),secure-div[data-secure-state="blocked"],
+secure-div[data-secure-state="stale"]{opacity:0!important}
+#log{white-space:pre-wrap;background:#142438;padding:14px;font:13px/1.5 ui-monospace,monospace}
+#preview{width:960px;max-width:100%;border:1px solid #536883;border-radius:12px;padding:18px;background:#1e3048;margin:20px 0}
+button{cursor:pointer}strong{color:#f7fff7}
+</style></head>
+<body><main>
+<h1>One real element. DRM pixels automatically.</h1>
+<p>Actual HTML/CSS → one developer build step → licensed FairPlay/Widevine output. Visitors use a normal HTTPS browser without installing anything.</p>
+<div class="note"><strong>Research only:</strong> the element's DOM remains in the page for layout, CSS, tabbing and actual button clicks, but its own pixels are suppressed with opacity 0. An externally positioned DRM video displays its visual snapshot. Screenshots may omit those protected media pixels on supported devices. Public Axinom test keys offer no data secrecy, and changing the card requires rebuilding its video.</div>
+<div id="mount" class="demo" aria-label="Real secure-div custom element with source HTML"></div>
+<p id="state">Preparing real HTML element…</p>
+<p id="clicks">Button clicks: 0</p>
+<details><summary>How this works / limits</summary>
+<p>This prototype does not request a browser screenshot-blocking API. It automatically converts the actual HTML snapshot to DRM pixels during the developer build. DOM interactions stay native and no app/extension is required for visitors, but the protected image is static and CSS/DOM changes require a rebuild. Browser, CDM and operating-system capture behavior must still be tested separately.</p>
+</details>
+<pre id="log">No plaintext fallback.</pre>
+</main>
+<script type="module" src="/src/main.js"></script>
+</body></html>
