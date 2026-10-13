@@ -76,3 +76,21 @@ The underlying sample text, button and page remain **ordinary interactive DOM**.
 **Testing:** First confirm the page reports a verified DRM session and advances the video timestamp/decoded-frame counter (when available). The diagnostics report computed CSS opacity and pointer-event behavior. Then take an operating-system screenshot, record a screen, or screen share. Compare the captured ordinary DOM content against the physical display. Use `Unprotected DOM control` (no overlay) and `Full protected page` (opaque licensed media) as controls. The outcome for near-invisible overlay mode **has not yet been verified** on hardware. Browsers may handle extremely small alpha values or protected video compositor layers differently, so record exact browser and capture method.
 
 If the browser computes the opacity as `0` or stops sending decoded frames, report it rather than interpreting the result as DRM capture blocking. This experiment does not test whether it protects confidential data, and no result should be assumed without a capture comparison.
+
+## Live opacity threshold experiment
+
+The original test at **0.0000001%** still showed ordinary DOM text in the supplied screenshot, even though the diagnostic reported verified Widevine playback and advancing decoded frames. This is a concrete observation for that specific browser and capture, not a general conclusion about all opacity settings.
+
+A new **Live DRM opacity** slider changes the same encrypted video's CSS opacity without destroying/recreating the Shaka player or restarting its DRM license session. It does **not** rasterize or otherwise modify the DOM underneath. The choices are intentionally discrete, reproducible values: 0%, 0.0000001%, 0.000001%, 0.00001%, 0.0001%, 0.001%, 0.01%, 0.1%, 0.4%, 1%, 5%, 10%, 25%, 50%, and 100%. The UI displays both the percentage and decimal CSS opacity; for example, **0.0000001% = CSS opacity 0.000000001**.
+
+### How to test
+
+1. Start `bun run example:page` using an already generated `bun run drm:page:package` encrypted synthetic fixture. The default is the full-viewport overlay at 0.0000001% over the clickable HTML.
+2. Confirm the on-screen diagnostic reports DRM verified, a running media timeline, decoded frames (if provided by the browser), pointer-events none, and full viewport coverage.
+3. Move the slider to an opacity preset. The actual underlying HTML must remain interactive and the license session must not be recreated.
+4. Take an OS screenshot or short recording at that setting. Note whether the **DOM text itself** remains visible, whether the protected video is omitted, and whether the physical screen is still readable.
+5. Repeat at selected opacities, especially **0%**, **0.0000001%**, **0.01%**, **0.1%**, **0.4%**, **1%**, **10%** and **100%**. Compare with the unprotected DOM control, which has no active video overlay.
+
+At higher opacity, a DRM video might obscure the DOM to the physical viewer as well as in a captured image. That is **not** the sought result: the goal is to preserve readable, interactive DOM on the screen while it is absent from screenshots. Treat each opacity as an experiment; don't infer compositor behavior solely from playback diagnostics. Browser implementations may quantize alpha or drop an effectively invisible layer.
+
+The selected index is encoded in the demo URL `?mode=overlay&opacity=<index>` so it can be revisited and reproduced.
