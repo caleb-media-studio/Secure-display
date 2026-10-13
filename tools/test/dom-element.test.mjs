@@ -51,6 +51,6 @@ test("playback fails closed without clearing into HTML",()=>{
  assert.match(source,/p\.drmInfo\(\)\?\.keySystem/);
  assert.match(source,/X-AxDRM-Message/);
  assert.match(source,/automated-dom-drm-v1/);
- assert.match(element,/data\.secureState="blocked"/);
+ assert.match(element,/this\.dataset\.secureState="blocked"/);
  assert.doesNotMatch(element,/clear[- ]video/i);
 });
