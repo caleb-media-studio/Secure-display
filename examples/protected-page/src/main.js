@@ -15,8 +15,9 @@ const start=document.querySelector("#start");
 const status=document.querySelector("#status");
 const diagnostic=document.querySelector("#diagnostic");
 const interactions=document.querySelector("#interactions");
+const metrics=document.querySelector("#overlay-metrics");
 const query=new URLSearchParams(location.search);
-let mode=MODES.includes(query.get("mode"))?query.get("mode"):"protected";
+let mode=MODES.includes(query.get("mode"))?query.get("mode"):"overlay";
 const safari=/Safari/i.test(navigator.userAgent)&&!/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)/i.test(navigator.userAgent);
 drmSelect.value=safari?"fairplay":"widevine";
 let player,run=0,playing=false,clicks=0;
@@ -48,7 +49,7 @@ function updateMode(){
  const description=mode==="protected"
   ?"Only DRM pixels form the page; no test sentence is visible in ordinary DOM."
   :mode==="overlay"
-    ?"Ordinary HTML is visible underneath a DRM video with CSS opacity 0.015. This is NOT a true transparent DRM video and is not expected to protect DOM pixels."
+    ?"Testing a real DRM video at exactly 0.0000001% opacity over ordinary interactive DOM. This experiment measures the capture result; it does not presume one."
     :"All page text is ordinary DOM, with no DRM layer.";
  document.querySelector("#mode-description").textContent=description;
  if(mode==="protected"&&!playing)
@@ -56,7 +57,7 @@ function updateMode(){
  else if(mode==="protected")
    status.textContent="Licensed DRM playback active. Check physical display vs screenshot and recording.";
  else if(mode==="overlay")
-   status.textContent=playing?"Overlay active. Check whether ordinary HTML is still capturable.":(playbackError||phase);
+   status.textContent=playing?"DRM verified and playing at 0.0000001% opacity. Take a screenshot, recording or screen share to measure what remains visible.":(playbackError||phase);
  else status.textContent="Unprotected DOM control. Screenshots should contain the sentence.";
 }
 function setMode(value) {
@@ -207,7 +208,27 @@ video.addEventListener("error",()=>{
 start.addEventListener("click",()=>void startPlayback());
 drmSelect.addEventListener("change",()=>void release());
 updateMode();
-log("Begin in full protected mode. Load DRM, then compare all three modes.");
+log("Near-invisible full-viewport DRM overlay experiment: attempting public Axinom test playback.");
+
+// Keep a separate diagnostic of whether media playback continues at tiny opacity.
+// These counters don't tell us what the browser screenshot compositor captures.
+function updateOverlayMetrics(){
+ if(!metrics)return;
+ const style=getComputedStyle(video);
+ const quality=video.getVideoPlaybackQuality?.();
+ const frames=quality?.totalVideoFrames;
+ metrics.textContent="DRM verified: "+(drmVerified?"yes":"no")
+   +" | Playback: "+(video.paused?"paused":"running")
+   +" | Video time: "+video.currentTime.toFixed(2)+"s"
+   +" | Decoded frames: "+(Number.isFinite(frames)?frames:"unavailable")
+   +" | CSS opacity: "+style.opacity
+   +" | Pointer events: "+style.pointerEvents;
+}
+video.addEventListener("playing",updateOverlayMetrics);
+video.addEventListener("timeupdate",updateOverlayMetrics);
+video.addEventListener("pause",updateOverlayMetrics);
+setInterval(updateOverlayMetrics,1000);
+updateOverlayMetrics();
 
 // Begin the public test EME workflow on load; the button remains a retry.
 void startPlayback();
