@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
       - uses: oven-sh/setup-bun@v2
@@ -73,7 +73,7 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
@@ -91,4 +91,4 @@ jobs:
           shopt -s nullglob
           files=(npm-release/*.tgz)
           test "${#files[@]}" -eq 1
-          npm publish "${files[0]}" --access public --tag experimental --provenance --ignore-scripts
+          npm publish "./${files[0]}" --access public --tag experimental --provenance --ignore-scripts
