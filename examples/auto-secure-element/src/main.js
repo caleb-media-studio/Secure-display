@@ -5,6 +5,7 @@ import {registerSecureDiv} from "./secure-div.js";
 const state=document.querySelector("#state");
 const log=document.querySelector("#log");
 const clicks=document.querySelector("#clicks");
+const selectionStatus=document.querySelector("#selection-status");
 const container=document.querySelector("#mount");
 let count=0;
 const fail=message=>{
@@ -36,6 +37,13 @@ async function main(){
    state.textContent="Protected pixels playing via "+details.drm+". Test physical display vs screenshot.";
    log.textContent="Browser rendered the ORIGINAL HTML at build time. Current DOM is transparent but clickable; DRM video is visible. No first-paint plaintext fallback.";
   }else fail(details.reason||"DRM rendering not available");
+ });
+ secure.addEventListener("secure-selection-change",event=>{
+  const {selectedCharacters,highlightRects}=event.detail;
+  selectionStatus.textContent=selectedCharacters>0
+   ?"Native text selected: "+selectedCharacters+" characters across "+highlightRects+
+      " highlight region(s). Drag to adjust; Cmd/Ctrl+C uses the browser's normal selection."
+   :"No protected text selected. Drag over the paragraph or heading.";
  });
  secure.querySelector("#real-button").addEventListener("click",()=>{
   count+=1;
