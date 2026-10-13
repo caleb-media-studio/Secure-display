@@ -1,4 +1,4 @@
-import {createElement, useEffect, useRef, type HTMLAttributes, type ReactNode} from "react";
+import {createElement, useEffect, useRef, type HTMLAttributes, type ReactNode, type ReactElement} from "react";
 import {registerSecureDiv, type SecureDivPlaybackAdapter} from "@secure-display/secure-div";
 
 export interface SecureDivState {
@@ -31,7 +31,7 @@ export interface SecureDivProps extends Omit<HTMLAttributes<HTMLElement>, "child
 export function SecureDiv({
   assetId, sourceSha256, playbackAdapter, children,
   onSecureStateChange, onSecureSelectionChange, style, ...rest
-}: SecureDivProps) {
+}: SecureDivProps): ReactElement {
   const ref = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (playbackAdapter) registerSecureDiv(playbackAdapter);
