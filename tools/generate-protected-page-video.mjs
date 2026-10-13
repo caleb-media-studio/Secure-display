@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Synthetic full-page DRM experiment. The clear PPM/MP4 is a local build
+ * Synthetic black DRM layer experiment. The clear PPM/MP4 is a local build
  * intermediate only; its pixels must be packaged into encrypted media.
  * No HTML canvas or font dependency is used for the browser.
  */
@@ -121,6 +121,11 @@ function label(message,x,y,scale,color) {
 function centered(message,y,scale,color) {
  label(message,Math.round((width-message.length*6*scale+scale)/2),y,scale,color);
 }
+// Blank media isolates DRM protected compositing from the actual DOM.
+// All meaningful text and controls remain in the regular HTML underneath.
+export function rasterizeBlack() {
+ return Buffer.alloc(PAGE_WIDTH*PAGE_HEIGHT*3,0);
+}
 export function rasterize() {
  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
   const shade=Math.floor(10+13*x/width+5*y/height);
@@ -144,7 +149,10 @@ export function rasterize() {
  return rgb;
 }
 async function main(){
- const image=rasterize();
+ // Default fixture is a solid black licensed video. '--graphic' is an
+ // explicit older diagnostic, NOT the overlay screenshot experiment.
+ const graphic=process.argv.includes("--graphic");
+ const image=graphic?rasterize():rasterizeBlack();
  await mkdir(OUT,{recursive:true});
  try {
   await writeFile(PPM,Buffer.concat([
@@ -157,7 +165,7 @@ async function main(){
   ],{encoding:"utf8",timeout:90000});
   if(child.error||child.status!==0)
     throw Error("FFmpeg synthetic page encoder failed: "+(child.stderr?.slice(0,300)||child.error?.message||"unknown"));
-  console.log("Generated local CLEAR synthetic page (not capture protected):",MP4);
+  console.log("Generated local CLEAR "+(graphic?"graphic":"SOLID BLACK")+" video for DRM packaging:",MP4);
  }finally{await rm(PPM,{force:true});}
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
