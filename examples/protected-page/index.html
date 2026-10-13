@@ -30,8 +30,10 @@ button:focus-visible,select:focus-visible{outline:2px solid #7ce5c8}
 #protected-video[hidden]{display:none!important}
 /* Near-invisible experiment: actual encrypted video is a viewport-wide layer
    ABOVE ordinary DOM, not a rasterized DOM replacement. */
-#experiment[data-mode="overlay"]{isolation:auto}
-#experiment[data-mode="overlay"] #protected-video{
+#experiment[data-mode="overlay"],#experiment[data-mode="neutral"]{isolation:auto}
+#experiment[data-mode="neutral"] #protected-video{mix-blend-mode:multiply}
+#experiment[data-mode="overlay"] #protected-video,
+#experiment[data-mode="neutral"] #protected-video{
   position:fixed;inset:0;width:100vw;height:100vh;
   object-fit:cover;z-index:2147483000;pointer-events:none
 }
@@ -75,28 +77,29 @@ footer{color:#92a7bc;font-size:.8rem;margin:1.4rem 0}
 </style></head>
 <body><main>
 <header><div class="eyebrow">SECURE DISPLAY · CAPTURE RESEARCH</div>
-<h1>Black DRM overlay vs ordinary HTML</h1>
-<p>Empirical test: the DRM video contains <strong>black pixels only</strong>. All text, buttons, and layout remain actual DOM. Change the encrypted black video's opacity to see what screenshots capture.</p></header>
-<div class="note"><strong>Experimental, not proven protection.</strong> The encrypted video is a plain black frame above the viewport at adjustable opacity with <code>pointer-events: none</code>. The test sentence and button belong only to HTML. If video graphics or duplicate lettering appear, rebuild the encrypted black fixture. Never use private data.</div>
+<h1>Invisible to you. Black to capture?</h1>
+<p><strong>Goal:</strong> the original page looks completely normal and stays interactive, but a screenshot captures black. The primary test uses <strong>encrypted white DRM video at 100% opacity with CSS multiply blending</strong>. White is neutral under multiply on the physical display. Whether the capture engine substitutes black before blending is what we are testing.</p></header>
+<div class="note"><strong>Pass only when BOTH hold:</strong> the physical display remains unchanged and its real DOM buttons work, while the screenshot or recording turns black. If either fails, the strategy fails. Synthetic test data only.</div>
 <div class="controls">
 <label>DRM <select id="drm"><option value="fairplay">Safari / FairPlay</option><option value="widevine">Chrome / Widevine</option></select></label>
 <button id="start">Start / Retry DRM</button>
 <div class="group" role="group" aria-label="Compare rendering modes">
+<button class="active" data-mode="neutral" aria-pressed="true">White DRM × multiply (test)</button>
+<button data-mode="overlay" aria-pressed="false">Black DRM opacity (control)</button>
 <button data-mode="protected" aria-pressed="false">Opaque black DRM (control)</button>
-<button class="active" data-mode="overlay" aria-pressed="true">Black DRM overlay</button>
 <button data-mode="normal" aria-pressed="false">Unprotected DOM control</button>
 </div>
 </div>
-<section id="opacity-lab" aria-label="Live DRM overlay opacity test">
+<section id="opacity-lab" aria-label="Black DRM opacity control" hidden>
 <label for="opacity-slider">Live DRM opacity</label>
 <input id="opacity-slider" type="range" min="0" max="14" step="1" value="1" aria-describedby="opacity-hint">
 <output id="opacity-value" for="opacity-slider">0.0000001%</output>
 <span id="opacity-css">CSS opacity: 0.000000001</span>
 </section>
-<p id="opacity-hint">Move the slider while DRM stays playing. Try 0%, 0.0000001%, 0.01%, 0.4%, 1%, 10%, and 100%. This changes only the DRM overlay, not the underlying HTML.</p>
-<div id="status" role="status">Starting DRM overlay experiment...</div>
-<p id="mode-description">Testing black encrypted DRM frames over ordinary HTML. No image or text is present in the DRM video.</p>
-<div class="frame"><div id="experiment" data-mode="overlay">
+<p id="opacity-hint" hidden>The black DRM opacity slider is an older control, not the solution being tested. The white multiply test always uses 100% opacity.</p>
+<div id="status" role="status">Starting white DRM multiply overlay test...</div>
+<p id="mode-description">White encrypted DRM video at 100% opacity using multiply blending over the unchanged DOM.</p>
+<div class="frame"><div id="experiment" data-mode="neutral">
 <div id="dom-page">
   <div class="dom-header"><span>▌</span> SECURE DISPLAY</div>
   <div class="dom-panel">
@@ -110,7 +113,7 @@ footer{color:#92a7bc;font-size:.8rem;margin:1.4rem 0}
 <div id="protected-guard" aria-hidden="true"></div>
 <button id="protected-hotspot" hidden disabled aria-label="Activate protected-page demo button" title="Activate test"></button>
 </div></div>
-<section id="capture-calibration" aria-labelledby="reference-heading">
+<details><summary>Optional DRM output calibration (not the overlay test)</summary><section id="capture-calibration" aria-labelledby="reference-heading">
 <h2 id="reference-heading">Is DRM actually excluded from the screenshot?</h2>
 <p>Compare two versions of the <strong>exact same synthetic magenta/cyan pattern</strong>. Left: independently licensed Widevine/FairPlay encrypted video. Right: ordinary clear MP4. Both should look colorful on your physical display. If only the left becomes black or blank in a screenshot, we have direct evidence of protected video capture exclusion for that path.</p>
 <button id="reference-start" type="button">Run encrypted vs clear reference</button>
@@ -119,11 +122,11 @@ footer{color:#92a7bc;font-size:.8rem;margin:1.4rem 0}
 <figure class="reference-tile"><video id="drm-reference-video" muted loop playsinline preload="none" aria-label="Encrypted DRM color reference"></video><figcaption><strong>Encrypted DRM reference</strong> — should be colorful on your display; capture result to be tested</figcaption></figure>
 <figure class="reference-tile"><video id="clear-reference-video" muted loop playsinline preload="none" aria-label="Unencrypted color reference"></video><figcaption><strong>Unencrypted control</strong> — same visible frames, expected to remain visible in ordinary screenshots</figcaption></figure>
 </div>
-</section>
+</section></details>
 <p id="interactions" role="status">Interaction count: 0 (this counter is ordinary DOM)</p>
 <p id="overlay-metrics" role="status">Checking DRM media and overlay compositor settings...</p>
 <h2>Capture experiment</h2>
-<p>Start with the <strong>0.0000001% DRM overlay</strong>, then move the live opacity slider without restarting the Axinom DRM session. Take a screenshot at each preset while the video time advances, and compare against the <strong>Unprotected DOM control</strong>. At 100%, the video may visibly obscure the webpage as well as screenshots: that is a separate observation from protecting the HTML.</p>
+<p>Use <strong>White DRM × multiply (test)</strong>. Compare how the normal DOM looks physically versus in a screenshot. Try clicking its real button. The success condition is unchanged physical appearance AND entirely black capture. Compare with the Unprotected DOM control. The old black-opacity slider remains available as a separate control.</p>
 <details open><summary>Sanitized playback diagnostics (opens automatically)</summary><pre id="diagnostic">Ready.</pre></details>
 <footer>Public Axinom test encryption keys are known. Does not protect confidential data or certify cross-platform capture resistance.</footer>
 <script type="module" src="/src/main.js"></script>
