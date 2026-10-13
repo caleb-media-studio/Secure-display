@@ -19,14 +19,18 @@ test("React shortcut redirects to the React HTML entry even with local TLS confi
   const address=server.httpServer?.address();
   assert.ok(address && typeof address!=="string");
   const origin="http://127.0.0.1:"+address.port;
-  const redirect=await fetch(origin+"/react",{redirect:"manual"});
+  const redirect=await fetch(origin+"/react",{redirect:"manual",headers:{connection:"close"}});
   assert.equal(redirect.status,308);
   assert.equal(redirect.headers.get("location"),"/react/");
-  const page=await fetch(origin+"/react/");
+  await redirect.arrayBuffer();
+  const page=await fetch(origin+"/react/",{headers:{connection:"close"}});
   assert.equal(page.status,200);
   assert.match(page.headers.get("content-type")??"",/text\/html/);
   const html=await page.text();
   assert.match(html,/React component experiment/);
   assert.match(html,/react\/main\.tsx/);
- }finally{await server.close();}
+ }finally{
+  server.httpServer?.closeAllConnections?.();
+  await server.close();
+ }
 });
