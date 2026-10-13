@@ -9,7 +9,7 @@ main{width:min(1120px,96%);margin:45px auto}
 h1{font-size:clamp(25px,3.5vw,43px);margin:0 0 8px}p{color:#b4c9dd}
 .note{background:#203048;padding:16px;border-left:3px solid #5ae1b0;border-radius:8px}
 .demo{margin:28px 0;position:relative;min-height:540px;width:960px;max-width:100%;background:#000;border-radius:18px}
-secure-div{display:block;width:960px;max-width:100%;margin:0;opacity:0!important}
+secure-div{display:block;width:960px;max-width:100%;margin:0;opacity:0!important;user-select:text;-webkit-user-select:text}
 /* Guard is active even BEFORE customElements.define(): no first-paint leak. */
 secure-div:not(:defined),secure-div[data-secure-state="blocked"],
 secure-div[data-secure-state="stale"]{opacity:0!important}
@@ -24,7 +24,9 @@ button{cursor:pointer}strong{color:#f7fff7}
 <div id="mount" class="demo" aria-label="Real secure-div custom element with source HTML"></div>
 <p id="state">Preparing real HTML element…</p>
 <p id="clicks">Button clicks: 0</p>
+<p id="selection-status">No protected text selected. Drag across the text in the card.</p>
 <details><summary>How this works / limits</summary>
+<p>Text selection uses the real invisible DOM Selection/Range. Blue selection rectangles are painted over the licensed video, contain no text glyphs, and may be visible in screenshots. Browser text copying remains enabled in this test.</p>
 <p>This prototype does not request a browser screenshot-blocking API. It automatically converts the actual HTML snapshot to DRM pixels during the developer build. DOM interactions stay native and no app/extension is required for visitors, but the protected image is static and CSS/DOM changes require a rebuild. Browser, CDM and operating-system capture behavior must still be tested separately.</p>
 </details>
 <pre id="log">No plaintext fallback.</pre>
