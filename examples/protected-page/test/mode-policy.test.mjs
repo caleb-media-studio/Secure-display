@@ -8,7 +8,7 @@ test("full protected mode never reveals normal text; blocks before actual playba
  assert.deepEqual(modePolicy("protected",false),{
   showDom:false,showVideo:false,videoOpacity:1,enableProtectedHotspot:false});
  assert.deepEqual(modePolicy("protected",true),{
-  showDom:false,showVideo:true,videoOpacity:1,enableProtectedHotspot:true});
+  showDom:false,showVideo:true,videoOpacity:1,enableProtectedHotspot:false});
 });
 test("overlay experiment deliberately leaves DOM capturable",()=>{
  const overlay=modePolicy("overlay",true);
@@ -82,4 +82,15 @@ test("slider controls DOM and video CSS without reinitializing DRM",()=>{
  assert.match(html,/id="opacity-slider" type="range"/);
  assert.match(html,/id="opacity-value"/);
  assert.match(html,/id="opacity-css"/);
+});
+
+test("default black-video overlay needs fresh local fixture marker",()=>{
+ const dir=resolve(dirname(fileURLToPath(import.meta.url)),"..");
+ const source=readFileSync(resolve(dir,"src/main.js"),"utf8");
+ const html=readFileSync(resolve(dir,"index.html"),"utf8");
+ assert.match(source,/fixture-info\.json/);
+ assert.match(source,/solid-black-v1/);
+ assert.match(source,/Outdated graphic DRM fixture/);
+ assert.match(html,/REAL HTML CONTENT/);
+ assert.match(html,/Opaque black DRM \(control\)/);
 });
